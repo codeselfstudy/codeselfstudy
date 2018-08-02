@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Colin Hughes" />
+<meta name="description" content="A website dedicated to the fascinating world of mathematics and programming" />
+<meta name="keywords" content="programming,mathematics,problems,puzzles" />
+<title>Problem 363 - Project Euler</title>
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="stylesheet" type="text/css" href="themes/20180507/style_default.css" />
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"],
+      tex2jax: {
+         inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+         displayMath: [ ["$$","$$"], ["\\[","\\]"] ],
+         processEscapes: true
+      },
+      "HTML-CSS": { availableFonts: ["TeX"] }
+   });
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_HTML-full,Safe"></script></head>
+
+<body>
+<div id="container">
+<div id="header" class="noprint">
+<div id="nav" class="noprint">
+<ul>
+<li><a href="about" title="About" accesskey="h">About</a></li>
+<li id="current"><a href="archives" title="Archives" accesskey="1">Archives</a></li>
+<li><a href="recent" title="Recent" accesskey="2">Recent</a></li>
+<li><a href="news" title="News" accesskey="3">News</a></li>
+<li><a href="register" title="Register" accesskey="4">Register</a></li>
+<li><a href="sign_in" title="Sign In" accesskey="5">Sign In</a></li>
+</ul>
+</div>
+
+<div id="logo" class="noprint">
+   <div>Project Euler<span>.net</span></div>
+</div>
+
+</div>
+
+<div id="info_panel"><a href="search"><img src="images/icon_search.png" alt="Search Problems" title="Search Problems" /></a><a href="rss2_euler.xml"><img src="images/icon_rss.png" alt="RSS Feed" title="RSS Feed" /></a></div>
+<div id="content">
+
+<div style="text-align:center;" class="print"><img src="images/print_page_logo.png" alt="projecteuler.net" style="border:none;" /></div>
+<h2>Bézier Curves</h2><div id="problem_info"><h3>Problem 363 <span style="float:right;" class="info noprint"><img src="images/icon_info.png" style="width:18px;opacity:0.7;" /><span style="left:-400px;width:450px;font-size:80%;">Published on Sunday, 18th December 2011, 10:00 am; Solved by 827;<br />Difficulty rating: 35%</span></h3></div>
+<div class="problem_content" role="problem">
+<p>A cubic Bézier curve is defined by four points: P<sub>0</sub>, P<sub>1</sub>, P<sub>2</sub> and P<sub>3</sub>.</p>
+
+<div style="float:right;"><img src="project/images/p363_bezier.png" alt="p363_bezier.png" /></div>
+
+<p>The curve is constructed as follows:<br />
+On the segments P<sub>0</sub>P<sub>1</sub>, P<sub>1</sub>P<sub>2</sub> and P<sub>2</sub>P<sub>3</sub> the points Q<sub>0</sub>,Q<sub>1</sub> and Q<sub>2</sub> are drawn such that<br />
+P<sub>0</sub>Q<sub>0</sub> / P<sub>0</sub>P<sub>1</sub> = P<sub>1</sub>Q<sub>1</sub> / P<sub>1</sub>P<sub>2</sub> = P<sub>2</sub>Q<sub>2</sub> / P<sub>2</sub>P<sub>3</sub> = t (t in [0,1]).<br />
+On the segments Q<sub>0</sub>Q<sub>1</sub> and Q<sub>1</sub>Q<sub>2</sub> the points R<sub>0</sub> and R<sub>1</sub> are drawn such that<br />
+Q<sub>0</sub>R<sub>0</sub>  / Q<sub>0</sub>Q<sub>1</sub> = Q<sub>1</sub>R<sub>1</sub> / Q<sub>1</sub>Q<sub>2</sub> = t for the same value of t.<br />
+On the segment R<sub>0</sub>R<sub>1</sub> the point B is drawn such that R<sub>0</sub>B / R<sub>0</sub>R<sub>1</sub> = t for the same value of t.<br />
+The Bézier curve defined by the points P<sub>0</sub>, P<sub>1</sub>, P<sub>2</sub>, P<sub>3</sub> is the locus of B as Q<sub>0</sub> takes all possible positions on the segment P<sub>0</sub>P<sub>1</sub>.<br />
+(Please note that for all points the value of t is the same.)</p>
+
+<p style="clear:right;">At <a href="http://home.kpn.nl/hklein/bezier/bezier.html">this (external) web address</a> you will find an applet that allows you to drag the points P<sub>0</sub>, P<sub>1</sub>, P<sub>2</sub> and P<sub>3</sub> to see what the Bézier curve (green curve) defined by those points looks like. You can also drag the point Q<sub>0</sub> along the segment P<sub>0</sub>P<sub>1</sub>.</p>
+
+<p>From the construction it is clear that the Bézier curve will be tangent to the segments P<sub>0</sub>P<sub>1</sub> in P<sub>0</sub> and P<sub>2</sub>P<sub>3</sub> in P<sub>3</sub>.</p>
+
+<p>A cubic Bézier curve with P<sub>0</sub>=(1,0), P<sub>1</sub>=(1,<var>v</var>), P<sub>2</sub>=(<var>v</var>,1) and P<sub>3</sub>=(0,1) is used to approximate a quarter circle.<br />
+The value <var>v</var> &gt; 0 is chosen such that the area enclosed by the lines OP<sub>0</sub>, OP<sub>3</sub> and the curve is equal to <sup>π</sup>/<sub>4</sub> (the area of the quarter circle).</p>
+
+<div>By how many percent does the length of the curve differ from the length of the quarter circle?</div>
+<table><tr><td>That is, if L is the length of the curve, calculate  100 × </td><td><div style="text-align:center;"><div style="border-bottom:1px solid #000;">L − π/2</div>π/2</div></td></tr></table><div>Give your answer rounded to 10 digits behind the decimal point.</div>
+</div><br />
+<br /></div>
+
+<div id="footer" class="noprint">
+Project Euler: <a href="copyright">Copyright Information</a> | <a href="privacy">Privacy Policy</a>
+<!--/Creative Commons License--><!-- <rdf:RDF xmlns="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+   <Work rdf:about="">
+      <license rdf:resource="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/" />
+   <dc:type rdf:resource="http://purl.org/dc/dcmitype/Text" />
+   </Work>
+   <License rdf:about="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/"><permits rdf:resource="http://web.resource.org/cc/Reproduction"/><permits rdf:resource="http://web.resource.org/cc/Distribution"/><requires rdf:resource="http://web.resource.org/cc/Notice"/><requires rdf:resource="http://web.resource.org/cc/Attribution"/><prohibits rdf:resource="http://web.resource.org/cc/CommercialUse"/><permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/><requires rdf:resource="http://web.resource.org/cc/ShareAlike"/></License></rdf:RDF> -->
+</div>
+</div>
+</body>
+</html>

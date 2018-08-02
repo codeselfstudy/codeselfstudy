@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Colin Hughes" />
+<meta name="description" content="A website dedicated to the fascinating world of mathematics and programming" />
+<meta name="keywords" content="programming,mathematics,problems,puzzles" />
+<title>Problem 308 - Project Euler</title>
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="stylesheet" type="text/css" href="themes/20180507/style_default.css" />
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"],
+      tex2jax: {
+         inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+         displayMath: [ ["$$","$$"], ["\\[","\\]"] ],
+         processEscapes: true
+      },
+      "HTML-CSS": { availableFonts: ["TeX"] }
+   });
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_HTML-full,Safe"></script></head>
+
+<body>
+<div id="container">
+<div id="header" class="noprint">
+<div id="nav" class="noprint">
+<ul>
+<li><a href="about" title="About" accesskey="h">About</a></li>
+<li id="current"><a href="archives" title="Archives" accesskey="1">Archives</a></li>
+<li><a href="recent" title="Recent" accesskey="2">Recent</a></li>
+<li><a href="news" title="News" accesskey="3">News</a></li>
+<li><a href="register" title="Register" accesskey="4">Register</a></li>
+<li><a href="sign_in" title="Sign In" accesskey="5">Sign In</a></li>
+</ul>
+</div>
+
+<div id="logo" class="noprint">
+   <div>Project Euler<span>.net</span></div>
+</div>
+
+</div>
+
+<div id="info_panel"><a href="search"><img src="images/icon_search.png" alt="Search Problems" title="Search Problems" /></a><a href="rss2_euler.xml"><img src="images/icon_rss.png" alt="RSS Feed" title="RSS Feed" /></a></div>
+<div id="content">
+
+<div style="text-align:center;" class="print"><img src="images/print_page_logo.png" alt="projecteuler.net" style="border:none;" /></div>
+<h2>An amazing Prime-generating Automaton</h2><div id="problem_info"><h3>Problem 308 <span style="float:right;" class="info noprint"><img src="images/icon_info.png" style="width:18px;opacity:0.7;" /><span style="left:-400px;width:450px;font-size:80%;">Published on Saturday, 30th October 2010, 01:00 pm; Solved by 620;<br />Difficulty rating: 60%</span></h3></div>
+<div class="problem_content" role="problem">
+<p>A program written in the programming language Fractran consists of a list of fractions.</p>
+
+<p>The internal state of the Fractran Virtual Machine is a positive integer, which is initially set to a seed value. Each iteration of a Fractran program multiplies the state integer by the first fraction in the list which will leave it an integer.</p>
+
+<p>For example, one of the Fractran programs that John Horton Conway wrote for prime-generation consists of the following 14 fractions:<br /></p><table class="formula"><tr><td><table class="frac"><tr><td>17</td></tr><tr><td class="overline">91</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>78</td></tr><tr><td class="overline">85</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>19</td></tr><tr><td class="overline">51</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>23</td></tr><tr><td class="overline">38</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>29</td></tr><tr><td class="overline">33</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>77</td></tr><tr><td class="overline">29</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>95</td></tr><tr><td class="overline">23</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>77</td></tr><tr><td class="overline">19</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>1</td></tr><tr><td class="overline">17</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>11</td></tr><tr><td class="overline">13</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>13</td></tr><tr><td class="overline">11</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>15</td></tr><tr><td class="overline">2</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>1</td></tr><tr><td class="overline">7</td></tr></table></td>
+<td>,</td>
+<td><table class="frac"><tr><td>55</td></tr><tr><td class="overline">1</td></tr></table></td>
+<td>.</td>
+</tr></table><p>Starting with the seed integer 2, successive iterations of the program produce the sequence:<br />
+15, 825, 725, 1925, 2275, 425, ..., 68, <b>4</b>, 30, ..., 136, <b>8</b>, 60, ..., 544, <b>32</b>, 240, ...</p>
+
+<p>The powers of 2 that appear in this sequence are 2<sup>2</sup>, 2<sup>3</sup>, 2<sup>5</sup>, ...<br />
+It can be shown that <i>all</i> the powers of 2 in this sequence have prime exponents and that <i>all</i> the primes appear as exponents of powers of 2, in proper order!</p>
+
+<p>If someone uses the above Fractran program to solve Project Euler Problem 7 (find the 10001<sup>st</sup> prime), how many iterations would be needed until the program produces 2<sup>10001st prime</sup> ?</p>
+</div><br />
+<br /></div>
+
+<div id="footer" class="noprint">
+Project Euler: <a href="copyright">Copyright Information</a> | <a href="privacy">Privacy Policy</a>
+<!--/Creative Commons License--><!-- <rdf:RDF xmlns="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+   <Work rdf:about="">
+      <license rdf:resource="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/" />
+   <dc:type rdf:resource="http://purl.org/dc/dcmitype/Text" />
+   </Work>
+   <License rdf:about="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/"><permits rdf:resource="http://web.resource.org/cc/Reproduction"/><permits rdf:resource="http://web.resource.org/cc/Distribution"/><requires rdf:resource="http://web.resource.org/cc/Notice"/><requires rdf:resource="http://web.resource.org/cc/Attribution"/><prohibits rdf:resource="http://web.resource.org/cc/CommercialUse"/><permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/><requires rdf:resource="http://web.resource.org/cc/ShareAlike"/></License></rdf:RDF> -->
+</div>
+</div>
+</body>
+</html>
