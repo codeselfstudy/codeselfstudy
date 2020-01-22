@@ -1,9 +1,10 @@
 {
     "name": "puzzles",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "private": true,
     "scripts": {
-        "start": "node ./bin/www"
+        "start": "DEBUG=puzzles:* npm run serve",
+        "serve": "npx nodemon ./bin/www"
     },
     "dependencies": {
         "cookie-parser": "~1.4.4",
@@ -12,5 +13,9 @@
         "hbs": "~4.0.4",
         "http-errors": "~1.6.3",
         "morgan": "~1.9.1"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.2",
+        "prettier": "^1.19.1"
     }
 }
