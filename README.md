@@ -1,3 +1,3 @@
-# Puzzle Scraper
+# Coding Puzzles
 
-Tools to scrape coding puzzles. To start it downloads Project Euler problems. (Creative Commons non-commercial license)
+A tool to scrape and serve coding puzzles.

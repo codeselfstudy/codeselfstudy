@@ -1,0 +1,40 @@
+version: '3'
+
+# Be sure to change the db_data name throughout this file, if necessary.
+volumes:
+    db_data:
+
+services:
+    # web:
+    #     build: .
+    #     ports:
+    #         - "3000:3000"
+    #     volumes:
+    #         - .:/usr/src/app
+    #     env_file:
+    #         - .env/development/web
+    #         - .env/development/database
+    #     environment:
+    #         - VAR=value
+
+    # Not exposing a port here keeps it hidden from the outside world.
+    # There also isn't a need to mount a volume, because we aren't
+    # changing files.
+    # redis:
+    #     image: redis
+
+    database:
+        image: postgres
+        # Create the necessary environment variables.
+        # env_file:
+        #     - .env/development/database
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            # POSTGRES_DB=myapp_development
+        volumes:
+            # Postgres stores data at `/var/lib/postgresql/data`.
+            # You can map that to the named volume `db_data`.
+            - db_data:/var/lib/postgresql/data
