@@ -4,7 +4,17 @@ A tool to scrape and serve coding puzzles.
 
 ## Notes
 
-You can edit the `docker-compose.yml` and `Dockerfile` as needed.
+To run the application:
+
+- Be sure that you have Docker installed.
+- Turn off your local MongoDB server, because this will run it's own Mongo in Docker on the default port (27017).
+- Start the application with Docker Compose:
+
+```text
+$ docker-compose up --build
+```
+
+Then visit [localhost:3000](http://localhost:3000/).
 
 ### Database
 
