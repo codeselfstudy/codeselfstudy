@@ -4,7 +4,7 @@ from os import listdir
 from os.path import isfile, join
 
 
-DATA_DIR = "./data/"
+DATA_DIR = "../data/project_euler"
 
 
 def extract_content(fname):

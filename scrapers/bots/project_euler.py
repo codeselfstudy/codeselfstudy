@@ -6,7 +6,7 @@ from random import uniform
 
 
 URL_TEMPLATE = "https://projecteuler.net/problem={}"
-DATA_DIR = "./data"
+DATA_DIR = "../data/project_euler"
 
 
 if __name__ == "__main__":
