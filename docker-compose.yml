@@ -1,40 +1,24 @@
 version: '3'
 
-# Be sure to change the db_data name throughout this file, if necessary.
 volumes:
-    db_data:
+    mongo:
 
 services:
-    # web:
-    #     build: .
-    #     ports:
-    #         - "3000:3000"
-    #     volumes:
-    #         - .:/usr/src/app
-    #     env_file:
-    #         - .env/development/web
-    #         - .env/development/database
-    #     environment:
-    #         - VAR=value
-
-    # Not exposing a port here keeps it hidden from the outside world.
-    # There also isn't a need to mount a volume, because we aren't
-    # changing files.
-    # redis:
-    #     image: redis
-
-    database:
-        image: postgres
-        # Create the necessary environment variables.
-        # env_file:
-        #     - .env/development/database
+    web:
+        build:
+            context: ./express_api
+            dockerfile: Dockerfile.dev
         ports:
-            - 5432:5432
-        environment:
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=postgres
-            # POSTGRES_DB=myapp_development
+            - "3000:3000"
         volumes:
-            # Postgres stores data at `/var/lib/postgresql/data`.
-            # You can map that to the named volume `db_data`.
-            - db_data:/var/lib/postgresql/data
+            - .:/app
+        depends_on:
+            - mongo
+
+    mongo:
+        image: mongo
+        # TODO: don't expose port in production
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongo:/data/db
