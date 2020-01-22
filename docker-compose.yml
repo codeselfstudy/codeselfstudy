@@ -27,8 +27,5 @@ services:
 
     mongo:
         image: mongo
-        # TODO: don't expose port in production
-        ports:
-            - "27017:27017"
         volumes:
             - mongo:/data/db
