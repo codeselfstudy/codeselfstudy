@@ -1,9 +1,8 @@
 const express = require("express");
+const ctrl = require("../controllers/puzzleController");
 const router = express.Router();
 
-/* GET home page. */
-router.get("/", function(req, res, next) {
-    res.json({ title: "puzzles" });
-});
+router.get("/", ctrl.index);
+router.get("/:id", ctrl.detail);
 
 module.exports = router;
