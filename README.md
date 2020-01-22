@@ -2,7 +2,13 @@
 
 A tool to scrape and serve coding puzzles.
 
-## Notes
+## Technologies
+
+- Python 3 scraping tools
+- Express.js for the API
+- MongoDB for persistent storage (many people in the group know it)
+
+## Development
 
 To run the application:
 
