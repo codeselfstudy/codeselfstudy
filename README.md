@@ -4,9 +4,12 @@ A tool to scrape and serve coding puzzles.
 
 ## Technologies
 
-- Python 3 scraping tools
 - Express.js for the API
+- Redis for session storage in Express.js
 - MongoDB for persistent storage (many people in the group know it)
+- React for an SPA
+- Docker for easy development and deployment
+- Python 3 scraping tools (possibly to be replaced with puppeteer scrapers)
 
 ## Development
 

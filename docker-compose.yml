@@ -1,31 +1,56 @@
-version: '3'
+version: "3"
 
 volumes:
     mongo:
+    redis:
 
 services:
+    # The app is going to run on the host machine's port 4444
     nginx:
         restart: always
         depends_on:
             - api
-            - mongo
+            - client
         build:
+            dockerfile: Dockerfile.dev
             context: ./nginx
-            dockerfile: Dockerfile.dev
         ports:
-            - "3000:80"
+            - "4444:80"
 
+    # Express
     api:
-        build:
-            context: ./express_api
-            dockerfile: Dockerfile.dev
-        volumes:
-            - /app/node_modules
-            - ./express_api:/app
         depends_on:
             - mongo
+            - redis
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./api
+        volumes:
+            - /app/node_modules
+            - ./api:/app
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
 
+    # The MERN database
     mongo:
         image: mongo
         volumes:
             - mongo:/data/db
+
+    # Express.js sessions
+    redis:
+        image: "redis:latest"
+        volumes:
+            - redis:/data
+
+    # React SPA
+    client:
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./client
+        depends_on:
+            - api
+        volumes:
+            - /app/node_modules
+            - ./client:/app
