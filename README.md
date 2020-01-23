@@ -9,7 +9,7 @@ A tool to scrape and serve coding puzzles.
 - Express.js for the API
 - Redis for session storage in Express.js
 - MongoDB for persistent storage
-- React for an SPA (with Tailwinds CSS)
+- React for an SPA (with Bootstrap)
 - Docker for easy development and deployment
 - Python 3 scraping tools (possibly to be replaced with puppeteer scrapers)
 
