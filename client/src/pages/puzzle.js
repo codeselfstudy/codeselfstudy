@@ -11,10 +11,12 @@ export default function Puzzle() {
     }, [id]);
 
     return (
-        <div>
+        <div className="container">
             <h1 className="text-4xl">Coding Puzzle #{id}</h1>
             <p>puzzle description goes here</p>
-            <code>{JSON.stringify(puzzleData)}</code>
+            <code>
+                <pre>{JSON.stringify(puzzleData, null, 4)}</pre>
+            </code>
         </div>
     );
 }

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function Puzzles() {
     return (
         <div className="container">
-            <h1 className="text-4xl">Coding Puzzles</h1>
+            <h1>Coding Puzzles</h1>
             <p>Dynamic routes:</p>
             <ul>
                 <li>
