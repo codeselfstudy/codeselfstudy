@@ -10,15 +10,30 @@ function App() {
     return (
         <Router>
             <nav>
-                <ul>
-                    <li>
-                        <Link to="/">Home</Link>
+                <ul className="flex border-b">
+                    <li className="-mb-px mr-1">
+                        <Link
+                            className="bg-white inline-block border-l border-t border-r rounded-t py-2 px-4 text-blue-700 font-semibold"
+                            to="/"
+                        >
+                            Home
+                        </Link>
                     </li>
-                    <li>
-                        <Link to="/about">About</Link>
+                    <li className="mr-1">
+                        <Link
+                            className="bg-white inline-block py-2 px-4 text-blue-500 hover:text-blue-800 font-semibold"
+                            to="/about"
+                        >
+                            About
+                        </Link>
                     </li>
-                    <li>
-                        <Link to="/puzzles">Puzzles</Link>
+                    <li className="mr-1">
+                        <Link
+                            className="bg-white inline-block py-2 px-4 text-blue-500 hover:text-blue-800 font-semibold"
+                            to="/puzzles"
+                        >
+                            Puzzles
+                        </Link>
                     </li>
                 </ul>
             </nav>
