@@ -4,10 +4,12 @@ A tool to scrape and serve coding puzzles.
 
 ## Technologies
 
+"MERN stack"
+
 - Express.js for the API
 - Redis for session storage in Express.js
-- MongoDB for persistent storage (many people in the group know it)
-- React for an SPA
+- MongoDB for persistent storage
+- React for an SPA (with Tailwinds CSS)
 - Docker for easy development and deployment
 - Python 3 scraping tools (possibly to be replaced with puppeteer scrapers)
 
