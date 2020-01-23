@@ -12,7 +12,7 @@ export default function Puzzle() {
 
     return (
         <div>
-            <h1>Coding Puzzle #{id}</h1>
+            <h1 className="text-4xl">Coding Puzzle #{id}</h1>
             <p>puzzle description goes here</p>
             <code>{JSON.stringify(puzzleData)}</code>
         </div>

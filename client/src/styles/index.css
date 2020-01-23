@@ -14,3 +14,7 @@
 .btn-blue:hover {
     @apply bg-blue-700;
 }
+
+.is-1 {
+    @apply text-4xl;
+}

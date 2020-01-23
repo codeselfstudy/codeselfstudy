@@ -3,7 +3,7 @@ import React from "react";
 export default function Index() {
     return (
         <div>
-            <h1>Home Page</h1>
+            <h1 className="text-4xl">Home Page</h1>
             <p>Coding puzzles.</p>
             <div className="flex mb-4">
                 <div className="w-1/3 bg-gray-400 h-12">
