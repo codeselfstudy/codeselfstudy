@@ -8,8 +8,23 @@ const indexRouter = require("./routes/index");
 const puzzlesRouter = require("./routes/puzzles");
 const authRouter = require("./routes/auth");
 
+const redis = require("redis");
+const session = require("express-session");
+const RedisStore = require("connect-redis")(session);
+
+const client = redis.createClient({
+    host: "redis",
+});
 const app = express();
 
+app.use(
+    session({
+        store: new RedisStore({ client }),
+        // TODO: fix this
+        secret: "keybo4rd cat",
+        resave: false,
+    })
+);
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

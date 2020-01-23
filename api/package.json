@@ -8,13 +8,17 @@
         "serve": "npx nodemon ./bin/www"
     },
     "dependencies": {
+        "connect-redis": "^4.0.3",
         "cookie-parser": "~1.4.4",
         "debug": "~2.6.9",
         "express": "~4.16.1",
+        "express-session": "^1.17.0",
+        "helmet": "^3.21.2",
         "http-errors": "~1.6.3",
         "mongoose": "^5.8.9",
         "mongoose-type-url": "^1.0.6",
-        "morgan": "~1.9.1"
+        "morgan": "~1.9.1",
+        "redis": "^2.8.0"
     },
     "devDependencies": {
         "nodemon": "^2.0.2",
