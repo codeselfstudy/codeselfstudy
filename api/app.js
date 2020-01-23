@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const helmet = require("helmet");
 
 const indexRouter = require("./routes/index");
 const puzzlesRouter = require("./routes/puzzles");
@@ -17,6 +18,7 @@ const client = redis.createClient({
 });
 const app = express();
 
+app.use(helmet());
 app.use(
     session({
         store: new RedisStore({ client }),
@@ -48,7 +50,7 @@ app.use(function(err, req, res, next) {
 
     // render the error page
     res.status(err.status || 500);
-    res.render("error");
+    res.json({ error: "error" });
 });
 
 module.exports = app;
