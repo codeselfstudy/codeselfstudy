@@ -13,7 +13,8 @@
         "react-scripts": "3.3.0"
     },
     "scripts": {
-        "start": "react-scripts start",
+        "build:style": "tailwind build src/styles/index.css -o src/styles/tailwind.css",
+        "start": "npm run build:style && react-scripts start",
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject"
@@ -34,6 +35,9 @@
         ]
     },
     "devDependencies": {
-        "node-sass": "^4.13.1"
+        "autoprefixer": "^9.7.4",
+        "node-sass": "^4.13.1",
+        "postcss-cli": "^7.1.0",
+        "tailwindcss": "^1.1.4"
     }
 }

@@ -6,8 +6,6 @@ import About from "./pages/about";
 import Puzzles from "./pages/puzzles";
 import Puzzle from "./pages/puzzle";
 
-import "./App.scss";
-
 function App() {
     return (
         <Router>
