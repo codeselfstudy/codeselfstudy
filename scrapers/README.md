@@ -1,21 +1,5 @@
 # Scrapers
 
-**TODO: Add description**
+This is a separate project from the web application. It doesn't run in Docker. It's built with Elixir.
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `scrapers` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:scrapers, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/scrapers](https://hexdocs.pm/scrapers).
-
+These tools will fetch coding puzzles and store them in JSON seed files. Node can import them into Mongo when the application is built.
