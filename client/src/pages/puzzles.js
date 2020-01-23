@@ -8,7 +8,7 @@ export default function Puzzles() {
             <p>Dynamic routes:</p>
             <ul>
                 <li>
-                    <Link className="btn" to="/puzzles/123">
+                    <Link className="btn btn-blue" to="/puzzles/123">
                         Puzzle 123
                     </Link>
                 </li>

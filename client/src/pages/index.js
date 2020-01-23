@@ -4,7 +4,18 @@ export default function Index() {
     return (
         <div>
             <h1>Home Page</h1>
-            <p>This SPA is here in case we need a way to browse the content.</p>
+            <p>Coding puzzles.</p>
+            <div className="flex mb-4">
+                <div className="w-1/3 bg-gray-400 h-12">
+                    <h2>Hello</h2>
+                </div>
+                <div className="w-1/3 bg-gray-500 h-12">
+                    <h2>Hello</h2>
+                </div>
+                <div className="w-1/3 bg-gray-400 h-12">
+                    <h2>Hello</h2>
+                </div>
+            </div>
         </div>
     );
 }
