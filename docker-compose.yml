@@ -31,6 +31,7 @@ services:
         environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            - SESSION_SECRET="this is only for development"
 
     # The MERN database
     mongo:

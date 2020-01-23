@@ -22,9 +22,13 @@ app.use(helmet());
 app.use(
     session({
         store: new RedisStore({ client }),
-        // TODO: fix this
-        secret: "keybo4rd cat",
+        secret: process.env.SESSION_SECRET,
         resave: false,
+        secure: process.env.NODE_ENV === "production",
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24 * 7 * 4,
+        },
+        name: "alice",
     })
 );
 app.use(logger("dev"));
