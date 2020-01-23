@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Index from "./pages/index";
 import About from "./pages/about";
 import Puzzles from "./pages/puzzles";
+import Puzzle from "./pages/puzzle";
 
 import "./App.css";
 
@@ -27,6 +28,8 @@ function App() {
                 <Route path="/about">
                     <About />
                 </Route>
+
+                <Route path="/puzzles/:id" children={<Puzzle />} />
                 <Route path="/puzzles">
                     <Puzzles />
                 </Route>
