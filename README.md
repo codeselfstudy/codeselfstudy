@@ -13,6 +13,8 @@ A tool to scrape and serve coding puzzles.
 - Docker for easy development and deployment
 - Python 3 scraping tools (possibly to be replaced with puppeteer scrapers)
 
+![General overview](./misc/servers.png)
+
 ## Development
 
 To run the application:
