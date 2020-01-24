@@ -2,11 +2,12 @@
 
 A tool to scrape and serve coding puzzles.
 
+TODO: this may become the main website, because Gatsby can be put in a container at the root of the site.
+
 ## Technologies
 
-"MERN stack"
-
-- Express.js for the API
+- Gatsby + (contentful or strapi)
+- Express.js for the API ("MERN Stack")
 - Redis for session storage in Express.js
 - MongoDB for persistent storage
 - React for an SPA (with Bootstrap)
