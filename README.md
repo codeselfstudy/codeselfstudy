@@ -1,8 +1,8 @@
-# Coding Puzzles
+# Code Self Study Website
 
-A tool to scrape and serve coding puzzles.
+This is the new [Code Self Study](https://codeselfstudy.com/) website.
 
-TODO: this may become the main website, because Gatsby can be put in a container at the root of the site.
+This is an unfinished work in progress. Attend a meetup to find out how to contribute.
 
 ## Goals:
 
