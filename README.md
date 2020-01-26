@@ -37,11 +37,11 @@ See the `docker-compose.yml` file for an overview of the services that are runni
 ### How It Works
 
 - Nginx serves the app in development and production, proxying to the other servers behind it. It serves on port 80, but in development, you can visit it at port 4444.
-- There is a React SPA being served in another container with another instance of nginx.
+- Gatsby serves the main pages (backed by a headless CMS)
+- There is a React SPA being served in another container with another instance of nginx. It serves the puzzles at `/puzzles`.
 - Express.js is running on port 5000, mounted at `/api`. (`/api` is not visible in the Express code, so that might be confusing if you don't know to expect it. See the nginx configuration files.)
 - A Redis container will handle Express sessions (after users authenticate with the forum).
 - A MongoDB container will store the coding puzzle and user data. (This is an experiment with "MERN stack".)
-- The root site will be a GatsbyJS container (content managed in Contentful or strapi).
 
 ![General overview](./misc/servers.png)
 
