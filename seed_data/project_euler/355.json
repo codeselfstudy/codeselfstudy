@@ -1,1 +1,4 @@
-{"title": "Maximal coprime subset", "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nDefine Co(<var>n</var>) to be the maximal possible sum of a set of mutually co-prime elements from {1,\u00a02,\u00a0...,\u00a0<var>n</var>}.<br/> For example Co(10) is 30 and hits that maximum on the subset {1,\u00a05,\u00a07,\u00a08,\u00a09}.\n</p>\n<p>\nYou are given that Co(30) = 193 and Co(100) = 1356. \n</p>\n<p>Find Co(200000).\n</p>\n</div>"}
+{
+    "title": "Maximal coprime subset",
+    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nDefine Co(<var>n</var>) to be the maximal possible sum of a set of mutually co-prime elements from {1,\u00a02,\u00a0...,\u00a0<var>n</var>}.<br/> For example Co(10) is 30 and hits that maximum on the subset {1,\u00a05,\u00a07,\u00a08,\u00a09}.\n</p>\n<p>\nYou are given that Co(30) = 193 and Co(100) = 1356. \n</p>\n<p>Find Co(200000).\n</p>\n</div>"
+}

@@ -1,1 +1,4 @@
-{"title": "Coin sums", "body": "<div class=\"problem_content\" role=\"problem\">\n<p>In England the currency is made up of pound, \u00a3, and pence, p, and there are eight coins in general circulation:</p>\n<blockquote>1p, 2p, 5p, 10p, 20p, 50p, \u00a31 (100p) and \u00a32 (200p).</blockquote>\n<p>It is possible to make \u00a32 in the following way:</p>\n<blockquote>1\u00d7\u00a31 + 1\u00d750p + 2\u00d720p + 1\u00d75p + 1\u00d72p + 3\u00d71p</blockquote>\n<p>How many different ways can \u00a32 be made using any number of coins?</p>\n</div>"}
+{
+    "title": "Coin sums",
+    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>In England the currency is made up of pound, \u00a3, and pence, p, and there are eight coins in general circulation:</p>\n<blockquote>1p, 2p, 5p, 10p, 20p, 50p, \u00a31 (100p) and \u00a32 (200p).</blockquote>\n<p>It is possible to make \u00a32 in the following way:</p>\n<blockquote>1\u00d7\u00a31 + 1\u00d750p + 2\u00d720p + 1\u00d75p + 1\u00d72p + 3\u00d71p</blockquote>\n<p>How many different ways can \u00a32 be made using any number of coins?</p>\n</div>"
+}

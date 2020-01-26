@@ -1,1 +1,4 @@
-{"title": "Permutations of Project", "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nConsider the alphabet A made out of the letters of the word \"project\": A={c,e,j,o,p,r,t}.<br/>\nLet T(n) be the number of strings of length n consisting of letters from A that do not have a substring that is one of the 5040 permutations of \"project\".\n</p>\nT(7)=7<sup>7</sup>-7!=818503.\n\n<p>\nFind T(10<sup>12</sup>). Give the last 9 digits of your answer.\n</p>\n</div>"}
+{
+    "title": "Permutations of Project",
+    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nConsider the alphabet A made out of the letters of the word \"project\": A={c,e,j,o,p,r,t}.<br/>\nLet T(n) be the number of strings of length n consisting of letters from A that do not have a substring that is one of the 5040 permutations of \"project\".\n</p>\nT(7)=7<sup>7</sup>-7!=818503.\n\n<p>\nFind T(10<sup>12</sup>). Give the last 9 digits of your answer.\n</p>\n</div>"
+}

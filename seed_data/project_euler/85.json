@@ -1,1 +1,4 @@
-{"title": "Counting rectangles", "body": "<div class=\"problem_content\" role=\"problem\">\n<p>By counting carefully it can be seen that a rectangular grid measuring 3 by 2 contains eighteen rectangles:</p>\n<div style=\"text-align:center;\">\n<img alt=\"\" src=\"project/images/p085.gif\"/></div>\n<p>Although there exists no rectangular grid that contains exactly two million rectangles, find the area of the grid with the nearest solution.</p>\n</div>"}
+{
+    "title": "Counting rectangles",
+    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>By counting carefully it can be seen that a rectangular grid measuring 3 by 2 contains eighteen rectangles:</p>\n<div style=\"text-align:center;\">\n<img alt=\"\" src=\"project/images/p085.gif\"/></div>\n<p>Although there exists no rectangular grid that contains exactly two million rectangles, find the area of the grid with the nearest solution.</p>\n</div>"
+}

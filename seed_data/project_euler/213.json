@@ -1,1 +1,4 @@
-{"title": "Flea Circus", "body": "<div class=\"problem_content\" role=\"problem\">\n<p>A 30\u00d730 grid of squares contains 900 fleas, initially one flea per square.<br/>\nWhen a bell is rung, each flea jumps to an adjacent square at random (usually 4 possibilities, except for fleas on the edge of the grid or at the corners).</p>\n<p>What is the expected number of unoccupied squares after 50 rings of the bell? Give your answer rounded to six decimal places.</p>\n</div>"}
+{
+    "title": "Flea Circus",
+    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>A 30\u00d730 grid of squares contains 900 fleas, initially one flea per square.<br/>\nWhen a bell is rung, each flea jumps to an adjacent square at random (usually 4 possibilities, except for fleas on the edge of the grid or at the corners).</p>\n<p>What is the expected number of unoccupied squares after 50 rings of the bell? Give your answer rounded to six decimal places.</p>\n</div>"
+}

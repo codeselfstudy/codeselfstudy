@@ -1,1 +1,4 @@
-{"title": "Primitive Triangles", "body": "<div class=\"problem_content\" role=\"problem\">\n<p>Consider the triangles with integer sides a, b and c with a \u2264 b \u2264 c.<br/>\nAn integer sided triangle (a,b,c) is called primitive if <dfn title=\"gcd(a,b,c)=gcd(a,gcd(b,c))\"> gcd(a,b,c)</dfn>=1. <br/>\nHow many primitive integer sided triangles exist with a perimeter not exceeding 10 000 000?\n</p>\n</div>"}
+{
+    "title": "Primitive Triangles",
+    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>Consider the triangles with integer sides a, b and c with a \u2264 b \u2264 c.<br/>\nAn integer sided triangle (a,b,c) is called primitive if <dfn title=\"gcd(a,b,c)=gcd(a,gcd(b,c))\"> gcd(a,b,c)</dfn>=1. <br/>\nHow many primitive integer sided triangles exist with a perimeter not exceeding 10 000 000?\n</p>\n</div>"
+}

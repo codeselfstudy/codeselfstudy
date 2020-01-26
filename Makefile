@@ -16,4 +16,4 @@ docs:
 
 format:
 	prettier **/*.{js,css,html,json} --write
-	pushd scrapers && mix format && popd
+	cd scrapers && mix format

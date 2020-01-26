@@ -1,1 +1,4 @@
-{"title": "Modular Cubes, part 2", "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nFor a positive number <var>n</var>, define C(<var>n</var>) as the number of the integers <var>x,</var> for which 1&lt;<var>x</var>&lt;<var>n</var> and<br/><var>x</var><sup>3</sup>\u22611 mod <var>n</var>.\n</p>\n<p>\nWhen <var>n</var>=91, there are 8 possible values for <var>x</var>, namely : 9, 16, 22, 29, 53, 74, 79, 81.<br/>\nThus, C(91)=8.</p>\n<p>\nFind the sum of the positive numbers <var>n</var>\u226410<sup>11</sup> for which C(<var>n</var>)=242.</p>\n</div>"}
+{
+    "title": "Modular Cubes, part 2",
+    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nFor a positive number <var>n</var>, define C(<var>n</var>) as the number of the integers <var>x,</var> for which 1&lt;<var>x</var>&lt;<var>n</var> and<br/><var>x</var><sup>3</sup>\u22611 mod <var>n</var>.\n</p>\n<p>\nWhen <var>n</var>=91, there are 8 possible values for <var>x</var>, namely : 9, 16, 22, 29, 53, 74, 79, 81.<br/>\nThus, C(91)=8.</p>\n<p>\nFind the sum of the positive numbers <var>n</var>\u226410<sup>11</sup> for which C(<var>n</var>)=242.</p>\n</div>"
+}
