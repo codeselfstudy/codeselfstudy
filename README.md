@@ -60,16 +60,13 @@ See the `docker-compose.yml` file for an overview of the services that are runni
 To run the application:
 
 - Be sure that you have Docker installed.
-- Turn off your local MongoDB server, because this will run it's own Mongo in Docker on the default port (27017).
-- Start the application with Docker Compose:
+- Start the application with Docker Compose.
 
 ```text
 $ docker-compose up --build
 ```
 
 Then visit [localhost:4444](http://localhost:4444/).
-
-See the routes files for the available routes.
 
 To shutdown the containers:
 
