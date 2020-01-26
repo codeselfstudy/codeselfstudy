@@ -5,12 +5,12 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React from "react";
-import PropTypes from "prop-types";
-import Helmet from "react-helmet";
-import { useStaticQuery, graphql } from "gatsby";
+import React from 'react';
+import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
+import { useStaticQuery, graphql } from 'gatsby';
 
-function SEO({ description, lang, meta, title }) {
+function SEO({ description, lang, meta, title, isHome, isNoindex }) {
     const { site } = useStaticQuery(
         graphql`
             query {
@@ -27,14 +27,26 @@ function SEO({ description, lang, meta, title }) {
 
     const metaDescription = description || site.siteMetadata.description;
 
+    // The site name should come first in the HTML `<title>` only on the
+    // homepage.
+    const titleTemplate =
+        isHome === true
+            ? `${site.siteMetadata.title} | %s`
+            : `%s | ${site.siteMetadata.title}`;
+
+    const metaRobots = isNoindex === true ? 'noindex,nofollow' : 'index,follow';
     return (
         <Helmet
             htmlAttributes={{
                 lang,
             }}
             title={title}
-            titleTemplate={`%s | ${site.siteMetadata.title}`}
+            titleTemplate={titleTemplate}
             meta={[
+                {
+                    name: `robots`,
+                    content: metaRobots,
+                },
                 {
                     name: `description`,
                     content: metaDescription,

@@ -1,0 +1,94 @@
+@import './variables.scss';
+@import './backgrounds.scss';
+@import '~bulma/bulma.sass';
+@import "~text-spinners/spinners.scss";
+
+// If you need the bulma extensions, I think you can import them in the
+// same way that the index file does here:
+// @import '~bulma-extensions/src/sass/index.sass';
+
+// custom SCSS goes here
+
+@import url('https://fonts.googleapis.com/css?family=Anton|Quicksand|Open+Sans|Source+Code+Pro|Gruppo&display=swap');
+
+h1.title,
+h2.title {
+    font-family: 'Anton', sans-serif;
+    font-weight: 400 !important;
+}
+
+h3.title {
+    font-family: 'Gruppo', Helvetica, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color: #eee;
+    padding: 9px;
+    border-radius: 4px;
+}
+
+h4.title {
+    font-family: 'Source Code Pro', monospace;
+}
+
+.subtitle {
+    font-family: 'Quicksand', sans-serif !important;
+}
+
+body {
+    // Shows text immediately, even before custom fonts load.
+    font-display: swap;
+}
+a.muted-link {
+    color: $text;
+}
+
+#mainNavbar {
+    border-bottom: 1px solid #ccc;
+
+    #siteLogoText {
+        font-weight: bold;
+    }
+}
+
+.homepage-hero .hero-body {
+    padding-left: 0;
+    margin-top: 17px;
+    margin-bottom: 17px;
+    padding: 17px;
+    border-radius: 4px;
+    box-shadow: 0 0 9px 1px #ccc;
+    background-color: rgba(
+        240,
+        240,
+        240,
+        80
+    ); // # the background opacity isn't working
+}
+
+.page-footer {
+    background-color: #333;
+    color: #bbb;
+
+    a {
+        color: #bbb;
+    }
+}
+
+// Underline links, but not if they are styled like buttons or in the footer
+.content a:not(.button) {
+    text-decoration: underline;
+}
+.page-footer a {
+    text-decoration: none !important;
+}
+
+.quote-hero .hero-body blockquote {
+    color: #666;
+    font-size: $size-5;
+    padding: 17px;
+    border-radius: 9px;
+    background-color: #eee;
+}
+.quote-hero .content {
+    box-shadow: 0 0 9px 1px #ccc;
+}
