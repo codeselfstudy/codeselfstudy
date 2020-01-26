@@ -14,7 +14,7 @@ services:
             - gatsby
         build:
             dockerfile: Dockerfile.dev
-            context: ./nginx
+            context: ./containers/nginx
         ports:
             - "4444:80"
 
@@ -22,10 +22,10 @@ services:
     gatsby:
         build:
             dockerfile: Dockerfile.dev
-            context: ./gatsby
+            context: ./containers/gatsby
         volumes:
             - /app/node_modules
-            - ./gatsby:/app
+            - ./containers/gatsby:/app
 
     # The API for the puzzle server
     express_api:
@@ -34,10 +34,10 @@ services:
             - redis
         build:
             dockerfile: Dockerfile.dev
-            context: ./express_api
+            context: ./containers/express_api
         volumes:
             - /app/node_modules
-            - ./express_api:/app
+            - ./containers/express_api:/app
         environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
@@ -59,9 +59,9 @@ services:
     puzzle_client:
         build:
             dockerfile: Dockerfile.dev
-            context: ./puzzle_client
+            context: ./containers/puzzle_client
         depends_on:
             - express_api
         volumes:
             - /app/node_modules
-            - ./puzzle_client:/app
+            - ./containers/puzzle_client:/app
