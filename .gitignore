@@ -50,3 +50,4 @@ my_app-*.tar
 # this depending on your deployment strategy.
 /priv/static/
 scrapers_PENDING_DELETION/
+puzzle_client_PENDING_DELETION/
