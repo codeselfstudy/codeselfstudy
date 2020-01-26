@@ -19,20 +19,20 @@ services:
             - "4444:80"
 
     # The main content pages are in this container
-    # gatsby:
-    #     build:
-    #         dockerfile: Dockerfile.dev
-    #         context: ./containers/gatsby
-    #     volumes:
-    #         - /app/node_modules
-    #         - ./containers/gatsby:/app
-    #     environment:
-    #         - NODE_ENV=development
-    #         - GATSBY_WEBPACK_PUBLICPATH=/
-    #     ports:
-    #         - "8000:8000"
-    #         - "9929:9929"
-    #         - "9230:9230"
+    gatsby:
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./containers/gatsby
+        volumes:
+            - /app/node_modules
+            - ./containers/gatsby:/app
+        environment:
+            - NODE_ENV=development
+            - GATSBY_WEBPACK_PUBLICPATH=/
+        ports:
+            - "8000:8000"
+            # - "9929:9929"
+            # - "9230:9230"
 
     # The API for the puzzle server
     express_api:

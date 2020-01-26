@@ -1,8 +1,9 @@
 FROM node:12-alpine3.9
 WORKDIR /app
+RUN npm install -g gatsby-cli
+# RUN gatsby telemetry --disable
 COPY ./package.json ./
 RUN npm install
-# RUN gatsby telemetry --disable
 COPY . .
-EXPOSE 8000
+EXPOSE 9000
 CMD ["gatsby", "develop"]
