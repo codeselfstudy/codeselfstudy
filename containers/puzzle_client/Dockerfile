@@ -2,7 +2,7 @@
 # and copies the production output into an nginx image. That nginx
 # server runs on port 3000, which is upstream of port 80 on the main
 # user-facing nginx server.
-FROM node:alpine as builder
+FROM node:12-alpine3.9 as builder
 WORKDIR "/app"
 COPY ./package.json ./
 RUN npm install
