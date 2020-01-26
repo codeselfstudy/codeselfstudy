@@ -32,6 +32,8 @@ First, make sure that mdbook is installed.
 - Run `cargo install mdbook` to install mdbook.
 - Then run `make docs` to serve the documentation in a browser.
 
+It's also possible to manually browse the `docs/src` directory without building the HTML output.
+
 ## Technologies
 
 See the `docker-compose.yml` file for an overview of the services that are running.
@@ -53,7 +55,7 @@ See the `docker-compose.yml` file for an overview of the services that are runni
 - A Redis container will handle Express sessions (after users authenticate with the forum).
 - A MongoDB container will store the coding puzzle and user data. (This is an experiment with "MERN stack".)
 
-![General overview](./misc/servers.png)
+![General overview](./docs/src/images/servers.png)
 
 ## Development
 

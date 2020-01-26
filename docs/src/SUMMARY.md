@@ -7,3 +7,4 @@
     - [Gatsby](./overview/gatsby.md)
     - [CMS](./overview/cms.md)
 - [Contributing](./contributing.md)
+    - [Coding Style](./coding_style.md)

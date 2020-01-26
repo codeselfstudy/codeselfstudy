@@ -13,3 +13,7 @@ clean:
 docs:
 	echo "INSTRUCTIONS: point your browser at http://localhost:3000/"
 	cd docs && mdbook serve
+
+format:
+	prettier **/*.{js,css,html,json} --write
+	pushd scrapers && mix format && popd
