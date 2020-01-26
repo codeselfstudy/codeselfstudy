@@ -22,6 +22,16 @@ This is an unfinished work in progress. :construction: Attend a meetup to find o
 - commenting? (forum integration or separate)
 - voting
 
+## Documentation
+
+For the documentation, see the `docs` directory. You can write documentation in markdown and build it using [mdbook](https://github.com/rust-lang/mdBook).
+
+First, make sure that mdbook is installed.
+
+- [Install Rust](https://www.rust-lang.org/tools/install).
+- Run `cargo install mdbook` to install mdbook.
+- Then run `make docs` to serve the documentation in a browser.
+
 ## Technologies
 
 See the `docker-compose.yml` file for an overview of the services that are running.
