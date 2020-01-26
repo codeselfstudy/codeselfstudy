@@ -15,6 +15,9 @@ function DemoTable({ data }) {
             style={{ border: "2px dotted #666" }}
             className="table is-responsive"
         >
+            <caption style={{ backgroundColor: "yellow" }}>
+                A sample web request to the backend.
+            </caption>
             <thead>
                 <tr>
                     <th>key</th>
@@ -42,12 +45,14 @@ export default function IndexPage() {
     const [apiData, setApiData] = useState(null);
 
     useEffect(() => {
-        axios.get(`/api/puzzles/${Math.floor(Math.random() * 2000)}`).then(res => {
-            setTimeout(() => {
-                setApiData(res);
-                setIsLoading(false);
-            }, 2000);
-        });
+        axios
+            .get(`/api/puzzles/${Math.floor(Math.random() * 2000)}`)
+            .then(res => {
+                setTimeout(() => {
+                    setApiData(res);
+                    setIsLoading(false);
+                }, 2000);
+            });
     }, []);
 
     return (
