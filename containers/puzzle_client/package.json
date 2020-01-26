@@ -22,6 +22,7 @@
         "eject": "craco eject",
         "postbuild": "purgecss --css build/static/css/*.css --content build/static/index.html build/static/js/*.js --out build/static/css"
     },
+    "homepage": "http://0.0.0.0/puzzles",
     "eslintConfig": {
         "extends": "react-app"
     },

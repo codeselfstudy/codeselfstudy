@@ -1,6 +1,6 @@
 {
-    "short_name": "React App",
-    "name": "Create React App Sample",
+    "short_name": "Puzzle Server",
+    "name": "Code Self Study Puzzle Server",
     "icons": [
         {
             "src": "favicon.ico",
