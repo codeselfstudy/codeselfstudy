@@ -10,8 +10,8 @@ services:
         restart: always
         depends_on:
             - express_api
-            - puzzle_client
-            # - gatsby
+            # - puzzle_client
+            - gatsby
         build:
             dockerfile: Dockerfile.dev
             context: ./containers/nginx
@@ -63,12 +63,12 @@ services:
             - redis:/data
 
     # React SPA
-    puzzle_client:
-        build:
-            dockerfile: Dockerfile.dev
-            context: ./containers/puzzle_client
-        depends_on:
-            - express_api
-        volumes:
-            - /app/node_modules
-            - ./containers/puzzle_client:/app
+    # puzzle_client:
+    #     build:
+    #         dockerfile: Dockerfile.dev
+    #         context: ./containers/puzzle_client
+    #     depends_on:
+    #         - express_api
+    #     volumes:
+    #         - /app/node_modules
+    #         - ./containers/puzzle_client:/app
