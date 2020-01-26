@@ -6,6 +6,7 @@ import Layout from "../components/Layout";
 import SEO from "../components/SEO";
 import Spinner from "../components/Spinner";
 
+// TODO: This component can be removed once the real content is connected to Gatsby.
 function DemoTable({ data }) {
     const entries = Object.entries(data);
 
@@ -41,7 +42,7 @@ export default function IndexPage() {
     const [apiData, setApiData] = useState(null);
 
     useEffect(() => {
-        axios.get(`/api/puzzles/123`).then(res => {
+        axios.get(`/api/puzzles/${Math.floor(Math.random() * 2000)}`).then(res => {
             setTimeout(() => {
                 setApiData(res);
                 setIsLoading(false);
