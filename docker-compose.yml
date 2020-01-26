@@ -23,6 +23,9 @@ services:
         build:
             dockerfile: Dockerfile.dev
             context: ./containers/gatsby
+        # It might eventually pull data from Express, so wait for that container to boot.
+        depends_on:
+            - express_api
         volumes:
             - /app/node_modules
             - ./containers/gatsby:/app
@@ -31,10 +34,6 @@ services:
             - GATSBY_WEBPACK_PUBLICPATH=/
         working_dir: /app
         command: ./entrypoint.sh
-        # ports:
-            # - "8000:8000"
-            # - "9929:9929"
-            # - "9230:9230"
 
     # The API for the puzzle server
     express_api:
@@ -63,14 +62,3 @@ services:
         image: "redis:latest"
         volumes:
             - redis:/data
-
-    # React SPA
-    # puzzle_client:
-    #     build:
-    #         dockerfile: Dockerfile.dev
-    #         context: ./containers/puzzle_client
-    #     depends_on:
-    #         - express_api
-    #     volumes:
-    #         - /app/node_modules
-    #         - ./containers/puzzle_client:/app
