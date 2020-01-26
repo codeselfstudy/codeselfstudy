@@ -1,4 +1,6 @@
-.git/
+.git/*
 .dockerignore
 tags
 tags.*
+docs/*
+.cache/*

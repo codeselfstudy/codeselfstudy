@@ -29,6 +29,8 @@ services:
         environment:
             - NODE_ENV=development
             - GATSBY_WEBPACK_PUBLICPATH=/
+        working_dir: /app
+        command: ./containers/gatsby/entrypoint.sh
         ports:
             - "8000:8000"
             # - "9929:9929"
