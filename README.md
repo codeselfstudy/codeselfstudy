@@ -43,7 +43,8 @@ See the `docker-compose.yml` file for an overview of the services that are runni
 - Redis for session storage in Express.js
 - MongoDB for persistent storage
 - Docker for easy development and deployment
-- Python 3 scraping tools (possibly to be replaced with puppeteer scrapers)
+- Web scraping tools in Elixir
+- Coming soon: a Phoenix/Postgres server
 
 ### How It Works
 
