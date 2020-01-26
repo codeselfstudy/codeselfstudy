@@ -2,7 +2,7 @@
 
 This is the new [Code Self Study](https://codeselfstudy.com/) website.
 
-This is an unfinished work in progress. Attend a meetup to find out how to contribute.
+This is an unfinished work in progress. :construction: Attend a meetup to find out how to contribute.
 
 ## Goals:
 
