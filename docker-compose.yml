@@ -62,3 +62,10 @@ services:
         image: "redis:latest"
         volumes:
             - redis:/data
+
+    wiki:
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./containers/wiki
+        volumes:
+            - ./containers/wiki:/app

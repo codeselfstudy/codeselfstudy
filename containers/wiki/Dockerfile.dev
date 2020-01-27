@@ -1,0 +1,8 @@
+FROM rust:alpine3.11
+# RUN apk update
+#&& apk add build-base autoconf automake libtool pkgconfig nasm
+WORKDIR /app
+COPY ./ ./
+RUN cargo install mdbook
+EXPOSE 3000
+CMD ["mdbook", "server"]
