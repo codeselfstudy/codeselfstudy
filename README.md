@@ -95,3 +95,7 @@ You get information about the volumes like this:
 $ docker volume ls
 $ docker volume inspect <volume_name>
 ```
+
+## LICENSES
+
+The code is licensed under a BSD licensed (see the `./LICENSES` directory). The wiki content is licensed under a Creative Commons license. See that directory for more information. Other sections of the code may have their own licenses. (Search for files named `LICENSE` if you want to generate a list without looking in the directories.)
