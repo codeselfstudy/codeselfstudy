@@ -9,7 +9,11 @@ const puzzleSchema = new mongoose.Schema({
         minlength: 10,
         maxlength: 300,
     },
+    source_id: {
+        type: String,
+    },
     body: { type: String, required: true, minlength: 25 },
+    unsafe_html: { type: String, required: true },
     source: {
         type: String,
         required: true,
