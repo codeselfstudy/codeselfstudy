@@ -9,6 +9,8 @@ const indexRouter = require("./routes/index");
 const puzzlesRouter = require("./routes/puzzles");
 const authRouter = require("./routes/auth");
 
+const { isDatabaseSeeded } = require("./db/checkDatabases");
+
 const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
@@ -38,7 +40,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // After boot, check if the database has been seeded. If not, seed it.
-
+const { shouldSeedProjectEuler } = isDatabaseSeeded({ projectEuler: true });
 
 app.use("/", indexRouter);
 app.use("/puzzles", puzzlesRouter);
