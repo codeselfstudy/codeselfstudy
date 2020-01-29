@@ -1,4 +1,0 @@
-{
-    "title": "Distances in a bee's honeycomb ",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>Consider a honey bee's honeycomb where each cell is a perfect regular hexagon with side length 1.</p>\n<div align=\"center\">\n<img alt=\"p354_bee_honeycomb.png\" src=\"project/images/p354_bee_honeycomb.png\"/></div>\n<p>\nOne particular cell is occupied by the queen bee.<br/>\nFor a positive real number <var>L</var>, let B(<var>L</var>) count the cells with distance <var>L</var> from the queen bee cell (all distances are measured from centre to centre); you may assume that the honeycomb is large enough to accommodate for any distance we wish to consider. <br/>\nFor example, B(\u221a3) = 6, B(\u221a21) = 12 and B(111 111 111) = 54.</p>\n<p>Find the number of <var>L</var> \u2264 5\u00b710<sup>11</sup> such that B(<var>L</var>) = 450.</p>\n</div>"
-}

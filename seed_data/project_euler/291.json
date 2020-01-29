@@ -1,4 +1,0 @@
-{
-    "title": "Panaitopol Primes",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nA prime number <var>p</var> is called a Panaitopol prime if <img alt=\"p291_formula.gif\" src=\"project/images/p291_formula.gif\" style=\"vertical-align:middle;\"/> for some positive integers<br/><var>x</var> and <var>y</var>.\n</p>\n<p>\nFind how many Panaitopol primes are less than 5\u00d710<sup>15</sup>.\n</p>\n</div>"
-}

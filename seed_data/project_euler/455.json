@@ -1,4 +1,0 @@
-{
-    "title": "Powers With Trailing Digits",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>Let f(n) be the largest positive integer x less than 10<sup>9</sup> such that the last 9 digits of n<sup>x</sup> form the number <i>x</i> (including leading zeros), or zero if no such integer exists.</p>\n<p>For example:</p>\n<ul><li>f(4) = 411728896 (4<sup>411728896</sup> = ...490<u>411728896</u>) </li>\n<li>f(10) = 0</li>\n<li>f(157) = 743757 (157<sup>743757</sup> = ...567<u>000743757</u>)</li>\n<li>\u03a3f(n), 2 \u2264 n \u2264 10<sup>3</sup> = 442530011399</li>\n</ul><p>Find \u03a3f(n), 2 \u2264 n \u2264 10<sup>6</sup>.</p>\n</div>"
-}

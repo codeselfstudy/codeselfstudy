@@ -1,4 +1,0 @@
-{
-    "title": "Obtuse Angled Triangles",
-    "body": "<div class=\"problem_content\" role=\"problem\">\nConsider the set S(r) of points (x,y) with integer coordinates satisfying |x| + |y| \u2264 r. <br/>\nLet O be the point (0,0) and C the point (r/4,r/4). <br/>\nLet N(r) be the number of points B in S(r), so that the triangle OBC has an obtuse angle, i.e. the largest angle \u03b1 satisfies 90\u00b0&lt;\u03b1&lt;180\u00b0.<br/>\nSo, for example, N(4)=24 and N(8)=100.\n<p>\nWhat is N(1,000,000,000)?\n</p>\n</div>"
-}

@@ -1,4 +1,0 @@
-{
-    "title": "Cutting Squares",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>A square piece of paper with integer dimensions N\u00d7N is placed with a corner at the origin and two of its sides along the <var>x</var>- and <var>y</var>-axes. Then, we cut it up respecting the following rules:\n</p><ul><li>We only make straight cuts between two points lying on different sides of the square, and having integer coordinates.</li>\n<li>Two cuts cannot cross, but several cuts can meet at the same border point.</li>\n<li>Proceed until no more legal cuts can be made.</li>\n</ul><p>Counting any reflections or rotations as distinct, we call C(N) the number of ways to cut an N\u00d7N square. For example, C(1)\u2009=\u20092 and C(2)\u2009=\u200930 (shown below).</p>\n<div align=\"center\"><img alt=\"p270_CutSquare.gif\" src=\"project/images/p270_CutSquare.gif\"/></div>\n<p>What is C(30) mod 10<sup>8</sup> ?</p>\n</div>"
-}

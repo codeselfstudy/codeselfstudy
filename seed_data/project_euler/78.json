@@ -1,4 +1,0 @@
-{
-    "title": "Coin partitions",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>Let p(<i>n</i>) represent the number of different ways in which <i>n</i> coins can be separated into piles. For example, five coins can be separated into piles in exactly seven different ways, so p(5)=7.</p>\n<div style=\"text-align:center;\">\n<table cellpadding=\"10\" cellspacing=\"0\"><tr><td>OOOOO</td>\n</tr><tr><td>OOOO\u00a0 \u00a0O</td>\n</tr><tr><td>OOO\u00a0 \u00a0OO</td>\n</tr><tr><td>OOO\u00a0 \u00a0O\u00a0 \u00a0O</td>\n</tr><tr><td>OO\u00a0 \u00a0OO\u00a0 \u00a0O</td>\n</tr><tr><td>OO\u00a0 \u00a0O\u00a0 \u00a0O\u00a0 \u00a0O</td>\n</tr><tr><td>O\u00a0 \u00a0O\u00a0 \u00a0O\u00a0 \u00a0O\u00a0 \u00a0O</td>\n</tr></table></div>\n<p>Find the least value of <i>n</i> for which p(<i>n</i>) is divisible by one million.</p>\n</div>"
-}

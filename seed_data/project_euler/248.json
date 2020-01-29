@@ -1,4 +1,0 @@
-{
-    "title": "Numbers for which Euler\u2019s totient function equals 13!",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>The first number n for which \u03c6(n)=13! is 6227180929.</p>\n<p>Find the 150,000<sup>th</sup> such number.</p>\n</div>"
-}

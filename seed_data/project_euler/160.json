@@ -1,4 +1,0 @@
-{
-    "title": "Factorial trailing digits",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>For any N, let f(N) be the last five digits before the trailing zeroes in N!.<br/>\nFor example,</p>\n<p style=\"margin-left:50px;\">9! = 362880 so f(9)=36288<br/>\n10! = 3628800 so f(10)=36288<br/>\n20! = 2432902008176640000 so f(20)=17664</p>\n<p>Find f(1,000,000,000,000)</p>\n</div>"
-}

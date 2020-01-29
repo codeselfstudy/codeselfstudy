@@ -1,4 +1,0 @@
-{
-    "title": "Polynomials of Fibonacci numbers",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>The <strong>Fibonacci numbers</strong> {f<sub>n</sub>, n \u2265 0} are defined recursively as f<sub>n</sub> = f<sub>n-1</sub> + f<sub>n-2</sub> with base cases f<sub>0</sub> = 0 and f<sub>1</sub> = 1.</p>\n<p>Define the polynomials {F<sub>n</sub>, n \u2265 0} as F<sub>n</sub>(x) = \u2211f<sub>i</sub>x<sup>i</sup> for 0 \u2264 i \u2264 n.</p>\n<p>For example, F<sub>7</sub>(x) = x + x<sup>2</sup> + 2x<sup>3</sup> + 3x<sup>4</sup> + 5x<sup>5</sup> + 8x<sup>6</sup> + 13x<sup>7</sup>, and F<sub>7</sub>(11) = 268357683.</p>\n<p>Let n = 10<sup>15</sup>. Find the sum [\u2211<sub>0\u2264x\u2264100</sub> F<sub>n</sub>(x)] mod 1307674368000 (= 15!).</p>\n</div>"
-}

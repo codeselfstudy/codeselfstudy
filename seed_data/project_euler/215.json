@@ -1,4 +1,0 @@
-{
-    "title": "Crack-free Walls",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>Consider the problem of building a wall out of 2\u00d71 and 3\u00d71 bricks (horizontal\u00d7vertical dimensions) such that, for extra strength, the gaps between horizontally-adjacent bricks never line up in consecutive layers, i.e. never form a \"running crack\".</p>\n<p>For example, the following 9\u00d73 wall is not acceptable due to the running crack shown in red:</p>\n<div style=\"text-align:center;\">\n<img alt=\"\" src=\"project/images/p215_crackfree.gif\"/></div>\n<p>There are eight ways of forming a crack-free 9\u00d73 wall, written W(9,3) = 8.</p>\n<p>Calculate W(32,10).</p>\n</div>"
-}

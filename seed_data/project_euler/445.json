@@ -1,4 +1,0 @@
-{
-    "title": "Retractions A",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>\nFor every integer n&gt;1, the family of functions f<sub>n,a,b</sub>  is defined \nby f<sub>n,a,b</sub>(<var>x</var>)\u2261a<var>x</var>+b mod n for a,b,<var>x</var> integer and  0&lt;a&lt;n, 0\u2264b&lt;n, 0\u2264<var>x</var>&lt;n.<br/>\nWe will call f<sub>n,a,b</sub> a <i>retraction</i> if f<sub>n,a,b</sub>(f<sub>n,a,b</sub>(<var>x</var>))\u2261f<sub>n,a,b</sub>(<var>x</var>) mod n for every 0\u2264<var>x</var>&lt;n.<br/>\nLet R(n) be the number of retractions for n.\n</p>\n<p>\nYou are given that<br/>\n\u2211 R(c) for c=C(100 000,k), and 1 \u2264 k \u226499 999 \u2261628701600 (mod 1 000 000 007).<br/>\n(C(n,k) is the binomial coefficient).<br/></p>\n<p> \nFind \u2211 R(c) for c=C(10 000 000,k), and 1 \u2264k\u2264 9 999 999.<br/>\nGive your answer modulo 1 000 000 007.\n</p>\n</div>"
-}

@@ -1,4 +1,0 @@
-{
-    "title": "Triominoes",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>A triomino is a shape consisting of three squares joined via the edges.\nThere are two basic forms:</p>\n<p style=\"text-align:center;\"><img alt=\"\" src=\"project/images/p161_trio1.gif\"/></p>\n<p>If all possible orientations are taken into account there are six:</p>\n<p style=\"text-align:center;\"><img alt=\"\" src=\"project/images/p161_trio3.gif\"/></p>\n<p>Any n by m grid for which nxm is divisible by 3 can be tiled with triominoes.<br/>\nIf we consider tilings that can be obtained by reflection or rotation from another tiling as different there are 41 ways a 2 by 9 grid can be  tiled with triominoes:</p>\n<p style=\"text-align:center;\"><img alt=\"\" src=\"project/images/p161_k9.gif\"/></p>\n<p>In how many ways can a 9 by 12 grid be tiled in this way by triominoes?</p>\n</div>"
-}

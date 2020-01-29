@@ -1,4 +1,0 @@
-{
-    "title": "Special isosceles triangles",
-    "body": "<div class=\"problem_content\" role=\"problem\">\n<p>Consider the isosceles triangle with base length, <i>b</i> = 16, and legs, L = 17.</p>\n<div style=\"text-align:center;\">\n<img alt=\"\" height=\"228\" src=\"project/images/p138.gif\" width=\"230\"/></div>\n<p>By using the Pythagorean theorem it can be seen that the height of the triangle, <i>h</i> = \u221a(17<sup>2</sup> \u2212 8<sup>2</sup>) = 15, which is one less than the base length.</p>\n<p>With <i>b</i> = 272 and L = 305, we get <i>h</i> = 273, which is one more than the base length, and this is the second smallest isosceles triangle with the property that <i>h</i> = <i>b</i> \u00b1 1.</p>\n<p>Find \u2211 L for the twelve smallest isosceles triangles for which <i>h</i> = <i>b</i> \u00b1 1 and <i>b</i>, L are positive integers.</p>\n</div>"
-}
