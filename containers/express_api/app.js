@@ -37,6 +37,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// After boot, check if the database has been seeded. If not, seed it.
+
+
 app.use("/", indexRouter);
 app.use("/puzzles", puzzlesRouter);
 app.use("/auth", authRouter);

@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const { db } = require("./db");
-const { Puzzle } = require("./models/puzzle");
+const { db } = require("./mongo");
+const { Puzzle } = require("../models/puzzle");
 
 const DATA_DIR = path.join(__dirname, "seed_data", "project_euler");
 const fileList = fs.readdirSync(DATA_DIR).filter(f => /^\d+\.json$/.test(f));
