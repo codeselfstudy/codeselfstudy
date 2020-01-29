@@ -5,7 +5,8 @@ defmodule Scrapers.ProjectEuler do
   use HTTPoison.Base
 
   @base_url "https://projecteuler.net/problem="
-  @output_dir File.cwd!() <> "/../seed_data/project_euler"
+  # TODO: this may have changed:
+  @output_dir File.cwd!() <> "/../containers/mongo/seed_data/project_euler"
   # Milliseconds to wait between fetches
   @delay 1000 * 1
 
