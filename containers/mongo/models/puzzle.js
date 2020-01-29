@@ -64,6 +64,7 @@ puzzleSchema.plugin(
 
 // TODO: this might be crashing(?)
 puzzleSchema.pre("save", next => {
+    console.log("arrived here", this);
     this.body = clean(this.unsafe_html);
     next();
 });

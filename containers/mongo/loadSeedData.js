@@ -10,13 +10,14 @@ const fileList = fs.readdirSync(DATA_DIR).filter(f => /^\d+\.json$/.test(f));
  * Create a path to the downloaded Project Euler problems.
  */
 function makePathTo(fname) {
-    return path.join(__dirname, "seed_data", "project_euler", fname);
+    return path.join(DATA_DIR, fname);
 }
 
 /**
  * Process all of the JSON files in the Project Euler directory.
  */
-fileList.forEach(f => {
+// TODO: remove the slice
+fileList.slice(0, 2).forEach(async f => {
     // save into mongo
     const { id, title, body, url } = JSON.parse(
         fs.readFileSync(makePathTo(f), "utf-8")
@@ -30,7 +31,13 @@ fileList.forEach(f => {
         source: "projecteuler",
     });
     console.log(`processing: ${puzzle.title}`);
-    puzzle.save();
+    try {
+        console.log(`trying to save: ${puzzle}`);
+        await puzzle.save();
+    } catch (e) {
+        console.log(`oh no: ${puzzle}`);
+        console.error("ERR", e);
+    }
 });
 
 db.close();
