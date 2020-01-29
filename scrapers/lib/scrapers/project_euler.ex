@@ -6,8 +6,6 @@ defmodule Scrapers.ProjectEuler do
 
   @base_url "https://projecteuler.net/problem="
   @output_dir File.cwd!() <> "/../seed_data/project_euler"
-  @start_id 1
-  @end_id 624
   # Milliseconds to wait between fetches
   @delay 1000 * 1
 
@@ -51,7 +49,7 @@ defmodule Scrapers.ProjectEuler do
     IO.puts("wrote #{filename}")
   end
 
-  def get_all_problems() do
+  def download_problems(start_id, end_id) do
     Enum.map(@start_id..@end_id, &fetch_puzzle/1)
     |> Enum.map(&process_response_body/1)
     |> Enum.map(&save_json_file/1)

@@ -1,18 +1,10 @@
 defmodule Scrapers do
   @moduledoc """
   Documentation for Scrapers.
+
+  Usage:
+
+    $ iex -S mix
+    iex> Scrapers.ProjectEuler.download_problems(start_id, end_id)
   """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Scrapers.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
