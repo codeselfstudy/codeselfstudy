@@ -1,1 +1,6 @@
-{"body":"<p>\nIn a room <var>N</var> chairs are placed around a round table.<br/>\nKnights enter the room one by one and choose at random an available empty chair.<br/>\nTo have enough elbow room the knights always leave at least one empty chair between each other.\n</p><p>\nWhen there aren&apos;t any suitable chairs left, the fraction <var>C</var> of empty chairs is determined.<br/>\nWe also define E(<var>N</var>) as the expected value of <var>C</var>.<br/>\nWe can verify that E(4) = 1/2 and E(6) = 5/9.\n</p><p>\nFind E(10<sup>18</sup>). Give your answer rounded to fourteen decimal places in the form 0.abcdefghijklmn.\n</p>","id":"469","title":"Empty chairs","url":"https://projecteuler.net/problem=469"}
+{
+    "body": "<p>\nIn a room <var>N</var> chairs are placed around a round table.<br/>\nKnights enter the room one by one and choose at random an available empty chair.<br/>\nTo have enough elbow room the knights always leave at least one empty chair between each other.\n</p><p>\nWhen there aren&apos;t any suitable chairs left, the fraction <var>C</var> of empty chairs is determined.<br/>\nWe also define E(<var>N</var>) as the expected value of <var>C</var>.<br/>\nWe can verify that E(4) = 1/2 and E(6) = 5/9.\n</p><p>\nFind E(10<sup>18</sup>). Give your answer rounded to fourteen decimal places in the form 0.abcdefghijklmn.\n</p>",
+    "id": "469",
+    "title": "Empty chairs",
+    "url": "https://projecteuler.net/problem=469"
+}

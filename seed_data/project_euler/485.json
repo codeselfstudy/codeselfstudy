@@ -1,1 +1,6 @@
-{"body":"<p>\nLet d(n) be the number of divisors of n.<br/>\nLet M(n,k) be the maximum value of d(j) for n ≤ j ≤ n+k-1.<br/>\nLet S(u,k) be the sum of M(n,k) for 1 ≤ n ≤ u-k+1.\n</p><p>\nYou are given that S(1000,10)=17176.\n</p><p>\nFind S(100 000 000,100 000).\n</p>","id":"485","title":"Maximum number of divisors","url":"https://projecteuler.net/problem=485"}
+{
+    "body": "<p>\nLet d(n) be the number of divisors of n.<br/>\nLet M(n,k) be the maximum value of d(j) for n ≤ j ≤ n+k-1.<br/>\nLet S(u,k) be the sum of M(n,k) for 1 ≤ n ≤ u-k+1.\n</p><p>\nYou are given that S(1000,10)=17176.\n</p><p>\nFind S(100 000 000,100 000).\n</p>",
+    "id": "485",
+    "title": "Maximum number of divisors",
+    "url": "https://projecteuler.net/problem=485"
+}

@@ -1,1 +1,6 @@
-{"body":"<p>\nA number is p-smooth if it has no prime factors larger than p.<br/>\nLet T be the sequence of triangular numbers, ie T(<var>n</var>)=<var>n</var>(<var>n</var>+1)/2.<br/>\nFind the sum of all indices <var>n</var> such that T(<var>n</var>) is 47-smooth.\n</p>","id":"581","title":"47-smooth triangular numbers","url":"https://projecteuler.net/problem=581"}
+{
+    "body": "<p>\nA number is p-smooth if it has no prime factors larger than p.<br/>\nLet T be the sequence of triangular numbers, ie T(<var>n</var>)=<var>n</var>(<var>n</var>+1)/2.<br/>\nFind the sum of all indices <var>n</var> such that T(<var>n</var>) is 47-smooth.\n</p>",
+    "id": "581",
+    "title": "47-smooth triangular numbers",
+    "url": "https://projecteuler.net/problem=581"
+}

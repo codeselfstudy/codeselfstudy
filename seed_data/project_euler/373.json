@@ -1,1 +1,6 @@
-{"body":"<p>\nEvery triangle has a circumscribed circle that goes through the three vertices.\nConsider all integer sided triangles for which the radius of the circumscribed circle is integral as well.\n</p><p>\nLet S(<var>n</var>) be the sum of the radii of the circumscribed circles of all such triangles for which the radius does not exceed <var>n</var>.\n</p><p>S(100)=4950 and S(1200)=1653605.\n</p><p>\nFind S(10<sup>7</sup>).\n</p>","id":"373","title":"Circumscribed Circles","url":"https://projecteuler.net/problem=373"}
+{
+    "body": "<p>\nEvery triangle has a circumscribed circle that goes through the three vertices.\nConsider all integer sided triangles for which the radius of the circumscribed circle is integral as well.\n</p><p>\nLet S(<var>n</var>) be the sum of the radii of the circumscribed circles of all such triangles for which the radius does not exceed <var>n</var>.\n</p><p>S(100)=4950 and S(1200)=1653605.\n</p><p>\nFind S(10<sup>7</sup>).\n</p>",
+    "id": "373",
+    "title": "Circumscribed Circles",
+    "url": "https://projecteuler.net/problem=373"
+}

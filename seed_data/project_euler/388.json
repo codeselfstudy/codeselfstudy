@@ -1,1 +1,6 @@
-{"body":"<p>\nConsider all lattice points (a,b,c) with 0 ≤ a,b,c ≤ N.\n</p><p>\nFrom the origin O(0,0,0) all lines are drawn to the other lattice points.<br/>\nLet D(N) be the number of <i>distinct</i> such lines.\n</p><p>\nYou are given that D(1 000 000) = 831909254469114121.\n</p><p>\nFind D(10<sup>10</sup>). Give as your answer the first nine digits followed by the last nine digits.\n</p>","id":"388","title":"Distinct Lines","url":"https://projecteuler.net/problem=388"}
+{
+    "body": "<p>\nConsider all lattice points (a,b,c) with 0 ≤ a,b,c ≤ N.\n</p><p>\nFrom the origin O(0,0,0) all lines are drawn to the other lattice points.<br/>\nLet D(N) be the number of <i>distinct</i> such lines.\n</p><p>\nYou are given that D(1 000 000) = 831909254469114121.\n</p><p>\nFind D(10<sup>10</sup>). Give as your answer the first nine digits followed by the last nine digits.\n</p>",
+    "id": "388",
+    "title": "Distinct Lines",
+    "url": "https://projecteuler.net/problem=388"
+}

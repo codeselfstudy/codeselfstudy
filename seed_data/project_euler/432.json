@@ -1,1 +1,6 @@
-{"body":"<p>\nLet S(<var>n,m</var>) = ∑φ(<var>n × i</var>) for 1 ≤ <var>i ≤ m</var>. (φ is Euler&apos;s totient function)<br/>\nYou are given that S(510510,10<sup>6</sup> )= 45480596821125120. \n</p><p>\nFind S(510510,10<sup>11</sup>).<br/>\nGive the last 9 digits of your answer.\n</p>","id":"432","title":"Totient sum","url":"https://projecteuler.net/problem=432"}
+{
+    "body": "<p>\nLet S(<var>n,m</var>) = ∑φ(<var>n × i</var>) for 1 ≤ <var>i ≤ m</var>. (φ is Euler&apos;s totient function)<br/>\nYou are given that S(510510,10<sup>6</sup> )= 45480596821125120. \n</p><p>\nFind S(510510,10<sup>11</sup>).<br/>\nGive the last 9 digits of your answer.\n</p>",
+    "id": "432",
+    "title": "Totient sum",
+    "url": "https://projecteuler.net/problem=432"
+}

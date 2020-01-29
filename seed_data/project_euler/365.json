@@ -1,1 +1,6 @@
-{"body":"<p>\nThe binomial coefficient $\\displaystyle{\\binom{10^{18}}{10^9}}$ is a number with more than 9 billion ($9\\times 10^9$) digits.\n</p><p>\nLet $M(n,k,m)$ denote the binomial coefficient $\\displaystyle{\\binom{n}{k}}$ modulo $m$.\n</p><p>\nCalculate $\\displaystyle{\\sum M(10^{18},10^9,p\\cdot q\\cdot r)}$ for $1000\\lt p\\lt q\\lt r\\lt 5000$ and $p$,$q$,$r$ prime.\n</p>","id":"365","title":"A huge binomial coefficient","url":"https://projecteuler.net/problem=365"}
+{
+    "body": "<p>\nThe binomial coefficient $\\displaystyle{\\binom{10^{18}}{10^9}}$ is a number with more than 9 billion ($9\\times 10^9$) digits.\n</p><p>\nLet $M(n,k,m)$ denote the binomial coefficient $\\displaystyle{\\binom{n}{k}}$ modulo $m$.\n</p><p>\nCalculate $\\displaystyle{\\sum M(10^{18},10^9,p\\cdot q\\cdot r)}$ for $1000\\lt p\\lt q\\lt r\\lt 5000$ and $p$,$q$,$r$ prime.\n</p>",
+    "id": "365",
+    "title": "A huge binomial coefficient",
+    "url": "https://projecteuler.net/problem=365"
+}

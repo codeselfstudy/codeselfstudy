@@ -1,1 +1,6 @@
-{"body":"<p>\nA triplet of positive integers (<var>a</var>,<var>b</var>,<var>c</var>) is called a Cardano Triplet if it satisfies the condition:</p>\n$$\\sqrt[3]{a + b \\sqrt{c}} + \\sqrt[3]{a - b \\sqrt{c}} = 1$$\n\n<p>\nFor example, (2,1,5) is a Cardano Triplet.\n</p><p>\nThere exist 149 Cardano Triplets for which <var>a</var>+<var>b</var>+<var>c</var> ≤ 1000.\n</p><p>\nFind how many Cardano Triplets exist such that <var>a</var>+<var>b</var>+<var>c</var> ≤ 110,000,000.\n \n</p>","id":"251","title":"Cardano Triplets","url":"https://projecteuler.net/problem=251"}
+{
+    "body": "<p>\nA triplet of positive integers (<var>a</var>,<var>b</var>,<var>c</var>) is called a Cardano Triplet if it satisfies the condition:</p>\n$$\\sqrt[3]{a + b \\sqrt{c}} + \\sqrt[3]{a - b \\sqrt{c}} = 1$$\n\n<p>\nFor example, (2,1,5) is a Cardano Triplet.\n</p><p>\nThere exist 149 Cardano Triplets for which <var>a</var>+<var>b</var>+<var>c</var> ≤ 1000.\n</p><p>\nFind how many Cardano Triplets exist such that <var>a</var>+<var>b</var>+<var>c</var> ≤ 110,000,000.\n \n</p>",
+    "id": "251",
+    "title": "Cardano Triplets",
+    "url": "https://projecteuler.net/problem=251"
+}

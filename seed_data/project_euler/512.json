@@ -1,1 +1,6 @@
-{"body":"<p>Let $\\varphi(n)$ be Euler&apos;s totient function.</p><p>\nLet $f(n)=(\\sum_{i=1}^{n}\\varphi(n^i)) \\text{ mod } (n+1)$.</p><p>\nLet $g(n)=\\sum_{i=1}^{n} f(i)$.</p><p>\n$g(100)=2007$.\n</p><p>\nFind $g(5 \\times 10^8)$.\n</p>","id":"512","title":"Sums of totients of powers","url":"https://projecteuler.net/problem=512"}
+{
+    "body": "<p>Let $\\varphi(n)$ be Euler&apos;s totient function.</p><p>\nLet $f(n)=(\\sum_{i=1}^{n}\\varphi(n^i)) \\text{ mod } (n+1)$.</p><p>\nLet $g(n)=\\sum_{i=1}^{n} f(i)$.</p><p>\n$g(100)=2007$.\n</p><p>\nFind $g(5 \\times 10^8)$.\n</p>",
+    "id": "512",
+    "title": "Sums of totients of powers",
+    "url": "https://projecteuler.net/problem=512"
+}

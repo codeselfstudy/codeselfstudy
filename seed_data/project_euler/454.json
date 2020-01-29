@@ -1,1 +1,6 @@
-{"body":"<p>In the following equation <var>x</var>, <var>y</var>, and <var>n</var> are positive integers.</p>\n$$\\dfrac{1}{x} + \\dfrac{1}{y} = \\dfrac{1}{n}$$\n<p>For a limit <var>L</var> we define F(<var>L</var>) as the number of solutions which satisfy <var>x</var> &lt; <var>y</var> ≤ <var>L</var>.</p><p>We can verify that F(15) = 4 and F(1000) = 1069.<br/>\nFind F(10<sup>12</sup>).</p>","id":"454","title":"Diophantine reciprocals III","url":"https://projecteuler.net/problem=454"}
+{
+    "body": "<p>In the following equation <var>x</var>, <var>y</var>, and <var>n</var> are positive integers.</p>\n$$\\dfrac{1}{x} + \\dfrac{1}{y} = \\dfrac{1}{n}$$\n<p>For a limit <var>L</var> we define F(<var>L</var>) as the number of solutions which satisfy <var>x</var> &lt; <var>y</var> ≤ <var>L</var>.</p><p>We can verify that F(15) = 4 and F(1000) = 1069.<br/>\nFind F(10<sup>12</sup>).</p>",
+    "id": "454",
+    "title": "Diophantine reciprocals III",
+    "url": "https://projecteuler.net/problem=454"
+}

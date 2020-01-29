@@ -1,1 +1,6 @@
-{"body":"<p>\nGiven is the arithmetic-geometric sequence u(<var>k</var>) = (900-3<var>k</var>)<var>r</var><sup><var>k</var>-1</sup>.<br/>\nLet s(<var>n</var>) = Σ<sub><var>k</var>=1...<var>n</var></sub>u(<var>k</var>).\n</p><p>\nFind the value of <var>r</var> for which s(5000) = -600,000,000,000.\n</p><p>\nGive your answer rounded to 12 places behind the decimal point.\n</p>","id":"235","title":"An Arithmetic Geometric sequence","url":"https://projecteuler.net/problem=235"}
+{
+    "body": "<p>\nGiven is the arithmetic-geometric sequence u(<var>k</var>) = (900-3<var>k</var>)<var>r</var><sup><var>k</var>-1</sup>.<br/>\nLet s(<var>n</var>) = Σ<sub><var>k</var>=1...<var>n</var></sub>u(<var>k</var>).\n</p><p>\nFind the value of <var>r</var> for which s(5000) = -600,000,000,000.\n</p><p>\nGive your answer rounded to 12 places behind the decimal point.\n</p>",
+    "id": "235",
+    "title": "An Arithmetic Geometric sequence",
+    "url": "https://projecteuler.net/problem=235"
+}

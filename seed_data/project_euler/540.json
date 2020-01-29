@@ -1,1 +1,6 @@
-{"body":"<p>\nA <b>Pythagorean triple</b> consists of three positive integers $a, b$ and $c$ satisfying $a^2+b^2=c^2$.<br/>\nThe triple is called primitive if $a, b$ and $c$ are relatively prime.<br/>\nLet P($n$) be the number of <b>primitive Pythagorean triples</b> with $a &lt; b &lt; c \\le n$.<br/>\nFor example P(20) = 3, since there are three triples: (3,4,5), (5,12,13) and (8,15,17).\n</p><p>\nYou are given that P(10<sup>6</sup>) = 159139.<br/>\nFind P(3141592653589793).\n</p>","id":"540","title":"Counting primitive Pythagorean triples","url":"https://projecteuler.net/problem=540"}
+{
+    "body": "<p>\nA <b>Pythagorean triple</b> consists of three positive integers $a, b$ and $c$ satisfying $a^2+b^2=c^2$.<br/>\nThe triple is called primitive if $a, b$ and $c$ are relatively prime.<br/>\nLet P($n$) be the number of <b>primitive Pythagorean triples</b> with $a &lt; b &lt; c \\le n$.<br/>\nFor example P(20) = 3, since there are three triples: (3,4,5), (5,12,13) and (8,15,17).\n</p><p>\nYou are given that P(10<sup>6</sup>) = 159139.<br/>\nFind P(3141592653589793).\n</p>",
+    "id": "540",
+    "title": "Counting primitive Pythagorean triples",
+    "url": "https://projecteuler.net/problem=540"
+}
