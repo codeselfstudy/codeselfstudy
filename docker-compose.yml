@@ -53,9 +53,13 @@ services:
 
     # The MERN database
     mongo:
-        image: mongo
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./containers/mongo
         volumes:
             - mongo:/data/db
+            - /app/node_modules
+            - ./containers/mongo:/app
 
     # Express.js sessions
     redis:
