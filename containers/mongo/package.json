@@ -7,5 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Code Self Study Community",
-    "license": "BSD"
+    "license": "BSD",
+    "dependencies": {
+        "mongoose": "^5.8.10"
+    }
 }
