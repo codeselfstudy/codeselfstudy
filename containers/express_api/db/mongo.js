@@ -1,7 +1,11 @@
 const DB_NAME = "puzzles";
 const mongoose = require("mongoose");
 
-mongoose.connect(`mongodb://mongo/${DB_NAME}`, { useNewUrlParser: true });
+mongoose.connect(`mongodb://mongo/${DB_NAME}`, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    // autoReconnect: true,
+}).catch(err => console.log("mongo connection error", err));
 
 const db = mongoose.connection;
 
