@@ -1,0 +1,11 @@
+{
+    "name": "@codeselfstudy/mongo",
+    "version": "0.1.0",
+    "description": "A mongo container with a database seeder",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Code Self Study Community",
+    "license": "BSD"
+}
