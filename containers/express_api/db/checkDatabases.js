@@ -22,10 +22,7 @@ function isDatabaseSeeded({
             if (err) console.log("err", err);
 
             if (puzzle) {
-                console.log(
-                    `project euler database was already seeded`,
-                    puzzle
-                );
+                console.log(`project euler database was already seeded`);
             } else {
                 shouldSeedProjectEuler = true;
             }

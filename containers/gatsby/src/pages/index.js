@@ -45,14 +45,13 @@ export default function IndexPage() {
     const [apiData, setApiData] = useState(null);
 
     useEffect(() => {
-        axios
-            .get(`/api/puzzles/${Math.floor(Math.random() * 2000)}`)
-            .then(res => {
-                setTimeout(() => {
-                    setApiData(res);
-                    setIsLoading(false);
-                }, 2000);
-            });
+        axios.get(`/api/puzzles`).then(res => {
+            console.log("res", res);
+            setTimeout(() => {
+                setApiData(res.data.puzzles[0]);
+                setIsLoading(false);
+            }, 1000);
+        });
     }, []);
 
     return (

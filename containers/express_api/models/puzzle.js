@@ -8,7 +8,7 @@ const puzzleSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
-        minlength: 10,
+        minlength: 1,
         maxlength: 300,
     },
     source_id: {
@@ -17,7 +17,7 @@ const puzzleSchema = new mongoose.Schema({
         required: true,
     },
     body: { type: String },
-    unsafe_html: { type: String, required: true, minlength: 5 },
+    unsafe_html: { type: String, required: true, minlength: 1 },
     source: {
         type: String,
         required: true,
@@ -58,9 +58,8 @@ puzzleSchema.plugin(
 
 puzzleSchema.pre("save", next => {
     console.log("arrived here", this);
-    // this.body = clean(this.unsafe_html);
     // TODO: this doesn't work.
-    this.body = "this will be the cleaned HTML";
+    this.body = clean(this.unsafe_html);
     next();
 });
 
