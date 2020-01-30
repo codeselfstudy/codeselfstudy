@@ -28,6 +28,7 @@ app.use(
         resave: false,
         secure: process.env.NODE_ENV === "production",
         cookie: {
+            // 28 days
             maxAge: 1000 * 60 * 60 * 24 * 7 * 4,
         },
         name: "alice",
@@ -42,6 +43,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // After boot, check if the database has been seeded. If not, seed it.
 const { shouldSeedProjectEuler } = isDatabaseSeeded({ projectEuler: true });
 
+// Mount the routers
 app.use("/", indexRouter);
 app.use("/puzzles", puzzlesRouter);
 app.use("/auth", authRouter);

@@ -40,4 +40,4 @@ fileList.slice(0, 2).forEach(async f => {
     }
 });
 
-db.close();
+// db.close();

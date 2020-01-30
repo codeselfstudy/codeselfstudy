@@ -58,7 +58,9 @@ puzzleSchema.plugin(
 
 puzzleSchema.pre("save", next => {
     console.log("arrived here", this);
-    this.body = clean(this.unsafe_html);
+    // this.body = clean(this.unsafe_html);
+    // TODO: this doesn't work.
+    this.body = "this will be the cleaned HTML";
     next();
 });
 
