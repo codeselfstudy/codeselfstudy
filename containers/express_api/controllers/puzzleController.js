@@ -15,7 +15,7 @@ function detail(req, res, next) {
     console.log("slug", slug);
     console.log("url", req.originalUrl);
     console.log("=======");
-    Puzzle.findOne({ slug }, (err, puzzle) => {
+    Puzzle.findOne({ slug: slug }, (err, puzzle) => {
         if (err) {
             console.error("err", err);
             res.status(404).json({ error: err });
