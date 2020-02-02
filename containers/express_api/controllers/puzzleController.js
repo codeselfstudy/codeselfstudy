@@ -25,7 +25,14 @@ function detail(req, res, next) {
     // res.json({ title: `detail for puzzle ${req.params.id} [NOT IMPLEMENTED]` });
 }
 
+function save(req, res) {
+    const slug = req.params.slug;
+    // User.puzzles.push(slug);
+    res.json({ msg: `you saved puzzle: ${slug}` })
+}
+
 module.exports = {
     index,
     detail,
+    save,
 };
