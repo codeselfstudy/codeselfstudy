@@ -21,6 +21,7 @@ module.exports = {
                 path: `${__dirname}/src/content/posts`,
             },
         },
+        `gatsby-transformer-remark`,
         {
             resolve: `gatsby-plugin-robots-txt`,
             options: {
