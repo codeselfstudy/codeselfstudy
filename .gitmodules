@@ -1,0 +1,3 @@
+[submodule "containers/gatsby/src/content"]
+	path = containers/gatsby/src/content
+	url = git@github.com:codeselfstudy/codeselfstudy_content.git
