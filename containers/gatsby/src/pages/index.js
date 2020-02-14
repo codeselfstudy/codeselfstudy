@@ -63,6 +63,9 @@ export default function IndexPage() {
             <section className="section">
                 <h1 className="title is-1">Hello World</h1>
                 <p>This should load some fake data from the Express API.</p>
+                <p>
+                    There's also a <Link to="/blog/test-post/">blog post</Link>.
+                </p>
 
                 {isLoading ? <Spinner /> : <DemoTable data={apiData} />}
 

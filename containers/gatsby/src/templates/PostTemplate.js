@@ -1,5 +1,8 @@
 import React from "react";
-import { graphql } from "gatsby";
+import { graphql, Link } from "gatsby";
+
+import Layout from "../components/Layout";
+import SEO from "../components/SEO";
 
 /**
  * This is the template for blog posts.
@@ -9,19 +12,25 @@ export default function PostTemplate({
 }) {
     const { markdownRemark } = data; // data.markdownRemark holds your post data
     const { frontmatter, html } = markdownRemark;
+
     return (
-        <div className="blog-post-container">
-            <div className="blog-post">
-                <h1>{frontmatter.title}</h1>
-                <h2>{frontmatter.date}</h2>
+        <Layout>
+            <SEO
+                isHome={true}
+                title="Learn Computer Programming, Python, JavaScript at Our Bootcamp Alternative"
+            />
+            <section className="section">
+                <h1 className="title is-1">{frontmatter.title}</h1>
+                <div className="blog-post-metadata">{frontmatter.date}</div>
                 <div
                     className="blog-post-content"
                     dangerouslySetInnerHTML={{ __html: html }}
                 />
-            </div>
-        </div>
+            </section>
+        </Layout>
     );
 }
+
 export const pageQuery = graphql`
     query($path: String!) {
         markdownRemark(frontmatter: { path: { eq: $path } }) {
