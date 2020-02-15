@@ -15,6 +15,21 @@ module.exports = {
             },
         },
         {
+            resolve: `gatsby-source-filesystem`,
+            options: {
+                name: `posts`,
+                path: `${__dirname}/src/content/posts`,
+            },
+        },
+        {
+            resolve: `gatsby-source-filesystem`,
+            options: {
+                name: `pages`,
+                path: `${__dirname}/src/content/pages`,
+            },
+        },
+        `gatsby-transformer-remark`,
+        {
             resolve: `gatsby-plugin-robots-txt`,
             options: {
                 configFile: `robots-txt.config.js`,
