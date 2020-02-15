@@ -1,12 +1,8 @@
 import React from "react";
+import { graphql } from "gatsby";
 
 import Layout from "../components/Layout";
-// import SEO from "../components/SEO";
-// import * as toml from "toml";
-// const fs = require("fs");
-// import * as path from "path";
-
-// console.log("FS", fs);
+import SEO from "../components/SEO";
 
 // // The home page content is loaded from a TOML file (git submodule).
 // const tomlFile = path.resolve("../content/pages/index.toml");
@@ -19,10 +15,12 @@ import Layout from "../components/Layout";
 // console.log("========");
 
 export default function IndexPage() {
+    // const { title, html_title, body } = data.allIndexToml.edges.node;
     return (
         <Layout>
+            <SEO isHome={true} title="home" />
             <section className="section">
-                <h1 className="title is-1">Future Homepage</h1>
+                <h1 className="title is-1">ASDF</h1>
                 Dolor fugiat cumque amet eius distinctio enim? Quaerat provident
                 praesentium quo nam qui, dolorum. A dolores molestiae
                 praesentium veniam soluta Iste quia provident impedit quaerat
@@ -41,3 +39,18 @@ export default function IndexPage() {
 //         </section>
 //     </Layout>
 // );
+
+// `data.allIndexToml.edges.node`
+export const query = graphql`
+    query HomeQuery {
+        allIndexToml {
+            edges {
+                node {
+                    title
+                    html_title
+                    body
+                }
+            }
+        }
+    }
+`;
