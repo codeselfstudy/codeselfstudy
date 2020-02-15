@@ -60,23 +60,13 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
         return edge.node.fields.collection === "pages";
     });
 
-    console.log(
-        "postEdges",
-        postEdges.map(p => JSON.stringify(p.node))
-    );
-    console.log(
-        "pageEdges",
-        pageEdges.map(p => JSON.stringify(p.node))
-    );
-
-    // | postEdges [
-    // |   '{"fields":{"collection":"posts"},"frontmatter":{"path":"/blog/title":"Test Post"}}'
-    // | ]
-    // | pageEdges [
-    // |   '{"fields":{"collection":"pages"},"frontmatter":{"path":"/about/","title":"About"}}'
-    // | ]
-
     // create blog posts
+    // You can link to prev and next in the templates:
+    // ```jsx
+    // <Link to={next.frontmatter.path} rel="next">
+    //     {next.frontmatter.title}
+    // </Link>
+    // ```
     each(postEdges, (edge, index) => {
         const prev =
             index === postEdges.length - 1 ? null : postEdges[index + 1].node;
