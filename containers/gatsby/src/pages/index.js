@@ -26,7 +26,7 @@ function DemoTable({ data }) {
             </thead>
             <tbody>
                 {entries.map(i => (
-                    <tr>
+                    <tr key={i[0]}>
                         <td>
                             <strong>{i[0]}</strong>
                         </td>
