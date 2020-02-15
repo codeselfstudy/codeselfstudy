@@ -7,6 +7,16 @@
 const path = require("path");
 const { get, each } = require("lodash");
 
+/**
+ * Sets the collection type as a field on the content.
+ *
+ * The collection name comes from the `name` field in the
+ * `gatsby-config.js` settings, e.g., `pages`, `posts`. This allows
+ * using different templates for different content types.
+ *
+ * See this post for an explanation of how it works:
+ * https://chipcullen.com/making-multiple-content-types-in-gatsby/
+ */
 exports.onCreateNode = ({ node, actions, getNode }) => {
     const { createNodeField } = actions;
 
@@ -45,13 +55,14 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
             }
         }
     `);
-    // Handle errors
+
+    // Handle errors.
     if (result.errors) {
         reporter.panicOnBuild(`Error while running GraphQL query.`);
         return;
     }
 
-    // Separate the collection types
+    // Separate the collection types (pages and posts).
     const allEdges = result.data.allMarkdownRemark.edges;
     const postEdges = allEdges.filter(edge => {
         return edge.node.fields.collection === "posts";
@@ -60,7 +71,8 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
         return edge.node.fields.collection === "pages";
     });
 
-    // create blog posts
+    // Create blog posts.
+    //
     // You can link to prev and next in the templates:
     // ```jsx
     // <Link to={next.frontmatter.path} rel="next">
@@ -83,7 +95,7 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
         });
     });
 
-    // create pages
+    // Create pages.
     each(pageEdges, (edge, _index) => {
         createPage({
             path: edge.node.frontmatter.path,
