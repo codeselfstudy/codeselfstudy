@@ -22,17 +22,11 @@ This is an unfinished work in progress. :construction: Attend a meetup to find o
 - commenting? (forum integration or separate)
 - voting
 
+See the [feature board](https://github.com/codeselfstudy/codeselfstudy/projects/1) for more ideas (and add your own).
+
 ## Documentation
 
-For the documentation, see the `docs` directory. You can write documentation in markdown and build it using [mdbook](https://github.com/rust-lang/mdBook).
-
-First, make sure that mdbook is installed.
-
-- [Install Rust](https://www.rust-lang.org/tools/install).
-- Run `cargo install mdbook` to install mdbook.
-- Then run `make docs` to serve the documentation in a browser.
-
-It's also possible to manually browse the `docs/src` directory without building the HTML output.
+For the documentation, see the [Code Self Study Wiki](https://github.com/codeselfstudy/codeselfstudy_wiki) (also a work in progress).
 
 ## Technologies
 
@@ -44,6 +38,7 @@ See the `docker-compose.yml` file for an overview of the services that are runni
 - MongoDB for persistent storage
 - Docker for easy development and deployment
 - Web scraping tools in Elixir
+- Coming soon: algorithm & data structure visualzation in Rust/WebAssembly.
 - Coming soon: a Phoenix/Postgres server
 
 ### How It Works
@@ -51,10 +46,10 @@ See the `docker-compose.yml` file for an overview of the services that are runni
 - Nginx serves the app in development and production, proxying to the other servers behind it. It serves on port 80, but in development, you can visit it at port 4444.
 - Gatsby serves the main pages (backed by a headless CMS)
 - Express.js is running on port 5000, mounted at `/api`. (`/api` is not visible in the Express code, so that might be confusing if you don't know to expect it. See the nginx configuration files.)
-- A Redis container will handle Express sessions (after users authenticate with the forum).
+- A Redis container will handle Express sessions (after users authenticate with [the forum](https://forum.codeselfstudy.com/)).
 - A MongoDB container will store the coding puzzle and user data. (This is an experiment with "MERN stack".)
 
-![General overview](./docs/src/images/servers.png)
+![General overview](./misc/images/servers.png)
 
 ## Development
 
@@ -98,4 +93,4 @@ $ docker volume inspect <volume_name>
 
 ## LICENSES
 
-The code is licensed under a BSD licensed (see the `./LICENSES` directory). The wiki content is licensed under a Creative Commons license. See that directory for more information. Other sections of the code may have their own licenses. (Search for files named `LICENSE` if you want to generate a list without looking in the directories.)
+The code is licensed under a BSD licensed (see the `./LICENSES` directory). Other sections of the code may have their own licenses. (Search for files named `LICENSE` if you want to generate a list without looking in the directories.)

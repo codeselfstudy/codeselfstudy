@@ -52,3 +52,4 @@ my_app-*.tar
 /priv/static/
 scrapers_PENDING_DELETION/
 puzzle_client_PENDING_DELETION/
+docs_PENDING_DELETION/
