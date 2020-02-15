@@ -22,8 +22,8 @@ exports.onCreateNode = ({ node, actions, getNode }) => {
 
 exports.createPages = async ({ actions, graphql, reporter }) => {
     const { createPage } = actions;
-    const postTemplate = path.resolve("src/templates/PostTemplate.js");
-    const pageTemplate = path.resolve("src/templates/pageTemplate.js");
+    const PostTemplate = path.resolve("src/templates/PostTemplate.js");
+    const PageTemplate = path.resolve("src/templates/PageTemplate.js");
 
     const result = await graphql(`
         {
@@ -76,23 +76,7 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
     // |   '{"fields":{"collection":"pages"},"frontmatter":{"path":"/about/","title":"About"}}'
     // | ]
 
-    // | postEdges [
-    // |   [Object: null prototype] {
-    // |     node: [Object: null prototype] {
-    // |       fields: [Object: null prototype],
-    // |       frontmatter: [Object: null prototype]
-    // |     }
-    // |   }
-    // | ]
-    // | pageEdges [
-    // |   [Object: null prototype] {
-    // |     node: [Object: null prototype] {
-    // |       fields: [Object: null prototype],
-    // |       frontmatter: [Object: null prototype]
-    // |     }
-    // |   }
-    // | ]
-
+    // create blog posts
     each(postEdges, (edge, index) => {
         const prev =
             index === postEdges.length - 1 ? null : postEdges[index + 1].node;
@@ -100,7 +84,7 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
 
         createPage({
             path: edge.node.frontmatter.path,
-            component: postTemplate,
+            component: PostTemplate,
             context: {
                 slug: edge.node.frontmatter.path,
                 prev,
@@ -109,19 +93,14 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
         });
     });
 
-    // postEdges.forEach(({ node }) => {
-    //     createPage({
-    //         path: node.frontmatter.path,
-    //         component: postTemplate,
-    //         context: {}, // additional data can be passed via context
-    //     });
-    // });
-
-    // pageEdges.forEach(({ node }) => {
-    //     createPage({
-    //         path: node.frontmatter.path,
-    //         component: pageTemplate,
-    //         context: {}, // additional data can be passed via context
-    //     });
-    // });
+    // create pages
+    each(pageEdges, (edge, _index) => {
+        createPage({
+            path: edge.node.frontmatter.path,
+            component: PageTemplate,
+            context: {
+                slug: edge.node.frontmatter.path,
+            },
+        });
+    });
 };
