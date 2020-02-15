@@ -93,13 +93,29 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
     // |   }
     // | ]
 
-    postEdges.forEach(({ node }) => {
+    each(postEdges, (edge, index) => {
+        const prev =
+            index === postEdges.length - 1 ? null : postEdges[index + 1].node;
+        const next = index === 0 ? null : postEdges[index - 1].node;
+
         createPage({
-            path: node.frontmatter.path,
+            path: edge.node.frontmatter.path,
             component: postTemplate,
-            context: {}, // additional data can be passed via context
+            context: {
+                slug: edge.node.frontmatter.path,
+                prev,
+                next,
+            },
         });
     });
+
+    // postEdges.forEach(({ node }) => {
+    //     createPage({
+    //         path: node.frontmatter.path,
+    //         component: postTemplate,
+    //         context: {}, // additional data can be passed via context
+    //     });
+    // });
 
     // pageEdges.forEach(({ node }) => {
     //     createPage({
