@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import Layout from "../components/Layout";
+import SEO from "../components/SEO";
 import Spinner from "../components/Spinner";
 
 // TODO: This component can be removed once the real content is connected to Gatsby.
@@ -54,6 +55,7 @@ export default function IndexPage() {
 
     return (
         <Layout>
+            <SEO title="Coding Puzzles and Algorithm Practice for Whiteboard Interview Prep" />
             <section className="section">
                 <h1 className="title is-1">Puzzles</h1>
 
