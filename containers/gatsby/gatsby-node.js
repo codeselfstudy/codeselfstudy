@@ -7,18 +7,18 @@
 const path = require("path");
 const { get, each } = require("lodash");
 
-// exports.onCreateNode = ({ node, actions, getNode }) => {
-//     const { createNodeField } = actions;
+exports.onCreateNode = ({ node, actions, getNode }) => {
+    const { createNodeField } = actions;
 
-//     if (get(node, "internal.type") === "MarkdownRemark") {
-//         const parent = getNode(get(node, "parent"));
-//         createNodeField({
-//             node,
-//             name: "collection",
-//             value: get(parent, "sourceInstanceName"),
-//         });
-//     }
-// };
+    if (get(node, "internal.type") === "MarkdownRemark") {
+        const parent = getNode(get(node, "parent"));
+        createNodeField({
+            node,
+            name: "collection",
+            value: get(parent, "sourceInstanceName"),
+        });
+    }
+};
 
 exports.createPages = async ({ actions, graphql, reporter }) => {
     const { createPage } = actions;
@@ -33,8 +33,12 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
             ) {
                 edges {
                     node {
+                        fields {
+                            collection
+                        }
                         frontmatter {
                             path
+                            title
                         }
                     }
                 }
