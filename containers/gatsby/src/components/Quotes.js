@@ -26,7 +26,7 @@ export default function Quotes(props) {
         setBackgroundStyle(`hero quote-hero ${bgs[currentBg]}`);
         setQuote(currentQuote.quote);
         setAuthor(currentQuote.author);
-    }, [bgs]);
+    }, []);
 
     return (
         <div className={backgroundStyle}>
