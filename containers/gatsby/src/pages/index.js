@@ -22,7 +22,7 @@ export default function IndexPage() {
     return (
         <Layout>
             <section className="section">
-                <h1 className="title is-1">Test</h1>
+                <h1 className="title is-1">Future Homepage</h1>
                 Dolor fugiat cumque amet eius distinctio enim? Quaerat provident
                 praesentium quo nam qui, dolorum. A dolores molestiae
                 praesentium veniam soluta Iste quia provident impedit quaerat

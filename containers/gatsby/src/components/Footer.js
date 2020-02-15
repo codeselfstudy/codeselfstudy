@@ -1,5 +1,5 @@
-import { Link } from 'gatsby';
-import React from 'react';
+import { Link } from "gatsby";
+import React from "react";
 
 export default function Footer({ siteTitle }) {
     return (
@@ -17,6 +17,9 @@ export default function Footer({ siteTitle }) {
                             </li>
                             <li>
                                 <Link to="/learn/">Learn How to Code</Link>
+                            </li>
+                            <li>
+                                <Link to="/puzzles/">Coding Puzzles</Link>
                             </li>
                         </ul>
                         {/*
