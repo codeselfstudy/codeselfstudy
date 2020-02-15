@@ -69,12 +69,12 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
         pageEdges.map(p => JSON.stringify(p.node))
     );
 
- // | postEdges [
- // |   '{"fields":{"collection":"posts"},"frontmatter":{"path":"/blog/title":"Test Post"}}'
- // | ]
- // | pageEdges [
- // |   '{"fields":{"collection":"pages"},"frontmatter":{"path":"/about/","title":"About"}}'
- // | ]
+    // | postEdges [
+    // |   '{"fields":{"collection":"posts"},"frontmatter":{"path":"/blog/title":"Test Post"}}'
+    // | ]
+    // | pageEdges [
+    // |   '{"fields":{"collection":"pages"},"frontmatter":{"path":"/about/","title":"About"}}'
+    // | ]
 
     // | postEdges [
     // |   [Object: null prototype] {
