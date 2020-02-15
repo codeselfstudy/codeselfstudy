@@ -53,14 +53,14 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
 
     // Separate the collection types
     const allEdges = result.data.allMarkdownRemark.edges;
-    // const postEdges = allEdges.filter(
-    //     edge => edge.node.fields.collection === "posts"
-    // );
-    // const pageEdges = allEdges.filter(
-    //     edge => edge.node.fields.collection === "pages"
-    // );
+    const postEdges = allEdges.filter(
+        edge => edge.node.fields.collection === "posts"
+    );
+    const pageEdges = allEdges.filter(
+        edge => edge.node.fields.collection === "pages"
+    );
 
-    result.data.allMarkdownRemark.edges.forEach(({ node }) => {
+    allEdges.forEach(({ node }) => {
         createPage({
             path: node.frontmatter.path,
             component: postTemplate,
