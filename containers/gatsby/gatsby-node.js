@@ -53,18 +53,59 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
 
     // Separate the collection types
     const allEdges = result.data.allMarkdownRemark.edges;
-    const postEdges = allEdges.filter(
-        edge => edge.node.fields.collection === "posts"
+    const postEdges = allEdges.filter(edge => {
+        return edge.node.fields.collection === "posts";
+    });
+    const pageEdges = allEdges.filter(edge => {
+        return edge.node.fields.collection === "pages";
+    });
+
+    console.log(
+        "postEdges",
+        postEdges.map(p => JSON.stringify(p.node))
     );
-    const pageEdges = allEdges.filter(
-        edge => edge.node.fields.collection === "pages"
+    console.log(
+        "pageEdges",
+        pageEdges.map(p => JSON.stringify(p.node))
     );
 
-    allEdges.forEach(({ node }) => {
+ // | postEdges [
+ // |   '{"fields":{"collection":"posts"},"frontmatter":{"path":"/blog/title":"Test Post"}}'
+ // | ]
+ // | pageEdges [
+ // |   '{"fields":{"collection":"pages"},"frontmatter":{"path":"/about/","title":"About"}}'
+ // | ]
+
+    // | postEdges [
+    // |   [Object: null prototype] {
+    // |     node: [Object: null prototype] {
+    // |       fields: [Object: null prototype],
+    // |       frontmatter: [Object: null prototype]
+    // |     }
+    // |   }
+    // | ]
+    // | pageEdges [
+    // |   [Object: null prototype] {
+    // |     node: [Object: null prototype] {
+    // |       fields: [Object: null prototype],
+    // |       frontmatter: [Object: null prototype]
+    // |     }
+    // |   }
+    // | ]
+
+    postEdges.forEach(({ node }) => {
         createPage({
             path: node.frontmatter.path,
             component: postTemplate,
             context: {}, // additional data can be passed via context
         });
     });
+
+    // pageEdges.forEach(({ node }) => {
+    //     createPage({
+    //         path: node.frontmatter.path,
+    //         component: pageTemplate,
+    //         context: {}, // additional data can be passed via context
+    //     });
+    // });
 };
