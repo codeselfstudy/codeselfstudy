@@ -6,6 +6,7 @@ module.exports = {
     },
     plugins: [
         `gatsby-plugin-sass`,
+        `gatsby-transformer-toml`,
         `gatsby-plugin-react-helmet`,
         {
             resolve: `gatsby-source-filesystem`,

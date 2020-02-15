@@ -1,78 +1,43 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "gatsby";
-import axios from "axios";
+import React from "react";
 
 import Layout from "../components/Layout";
-import SEO from "../components/SEO";
-import Spinner from "../components/Spinner";
+// import SEO from "../components/SEO";
+// import * as toml from "toml";
+// const fs = require("fs");
+// import * as path from "path";
 
-// TODO: This component can be removed once the real content is connected to Gatsby.
-function DemoTable({ data }) {
-    const entries = Object.entries(data);
+// console.log("FS", fs);
 
-    return (
-        <table
-            style={{ border: "2px dotted #666" }}
-            className="table is-responsive"
-        >
-            <caption style={{ backgroundColor: "yellow" }}>
-                A sample web request to the backend.
-            </caption>
-            <thead>
-                <tr>
-                    <th>key</th>
-                    <th>value</th>
-                </tr>
-            </thead>
-            <tbody>
-                {entries.map(i => (
-                    <tr key={i[0]}>
-                        <td>
-                            <strong>{i[0]}</strong>
-                        </td>
-                        <td>
-                            <code>{JSON.stringify(i[1])}</code>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-}
+// // The home page content is loaded from a TOML file (git submodule).
+// const tomlFile = path.resolve("../content/pages/index.toml");
+// console.log("========");
+// console.log("tomlFile", tomlFile);
+// const rawToml = fs.readFileSync(tomlFile);
+// console.log("rawToml", rawToml);
+// const pageData = toml.parse(rawToml);
+// console.log("pageData", pageData);
+// console.log("========");
 
 export default function IndexPage() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [apiData, setApiData] = useState(null);
-
-    useEffect(() => {
-        axios.get(`/api/puzzles`).then(res => {
-            console.log("res", res);
-            setTimeout(() => {
-                setApiData(res.data.puzzles[0]);
-                setIsLoading(false);
-            }, 1000);
-        });
-    }, []);
-
     return (
         <Layout>
-            <SEO
-                isHome={true}
-                title="Learn Computer Programming, Python, JavaScript at Our Bootcamp Alternative"
-            />
             <section className="section">
-                <h1 className="title is-1">Hello World</h1>
-                <p>This should load some fake data from the Express API.</p>
-                <p>
-                    There's also a <Link to="/blog/test-post/">blog post</Link>.
-                </p>
-
-                {isLoading ? <Spinner /> : <DemoTable data={apiData} />}
-
-                <p>
-                    There's also a <Link to="/page-2/">page 2</Link>.
-                </p>
+                <h1 className="title is-1">Test</h1>
+                Dolor fugiat cumque amet eius distinctio enim? Quaerat provident
+                praesentium quo nam qui, dolorum. A dolores molestiae
+                praesentium veniam soluta Iste quia provident impedit quaerat
+                quae? Quia ratione nostrum asperiores
             </section>
         </Layout>
     );
 }
+
+// return (
+//     <Layout>
+//         <SEO isHome={true} title={pageData.html_title} />
+//         <section className="section">
+//             <h1 className="title is-1">{pageData.title}</h1>
+//             {pageData.body}
+//         </section>
+//     </Layout>
+// );
