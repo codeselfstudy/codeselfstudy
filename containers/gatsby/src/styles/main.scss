@@ -11,6 +11,12 @@
 
 @import url('https://fonts.googleapis.com/css?family=Anton|Quicksand|Open+Sans|Source+Code+Pro|Gruppo&display=swap');
 
+// I couldn't find this rule in the old site, but it keeps the H1 from
+// appearing beneath the navbar.
+main {
+    margin-top: 62px;
+}
+
 h1.title,
 h2.title {
     font-family: 'Anton', sans-serif;
