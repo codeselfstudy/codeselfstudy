@@ -20,20 +20,26 @@ export default function PostTemplate({
 
     return (
         <Layout>
-            <section className="section content">
-                <h1 className="title is-1">{frontmatter.title}</h1>
-                <div className="blog-post-metadata" style={metadataStyle}>
-                    {frontmatter.date}
-                </div>
-                <div
-                    className="blog-post-content"
-                    dangerouslySetInnerHTML={{ __html: html }}
-                />
-                <hr />
-                <div>
-                    <Link to="/blog/" className="button is-large is-default">
-                        Return to the Blog
-                    </Link>
+            <section className="section">
+                <div className="container content">
+                    <h1 className="title is-1">{frontmatter.title}</h1>
+                    <div className="blog-post-metadata" style={metadataStyle}>
+                        Post by {frontmatter.author || "Admin"} on{" "}
+                        {frontmatter.date}
+                    </div>
+                    <div
+                        className="blog-post-content"
+                        dangerouslySetInnerHTML={{ __html: html }}
+                    />
+                    <hr />
+                    <div>
+                        <Link
+                            to="/blog/"
+                            className="button is-large is-default"
+                        >
+                            Return to the Blog
+                        </Link>
+                    </div>
                 </div>
             </section>
         </Layout>
@@ -48,6 +54,7 @@ export const pageQuery = graphql`
                 date(formatString: "MMMM DD, YYYY")
                 path
                 title
+                author
             }
         }
     }
