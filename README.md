@@ -32,7 +32,7 @@ For the documentation, see the [Code Self Study Wiki](https://github.com/codesel
 
 See the `docker-compose.yml` file for an overview of the services that are running.
 
-- Gatsby + (contentful or strapi)
+- Gatsby + markdown files for pages and blog posts
 - Express.js for the API ("MERN Stack")
 - Redis for session storage in Express.js
 - MongoDB for persistent storage
