@@ -24,7 +24,7 @@ export default function PostTemplate({
                 <div className="container content">
                     <h1 className="title is-1">{frontmatter.title}</h1>
                     <div className="blog-post-metadata" style={metadataStyle}>
-                        Post by {frontmatter.author || "Admin"} on{" "}
+                        Posted by {frontmatter.author || "Admin"} on{" "}
                         {frontmatter.date}
                     </div>
                     <div
