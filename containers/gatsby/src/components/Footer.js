@@ -19,6 +19,9 @@ export default function Footer({ siteTitle }) {
                                 <Link to="/learn/">Learn How to Code</Link>
                             </li>
                             <li>
+                                <Link to="/sponsors/">Sponsors</Link>
+                            </li>
+                            <li>
                                 <Link to="/puzzles/">Coding Puzzles</Link>
                             </li>
                         </ul>

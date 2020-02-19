@@ -3,6 +3,7 @@ import { graphql } from "gatsby";
 
 import Layout from "../components/Layout";
 import SEO from "../components/SEO";
+import SponsorsBox from "../components/SponsorsBox";
 
 export default function IndexPage({ data }) {
     const page = data.allIndexToml.edges.filter(
@@ -14,6 +15,12 @@ export default function IndexPage({ data }) {
             <SEO isHome={true} title={page.html_title} />
 
             <div dangerouslySetInnerHTML={{ __html: page.body }}></div>
+
+            <section className="section">
+                <div className="container content">
+                    <SponsorsBox />
+                </div>
+            </section>
         </Layout>
     );
 }
