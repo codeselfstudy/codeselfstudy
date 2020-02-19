@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import Layout from '../../components/Layout';
-import SEO from '../../components/SEO';
+import Layout from "../../components/Layout";
+import SEO from "../../components/SEO";
 
-import { sansSerif } from '../../data/unicode';
+import { sansSerif } from "../../data/unicode";
 
 export default function Unicode() {
-    const [text, setText] = useState('');
-    const [output, setOutput] = useState('');
+    const [text, setText] = useState("");
+    const [output, setOutput] = useState("");
 
     function handleOnKeyUp(e) {
         const chars = e.target.value;
         const translated = [...chars]
             .map(char => {
-                console.log('char', char);
+                console.log("char", char);
                 return sansSerif[char] || char;
             })
-            .join('');
+            .join("");
         setText(chars);
         setOutput(translated);
     }
@@ -29,10 +29,10 @@ export default function Unicode() {
                     <h1 className="title is-1">Bold Unicode Text Tool</h1>
                     <p>Type your text below to get the unicode characters.</p>
 
-                    <div class="field">
-                        <div class="control">
+                    <div className="field">
+                        <div className="control">
                             <input
-                                class="input"
+                                className="input"
                                 type="text"
                                 onKeyUp={handleOnKeyUp}
                                 placeholder="Enter some text"
@@ -42,8 +42,8 @@ export default function Unicode() {
                     {text ? (
                         <div className="box">
                             <small
-                                class="is-size-7"
-                                style={{ fontFamily: 'monospace' }}
+                                className="is-size-7"
+                                style={{ fontFamily: "monospace" }}
                             >
                                 OUTPUT:
                             </small>
