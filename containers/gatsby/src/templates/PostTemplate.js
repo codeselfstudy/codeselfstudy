@@ -46,6 +46,7 @@ export default function PostTemplate({
     );
 }
 
+// TODO: get the `prev` and `next` fields for easier navigation.
 export const pageQuery = graphql`
     query($path: String!) {
         markdownRemark(frontmatter: { path: { eq: $path } }) {
