@@ -71,21 +71,9 @@ a.muted-link {
     ); // # the background opacity isn't working
 }
 
-.page-footer {
-    background-color: #333;
-    color: #bbb;
-
-    a {
-        color: #bbb;
-    }
-}
-
 // Underline links, but not if they are styled like buttons or in the footer
 .content a:not(.button) {
     text-decoration: underline;
-}
-.page-footer a {
-    text-decoration: none !important;
 }
 
 .quote-hero .hero-body blockquote {
