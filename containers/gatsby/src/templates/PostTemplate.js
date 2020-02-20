@@ -31,12 +31,14 @@ export default function PostTemplate({
                         className="blog-post-content"
                         dangerouslySetInnerHTML={{ __html: html }}
                     />
-                    <hr />
-                    <div>
-                        <Link
-                            to="/blog/"
+                    <div style={{ marginTop: "67px" }}>
+                        <a
                             className="button is-large is-default"
+                            href="https://forum.codeselfstudy.com/"
                         >
+                            Comment in the Forum
+                        </a>{" "}
+                        <Link to="/blog/" className="button is-large is-link">
                             Return to the Blog
                         </Link>
                     </div>
@@ -46,6 +48,7 @@ export default function PostTemplate({
     );
 }
 
+// TODO: get the `prev` and `next` fields for easier navigation.
 export const pageQuery = graphql`
     query($path: String!) {
         markdownRemark(frontmatter: { path: { eq: $path } }) {
