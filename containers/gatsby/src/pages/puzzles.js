@@ -39,42 +39,28 @@ function DemoTable({ data }) {
     );
 }
 
-export default function PuzzlesPage() {
+export default function IndexPage() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [apiData, setApiData] = useState(null);
+
+    useEffect(() => {
+        axios.get(`/api/puzzles`).then(res => {
+            console.log("res", res);
+            setTimeout(() => {
+                setApiData(res.data.puzzles[0]);
+                setIsLoading(false);
+            }, 1000);
+        });
+    }, []);
+
     return (
         <Layout>
             <SEO title="Coding Puzzles and Algorithm Practice for Whiteboard Interview Prep" />
             <section className="section">
                 <h1 className="title is-1">Puzzles</h1>
 
-                <p>A page of coding puzzles is coming soon!</p>
+                {isLoading ? <Spinner /> : <DemoTable data={apiData} />}
             </section>
         </Layout>
     );
 }
-
-// Below is sample code to hit the Express API
-// export default function PuzzlesPage() {
-//     const [isLoading, setIsLoading] = useState(true);
-//     const [apiData, setApiData] = useState(null);
-
-//     useEffect(() => {
-//         axios.get(`/api/puzzles`).then(res => {
-//             console.log("res", res);
-//             setTimeout(() => {
-//                 setApiData(res.data.puzzles[0]);
-//                 setIsLoading(false);
-//             }, 1000);
-//         });
-//     }, []);
-
-//     return (
-//         <Layout>
-//             <SEO title="Coding Puzzles and Algorithm Practice for Whiteboard Interview Prep" />
-//             <section className="section">
-//                 <h1 className="title is-1">Puzzles</h1>
-
-//                 {isLoading ? <Spinner /> : <DemoTable data={apiData} />}
-//             </section>
-//         </Layout>
-//     );
-// }
