@@ -2,6 +2,7 @@ import React from "react";
 import { graphql } from "gatsby";
 
 import Layout from "../components/Layout";
+import SEO from "../components/SEO";
 
 /**
  * This is the template for the website's basic content pages.
@@ -14,6 +15,7 @@ export default function PageTemplate({
 
     return (
         <Layout>
+            <SEO title={frontmatter.html_title || frontmatter.title} />
             <section className="section">
                 <div className="container content">
                     <h1 className="title is-1">{frontmatter.title}</h1>

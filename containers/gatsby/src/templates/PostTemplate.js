@@ -2,6 +2,7 @@ import React from "react";
 import { graphql, Link } from "gatsby";
 
 import Layout from "../components/Layout";
+import SEO from "../components/SEO";
 
 const metadataStyle = {
     color: "#888",
@@ -20,6 +21,7 @@ export default function PostTemplate({
 
     return (
         <Layout>
+            <SEO title={frontmatter.html_title || frontmatter.title} />
             <section className="section">
                 <div className="container content">
                     <h1 className="title is-1">{frontmatter.title}</h1>
