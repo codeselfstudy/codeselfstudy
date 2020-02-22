@@ -25,6 +25,11 @@ export default function Footer({ siteTitle }) {
                             <li>
                                 <Link to="/school/">School</Link>
                             </li>
+                            <li>
+                                <a href="https://forum.codeselfstudy.com/">
+                                    Forum
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     <div className="column">
@@ -37,6 +42,9 @@ export default function Footer({ siteTitle }) {
                             </li>
                             <li>
                                 <Link to="/events/">Events</Link>
+                            </li>
+                            <li>
+                                <Link to="/discounts/">Discounts</Link>
                             </li>
                             <li>
                                 <Link to="/sponsors/">Sponsors</Link>

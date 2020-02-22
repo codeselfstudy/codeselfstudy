@@ -1,12 +1,12 @@
-import { Link } from 'gatsby';
-import React from 'react';
+import { Link } from "gatsby";
+import React from "react";
 
 const Navbar = () => {
     const toggleNav = () => {
-        const toggle = document.querySelector('.navbar-burger');
-        const menu = document.querySelector('.navbar-menu');
-        toggle.classList.toggle('is-active');
-        menu.classList.toggle('is-active');
+        const toggle = document.querySelector(".navbar-burger");
+        const menu = document.querySelector(".navbar-menu");
+        toggle.classList.toggle("is-active");
+        menu.classList.toggle("is-active");
     };
     return (
         <nav
@@ -53,8 +53,8 @@ const Navbar = () => {
                             Forum
                         </a>
 
-                        <Link to="/school/" className="navbar-item">
-                            School
+                        <Link to="/discounts/" className="navbar-item">
+                            Discounts
                         </Link>
                     </div>
 
