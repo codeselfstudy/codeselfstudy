@@ -1,43 +1,44 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+// import React, { useEffect, useState } from "react";
+import React from "react";
+// import axios from "axios";
 
 import Layout from "../components/Layout";
 import SEO from "../components/SEO";
-import Spinner from "../components/Spinner";
+// import Spinner from "../components/Spinner";
 
 // TODO: This component can be removed once the real content is connected to Gatsby.
-function DemoTable({ data }) {
-    const entries = Object.entries(data);
+// function DemoTable({ data }) {
+//     const entries = Object.entries(data);
 
-    return (
-        <table
-            style={{ border: "2px dotted #666" }}
-            className="table is-responsive"
-        >
-            <caption style={{ backgroundColor: "yellow" }}>
-                A sample web request to the backend.
-            </caption>
-            <thead>
-                <tr>
-                    <th>key</th>
-                    <th>value</th>
-                </tr>
-            </thead>
-            <tbody>
-                {entries.map(i => (
-                    <tr key={i[0]}>
-                        <td>
-                            <strong>{i[0]}</strong>
-                        </td>
-                        <td>
-                            <code>{JSON.stringify(i[1])}</code>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-}
+//     return (
+//         <table
+//             style={{ border: "2px dotted #666" }}
+//             className="table is-responsive"
+//         >
+//             <caption style={{ backgroundColor: "yellow" }}>
+//                 A sample web request to the backend.
+//             </caption>
+//             <thead>
+//                 <tr>
+//                     <th>key</th>
+//                     <th>value</th>
+//                 </tr>
+//             </thead>
+//             <tbody>
+//                 {entries.map(i => (
+//                     <tr key={i[0]}>
+//                         <td>
+//                             <strong>{i[0]}</strong>
+//                         </td>
+//                         <td>
+//                             <code>{JSON.stringify(i[1])}</code>
+//                         </td>
+//                     </tr>
+//                 ))}
+//             </tbody>
+//         </table>
+//     );
+// }
 
 export default function PuzzlesPage() {
     return (
