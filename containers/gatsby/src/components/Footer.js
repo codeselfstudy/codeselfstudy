@@ -26,9 +26,9 @@ export default function Footer({ siteTitle }) {
                                 <Link to="/school/">School</Link>
                             </li>
                             <li>
-                                <Link to="https://forum.codeselfstudy.com/">
+                                <a href="https://forum.codeselfstudy.com/">
                                     Forum
-                                </Link>
+                                </a>
                             </li>
                         </ul>
                     </div>
