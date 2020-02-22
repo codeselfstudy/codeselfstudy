@@ -39,7 +39,7 @@ export default function Footer({ siteTitle }) {
                                 <Link to="/events/">Events</Link>
                             </li>
                             <li>
-                                <Link to="/sponsors/">Sponsors</Link>
+                                <Link to="/discounts/">Discounts</Link>
                             </li>
                             <li>
                                 <Link to="/autism/">Autism Resources</Link>

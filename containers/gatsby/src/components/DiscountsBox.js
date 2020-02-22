@@ -9,13 +9,13 @@ const sponsorsData = [
         id: 1,
         name: "Digital Ocean",
         src: digitalOceanLogo,
-        href: "/sponsor/digital-ocean/",
+        href: "/discount/digital-ocean/",
     },
     {
         id: 2,
         name: "AlgoExpert",
         src: algoExpertLogo,
-        href: "/sponsor/algoexpert/",
+        href: "/discount/algoexpert/",
     },
 ];
 
@@ -33,21 +33,20 @@ function Sponsor({ name, src, href }) {
     );
 }
 
-export default function SponsorsBox() {
-    const [sponsors, setSponsors] = useState([]);
+export default function DiscountsBox() {
+    const [sponsors, setDiscounts] = useState([]);
 
     // Randomize the sponsors in the box.
     useEffect(() => {
-        setSponsors(shuffle(sponsorsData));
+        setDiscounts(shuffle(sponsorsData));
     }, []);
 
     return (
         <div className="box">
-            <h2 className="title is-2">Sponsors</h2>
+            <h2 className="title is-2">Discounts</h2>
             <p>
                 These companies provide services, discounts, or other assistance
-                to our group. To support us and add your logo, please{" "}
-                <Link to="/contact/">contact us</Link>.
+                to our group members.
             </p>
             <div className="columns" style={{ margin: "27px 17px" }}>
                 {sponsors.map(s => (
@@ -60,6 +59,11 @@ export default function SponsorsBox() {
                     />
                 ))}
             </div>
+            <p>
+                If you would like to help offer discounts to our members or
+                sponsor the group in some way, please{" "}
+                <Link to="/contact/">contact us</Link>.
+            </p>
         </div>
     );
 }
