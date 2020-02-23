@@ -25,11 +25,6 @@ export default function Footer({ siteTitle }) {
                             <li>
                                 <Link to="/school/">School</Link>
                             </li>
-                            <li>
-                                <a href="https://forum.codeselfstudy.com/">
-                                    Forum
-                                </a>
-                            </li>
                         </ul>
                     </div>
                     <div className="column">
@@ -44,13 +39,12 @@ export default function Footer({ siteTitle }) {
                                 <Link to="/events/">Events</Link>
                             </li>
                             <li>
-                                <Link to="/discounts/">Discounts</Link>
-                            </li>
-                            <li>
-                                <Link to="/sponsors/">Sponsors</Link>
-                            </li>
-                            <li>
                                 <Link to="/autism/">Autism Resources</Link>
+                            </li>
+                            <li>
+                                <a href="https://forum.codeselfstudy.com/">
+                                    Forum
+                                </a>
                             </li>
                         </ul>
                     </div>
@@ -76,9 +70,20 @@ export default function Footer({ siteTitle }) {
                     </div>
                 </div>
                 <div>
-                    <Link to="/">Code Self Study</Link> &bull; Programming
-                    community in Berkeley &amp; San Francsico Bay Area,
-                    California
+                    <p>
+                        <Link to="/">Code Self Study</Link> &bull; Programming
+                        community in Berkeley &amp; San Francsico Bay Area,
+                        California
+                    </p>
+                    <p>
+                        Hosted on{" "}
+                        <Link
+                            to="/discount/digital-ocean/"
+                            className="digital-ocean"
+                        >
+                            DigitalOcean
+                        </Link>
+                    </p>
                 </div>
             </div>
         </footer>

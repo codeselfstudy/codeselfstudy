@@ -52,10 +52,6 @@ const Navbar = () => {
                         >
                             Forum
                         </a>
-
-                        <Link to="/discounts/" className="navbar-item">
-                            Discounts
-                        </Link>
                     </div>
 
                     <div className="navbar-end">

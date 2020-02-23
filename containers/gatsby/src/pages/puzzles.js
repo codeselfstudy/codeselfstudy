@@ -45,9 +45,11 @@ export default function PuzzlesPage() {
         <Layout>
             <SEO title="Coding Puzzles and Algorithm Practice for Whiteboard Interview Prep" />
             <section className="section">
-                <h1 className="title is-1">Puzzles</h1>
+                <div className="container content">
+                    <h1 className="title is-1">Puzzles</h1>
 
-                <p>A page of coding puzzles is coming soon!</p>
+                    <p>A page of coding puzzles is coming soon!</p>
+                </div>
             </section>
         </Layout>
     );
