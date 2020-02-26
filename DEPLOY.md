@@ -114,3 +114,7 @@ Then install node 12:
 ```text
 $ nvm install 12
 ```
+
+## Dotfiles
+
+If you want the dotfiles, copy them into the host droplet.
