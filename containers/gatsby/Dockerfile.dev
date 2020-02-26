@@ -1,6 +1,7 @@
 FROM node:12-alpine as builder
 RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
 WORKDIR /app
+RUN ./fetch_submodule.sh
 COPY ./package*.json ./
 RUN mkdir node_modules && npm install
 
