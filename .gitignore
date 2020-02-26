@@ -11,6 +11,9 @@ tags.*
 .vscode/
 *.sw[op]
 
+.env
+.env/
+
 # Python
 *.py[cod]
 __pycache__/

@@ -1,0 +1,62 @@
+version: "3"
+
+volumes:
+    mongo:
+    redis:
+
+services:
+    nginx:
+        restart: always
+        depends_on:
+            - express_api
+            - gatsby
+        build:
+            dockerfile: Dockerfile
+            context: ./containers/nginx
+        ports:
+            - "80:80"
+
+    gatsby:
+        build:
+            dockerfile: Dockerfile
+            context: ./containers/gatsby
+        depends_on:
+            - express_api
+        volumes:
+            - /app/node_modules
+            - ./containers/gatsby:/app
+        environment:
+            - NODE_ENV=production
+            - GATSBY_WEBPACK_PUBLICPATH=/
+        working_dir: /app
+        command: ./entrypoint.sh
+
+    # The API for the puzzle server
+    express_api:
+        depends_on:
+            - mongo
+            - redis
+        build:
+            dockerfile: Dockerfile
+            context: ./containers/express_api
+        volumes:
+            - /app/node_modules
+            - ./containers/express_api:/app
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - NODE_ENV=production
+        env_file:
+            - ./env/express_api
+
+    # The MERN database
+    mongo:
+        image: mongo
+        volumes:
+            - mongo:/data/db
+
+    # Express.js sessions
+    redis:
+        image: "redis:latest"
+        volumes:
+            - redis:/data

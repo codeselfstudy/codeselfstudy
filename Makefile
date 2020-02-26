@@ -1,4 +1,4 @@
-.PHONY: clean docs format docker dockerdown
+.PHONY: clean docs format dev production dockerdown
 
 help:
 	@echo "clean - remove junk files"
@@ -6,6 +6,7 @@ help:
 	@echo "format - format the code"
 	@echo "docker - build the docker containers and run them with Docker Compose"
 	@echo "dockerdown - shut down the Docker containers"
+	@echo "production - build and run the application for production with Docker Compose"
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -21,8 +22,11 @@ format:
 	prettier **/*.{js,css,html,json} --write
 	cd scrapers && mix format
 
-docker:
-	docker-compose up --build
+production:
+	docker-compose up --build -f docker-compose.production.yml
+
+dev:
+	docker-compose up --build -f docker-compose.dev.yml
 
 dockerdown:
 	docker-compose down
