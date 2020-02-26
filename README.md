@@ -55,10 +55,7 @@ See the `docker-compose.*.yml` files for an overview of the services that are ru
 
 To run the application:
 
-- Load the content submodule
-    - `$ cd containers/gatsby/src/content`
-    - `$ git submodule init`
-    - `$ git submodule update`
+- Load the content submodule: `make initialize`
 - Be sure that you have Docker installed.
 - Start the application with Docker Compose. (Look inside the `Makefile` for commands to boot the app, like `make dev`.)
 

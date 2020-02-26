@@ -1,4 +1,4 @@
-.PHONY: clean docs format dev production dockerdown
+.PHONY: clean docs format dev production dockerdown initialize
 
 help:
 	@echo "clean - remove junk files"
@@ -7,6 +7,7 @@ help:
 	@echo "docker - build the docker containers and run them with Docker Compose"
 	@echo "dockerdown - shut down the Docker containers"
 	@echo "production - build and run the application for production with Docker Compose"
+	@echo "initialize - initial build steps to run after cloning the repo"
 
 clean:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -31,3 +32,8 @@ dev:
 # This works in development
 dockerdown:
 	docker-compose -f docker-compose.dev.yml down
+
+initialize:
+	cd containers/gatsby/src/content
+	git submodule init
+	git submodule update
