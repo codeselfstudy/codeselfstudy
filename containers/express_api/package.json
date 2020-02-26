@@ -5,7 +5,8 @@
     "scripts": {
         "dev": "DEBUG=puzzles:* npm run serve",
         "start": "npm run dev",
-        "serve": "npx nodemon ./bin/www"
+        "serve": "npx nodemon ./bin/www",
+        "production": "npx forever start ./bin/www"
     },
     "dependencies": {
         "connect-redis": "^4.0.3",
@@ -13,6 +14,7 @@
         "debug": "~2.6.9",
         "express": "~4.16.1",
         "express-session": "^1.17.0",
+        "forever": "^2.0.0",
         "helmet": "^3.21.2",
         "http-errors": "~1.6.3",
         "mongoose": "^5.8.9",

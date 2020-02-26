@@ -1,0 +1,3 @@
+SESSION_SECRET="put a strong secret here in production"
+
+# TODO: add Discourse SSO provider keys

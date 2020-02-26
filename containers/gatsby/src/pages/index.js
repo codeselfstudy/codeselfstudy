@@ -3,7 +3,8 @@ import { graphql } from "gatsby";
 
 import Layout from "../components/Layout";
 import SEO from "../components/SEO";
-import DiscountsBox from "../components/DiscountsBox";
+// Not yet
+// import DiscountsBox from "../components/DiscountsBox";
 
 export default function IndexPage({ data }) {
     const page = data.allIndexToml.edges.filter(
@@ -18,7 +19,6 @@ export default function IndexPage({ data }) {
 
             <section className="section">
                 <div className="container content">
-                    <DiscountsBox />
                 </div>
             </section>
         </Layout>

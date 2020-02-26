@@ -4,14 +4,15 @@ footer.page-footer {
 
     a {
         color: #bbb;
+        text-decoration: none !important;
     }
-}
 
-footer.page-footer .icons {
-    margin-left: 2em;
-    margin-top: 1em;
-}
+    .icons {
+        margin-left: 2em;
+        margin-top: 1em;
+    }
 
-footer.page-footer a {
-    text-decoration: none !important;
+    a:hover {
+        text-decoration: underline !important;
+    }
 }

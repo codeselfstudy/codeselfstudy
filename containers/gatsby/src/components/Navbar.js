@@ -52,17 +52,13 @@ const Navbar = () => {
                         >
                             Forum
                         </a>
-
-                        <Link to="/discounts/" className="navbar-item">
-                            Discounts
-                        </Link>
                     </div>
 
                     <div className="navbar-end">
                         <div className="navbar-item">
                             <div className="buttons">
                                 <a
-                                    className="button is-primary"
+                                    className="button"
                                     href="https://forum.codeselfstudy.com/signup"
                                     rel="nofollow"
                                 >
