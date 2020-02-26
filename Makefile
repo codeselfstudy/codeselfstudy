@@ -23,7 +23,7 @@ format:
 	cd scrapers && mix format
 
 production:
-	docker-compose up --build -f docker-compose.production.yml
+	docker-compose up --build -d -f docker-compose.production.yml
 
 dev:
 	docker-compose up --build -f docker-compose.dev.yml
