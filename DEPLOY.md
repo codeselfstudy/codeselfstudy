@@ -29,12 +29,13 @@ Install Docker Compose with [these instructions](https://docs.docker.com/compose
 
 ## Set Timezone
 
+Set the timezone to `Americas/Los_Angeles`.
+
 ```text
 # dpkg-reconfigure tzdata
 ```
 
 ## Create User
-
 
 As root:
 
@@ -46,7 +47,6 @@ As root:
 Configure the new user to use Docker without `sudo`: [instructions](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user).
 
 ## Change SSH Port
-
 
 ```text
 # vim /etc/ssh/sshd_config
@@ -87,7 +87,25 @@ If you need to use another branch:
 $ git checkout <branch_name>
 ```
 
+## Create the `.env` Directory
+
+```text
+$ cp -R .env-example .env
+```
+
+Then edit your settings in the files within that new directory. Those copies are not stored in Git (because they are secrets) but are unique to each installation of the website.
+
+## Initialize the Application
+
+To fetch the git submodule, run this:
+
+```text
+$ make initialize
+```
+
 ## Install Node
+
+[Note: this is optional and may not be needed.]
 
 Install [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
