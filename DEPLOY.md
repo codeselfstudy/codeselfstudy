@@ -86,3 +86,13 @@ If you need to use another branch:
 ```text
 $ git checkout <branch_name>
 ```
+
+## Install Node
+
+Install [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+
+Then install node 12:
+
+```text
+$ nvm install 12
+```

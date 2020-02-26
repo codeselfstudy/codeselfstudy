@@ -3,11 +3,11 @@
 # server runs on port 3000, which is upstream of port 80 on the main
 # user-facing nginx server.
 FROM node:12-alpine as builder
-# RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
-WORKDIR "/app"
+RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
+WORKDIR /app
 ENV NODE_ENV='production'
 COPY ./package.json ./
-RUN npm install
+RUN mkdir node_modules && npm install
 COPY . .
 RUN ./fetch_submodule.sh
 RUN npm run build
