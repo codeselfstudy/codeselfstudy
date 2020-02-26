@@ -30,7 +30,7 @@ For the documentation, see the [Code Self Study Wiki](https://github.com/codesel
 
 ## Technologies
 
-See the `docker-compose.yml` file for an overview of the services that are running.
+See the `docker-compose.*.yml` files for an overview of the services that are running.
 
 - Gatsby + markdown files for pages and blog posts
 - Express.js for the API ("MERN Stack")
@@ -63,10 +63,12 @@ To run the application:
 - Start the application with Docker Compose.
 
 ```text
-$ docker-compose up --build
+$ docker-compose up --build -f docker-compose.dev.yml
 ```
 
-Then visit [localhost:4444](http://localhost:4444/).
+(There is a separate Docker Compose file for production: `docker-compose.production.yml`.)
+
+Then visit [localhost:4444](http://localhost:4444/) in development mode.
 
 To shutdown the containers:
 
