@@ -1,5 +1,8 @@
 TMP/
 puzzle_client_PENDING_DELETION/
+.env
+.env/
+
 # Editors
 *~
 tags
