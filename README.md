@@ -60,10 +60,10 @@ To run the application:
     - `$ git submodule init`
     - `$ git submodule update`
 - Be sure that you have Docker installed.
-- Start the application with Docker Compose.
+- Start the application with Docker Compose. (Look inside the `Makefile` for commands to boot the app, like `make dev`.)
 
 ```text
-$ docker-compose up --build -f docker-compose.dev.yml
+$ docker-compose -f docker-compose.dev.yml up --build
 ```
 
 (There is a separate Docker Compose file for production: `docker-compose.production.yml`.)
