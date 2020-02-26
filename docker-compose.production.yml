@@ -47,7 +47,7 @@ services:
             - REDIS_PORT=6379
             - NODE_ENV=production
         env_file:
-            - ./env/express_api
+            - ./.env/express_api
 
     # The MERN database
     mongo:

@@ -18,7 +18,14 @@ and update the packages (it's a root prompt):
 # apt update && apt upgrade
 ```
 
+
+```text
+# apt install make
+```
+
 Install Docker with the instructions found [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-engine---community-1).
+
+Install Docker Compose with [these instructions](https://docs.docker.com/compose/install/).
 
 ## Set Timezone
 
@@ -35,6 +42,8 @@ As root:
 # adduser <username>
 # usermod -aG sudo <username>
 ```
+
+Configure the new user to use Docker without `sudo`: [instructions](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user).
 
 ## Change SSH Port
 
@@ -69,5 +78,11 @@ Copy your SSH key onto the server for the new user:
 ## Clone the Repo
 
 ```text
-$ git clone git@github.com:codeselfstudy/codeselfstudy.git
+$ git clone https://github.com/codeselfstudy/codeselfstudy.git
+```
+
+If you need to use another branch:
+
+```text
+$ git checkout <branch_name>
 ```
