@@ -9,6 +9,7 @@ ENV NODE_ENV='production'
 COPY ./package.json ./
 RUN npm install
 COPY . .
+RUN ./fetch_submodule.sh
 RUN npm run build
 
 FROM nginx
