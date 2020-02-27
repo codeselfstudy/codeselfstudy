@@ -6,9 +6,9 @@ FROM node:12-alpine as builder
 RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
 WORKDIR /app
 ENV NODE_ENV='production'
-COPY ./package.json ./
-RUN mkdir node_modules && npm install
+# COPY ./package.json ./
 COPY . .
+RUN mkdir node_modules && npm install
 RUN npm run build
 
 FROM nginx
