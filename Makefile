@@ -27,13 +27,16 @@ production:
 	docker-compose -f docker-compose.production.yml up --build -d
 
 dev:
+	./scripts/check_env.sh
 	docker-compose -f docker-compose.dev.yml up --build
 
 # This works in development
 dockerdown:
+	./scripts/check_env.sh
 	docker-compose -f docker-compose.dev.yml down
 
 initialize:
 	cd containers/gatsby/src/content
 	git submodule init
 	git submodule update
+	./scripts/check_env.sh
