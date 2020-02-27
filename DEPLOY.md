@@ -118,3 +118,10 @@ $ nvm install 12
 ## Dotfiles
 
 If you want the dotfiles, copy them into the host droplet.
+
+For example:
+
+```text
+$ cat ./scripts/.aliases >> ~/.bash_aliases
+$ cat ./scripts/.vimrc >> ~/.vimrc
+```
