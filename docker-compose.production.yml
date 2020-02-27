@@ -15,6 +15,7 @@ services:
             context: ./containers/nginx
         ports:
             - "80:80"
+            - "443:443"
 
     gatsby:
         build:
@@ -22,9 +23,9 @@ services:
             context: ./containers/gatsby
         depends_on:
             - express_api
-        volumes:
-            - /app/node_modules
-            - ./containers/gatsby:/app
+        # volumes:
+        #     - /app/node_modules
+        #     - ./containers/gatsby:/app
         environment:
             - NODE_ENV=production
             - GATSBY_WEBPACK_PUBLICPATH=/
@@ -39,15 +40,15 @@ services:
         build:
             dockerfile: Dockerfile
             context: ./containers/express_api
-        volumes:
-            - /app/node_modules
-            - ./containers/express_api:/app
+        # volumes:
+        #     - /app/node_modules
+        #     - ./containers/express_api:/app
         environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - NODE_ENV=production
         env_file:
-            - ./env/express_api
+            - ./.env/express_api
 
     # The MERN database
     mongo:
