@@ -6,6 +6,8 @@ FROM node:12-alpine as builder
 RUN apk update && apk add --no-cache --virtual .gyp python make g++
 WORKDIR /app
 ENV GATSBY_TELEMETRY_DISABLED=1
+RUN mkdir -p ~/.config/gatsby/
+COPY ./misc/config.json ~/.config/gatsby/
 ENV NODE_ENV=production
 COPY ./package.json ./
 RUN npm install
