@@ -94,6 +94,8 @@ $ docker volume ls
 $ docker volume inspect <volume_name>
 ```
 
+For information on how to clean up Docker images and containers, see the [Code Self Study Wiki's](https://wiki.codeselfstudy.com/) page on [Docker](https://wiki.codeselfstudy.com/guides/docker.html).
+
 ## LICENSES
 
 The code is licensed under a BSD licensed (see the `./LICENSES` directory). Other sections of the code may have their own licenses. (Search for files named `LICENSE` if you want to generate a list without looking in the directories.)
