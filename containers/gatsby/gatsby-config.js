@@ -3,6 +3,10 @@ module.exports = {
         title: `Code Self Study`,
         description: `Programming community in Berkeley, California`,
         author: `@codeselfstudy`,
+        siteUrl:
+            process.env.NODE_ENV === "production"
+                ? "https://codeselfstudy.com"
+                : "https://localhost:8000",
     },
     plugins: [
         `gatsby-plugin-sass`,

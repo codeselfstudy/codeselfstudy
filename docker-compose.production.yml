@@ -23,14 +23,10 @@ services:
             context: ./containers/gatsby
         depends_on:
             - express_api
-        # volumes:
-        #     - /app/node_modules
-        #     - ./containers/gatsby:/app
         environment:
             - NODE_ENV=production
             - GATSBY_WEBPACK_PUBLICPATH=/
         working_dir: /app
-        command: ./entrypoint.sh
 
     # The API for the puzzle server
     express_api:
@@ -40,9 +36,6 @@ services:
         build:
             dockerfile: Dockerfile
             context: ./containers/express_api
-        # volumes:
-        #     - /app/node_modules
-        #     - ./containers/express_api:/app
         environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
