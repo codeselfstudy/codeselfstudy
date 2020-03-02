@@ -2,7 +2,7 @@ TMP/
 puzzle_client_PENDING_DELETION/
 .env
 .env/
-data/certbot
+data/certbot/
 
 # Editors
 *~
