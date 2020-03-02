@@ -16,6 +16,9 @@ services:
         ports:
             - "80:80"
             - "443:443"
+        volumes:
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
 
     gatsby:
         build:
@@ -54,3 +57,10 @@ services:
         image: "redis:latest"
         volumes:
             - redis:/data
+
+    # This obtains the Let's Encrypt certificates
+    certbot:
+        image: certbot/certbot
+    volumes:
+        - ./data/certbot/conf:/etc/letsencrypt
+        - ./data/certbot/www:/var/www/certbot
