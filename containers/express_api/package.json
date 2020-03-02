@@ -6,7 +6,7 @@
         "dev": "DEBUG=puzzles:* npm run serve",
         "start": "npm run dev",
         "serve": "npx nodemon ./bin/www",
-        "production": "npx forever start ./bin/www"
+        "production": "npx forever ./bin/www"
     },
     "dependencies": {
         "connect-redis": "^4.0.3",
