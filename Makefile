@@ -4,7 +4,7 @@ help:
 	@echo "clean - remove junk files"
 	@echo "docs - build the documentation and serve it in a browser"
 	@echo "format - format the code"
-	@echo "docker - build the docker containers and run them with Docker Compose"
+	@echo "dev - build the docker containers and run them with Docker Compose"
 	@echo "dockerdown - shut down the Docker containers"
 	@echo "production - build and run the application for production with Docker Compose"
 	@echo "initialize - initial build steps to run after cloning the repo"
