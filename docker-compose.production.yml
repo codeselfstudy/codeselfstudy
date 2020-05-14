@@ -14,12 +14,13 @@ services:
             dockerfile: Dockerfile
             context: ./containers/nginx
         ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            - ./data/certbot/conf:/etc/letsencrypt
-            - ./data/certbot/www:/var/www/certbot
-        command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+            # There is an nginx install on the host machine temporarily
+            - "4444:80"
+            # - "443:443"
+        # volumes:
+        #     - ./data/certbot/conf:/etc/letsencrypt
+        #     - ./data/certbot/www:/var/www/certbot
+        # command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
     gatsby:
         build:
@@ -60,9 +61,9 @@ services:
             - redis:/data
 
     # This obtains the Let's Encrypt certificates
-    certbot:
-        image: certbot/certbot
-    volumes:
-        - ./data/certbot/conf:/etc/letsencrypt
-        - ./data/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    # certbot:
+    #     image: certbot/certbot
+    # volumes:
+    #     - ./data/certbot/conf:/etc/letsencrypt
+    #     - ./data/certbot/www:/var/www/certbot
+    # entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

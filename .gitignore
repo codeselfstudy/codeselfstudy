@@ -3,6 +3,7 @@ puzzle_client_PENDING_DELETION/
 .env
 .env/
 data/certbot
+containers/nginx/data/certbot/
 
 # Editors
 *~

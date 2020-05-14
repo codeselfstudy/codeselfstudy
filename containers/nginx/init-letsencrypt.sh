@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#########################################################################
+# This isn't being used at the moment, since there is no SSL certificate.
+#########################################################################
+
 if ! [ -x "$(command -v docker-compose)" ]; then
     echo 'Error: docker-compose is not installed.' >&2
     exit 1
