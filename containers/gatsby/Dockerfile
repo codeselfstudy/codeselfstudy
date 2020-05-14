@@ -14,7 +14,8 @@ RUN mkdir -p ~/.config/gatsby/
 COPY ./misc/config.json ~/.config/gatsby/
 
 COPY ./package.json ./
-RUN npm install
+RUN rm -rf ./.cache
+RUN mkdir node_modules && npm install
 COPY . .
 COPY ./src/content/files ./static/
 RUN npm run build
