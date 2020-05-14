@@ -4,7 +4,7 @@
 # user-facing nginx server.
 FROM node:12-alpine as builder
 # RUN apk update && apk add --no-cache --virtual .gyp python make g++
-RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm build-essential
+RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
 WORKDIR /app
 
 ENV NODE_ENV=production
