@@ -12,15 +12,9 @@ export default function IndexPage({ data }) {
     )[0].node;
 
     return (
-        <Layout>
+        <Layout isHome={true}>
             <SEO isHome={true} title={page.html_title} />
-
             <div dangerouslySetInnerHTML={{ __html: page.body }}></div>
-
-            <section className="section">
-                <div className="container content">
-                </div>
-            </section>
         </Layout>
     );
 }

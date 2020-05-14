@@ -8,8 +8,9 @@ RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV GATSBY_TELEMETRY_DISABLED=1
 
+# Turn off Gatsby telemetry
+ENV GATSBY_TELEMETRY_DISABLED=1
 RUN mkdir -p ~/.config/gatsby/
 COPY ./misc/config.json ~/.config/gatsby/
 

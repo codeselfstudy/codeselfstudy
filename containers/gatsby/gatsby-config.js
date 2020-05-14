@@ -62,8 +62,11 @@ module.exports = {
             options: {
                 printRejected: true, // Print removed selectors and processed file names
                 develop: false, // Enable while using `gatsby develop`
+                // The whitelist rules match any prefix (class, id, element).
+                // https://purgecss.com/whitelisting.html#specific-selectors
                 whitelist: [
                     "blockquote",
+                    "hr",
                     "hero",
                     "homepage-hero",
                     "bg-circuit-board",

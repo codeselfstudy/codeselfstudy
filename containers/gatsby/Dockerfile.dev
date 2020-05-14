@@ -2,7 +2,9 @@ FROM node:12-alpine as builder
 RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
 WORKDIR /app
 COPY ./package*.json ./
+RUN rm -rf ./.cache
 
+# Turn off Gatsby telemetry
 ENV GATSBY_TELEMETRY_DISABLED=1
 RUN mkdir -p ~/.config/gatsby/
 COPY ./misc/config.json ~/.config/gatsby/
@@ -11,8 +13,11 @@ RUN mkdir node_modules && npm install
 
 # Get a clean image with gatsby-cli and the pre-built node modules
 FROM node:12-alpine
+
+# Turn off Gatsby telemetry
 ENV GATSBY_TELEMETRY_DISABLED=1
 RUN mkdir -p ~/.config/gatsby/
 COPY ./misc/config.json ~/.config/gatsby/
+
 RUN npm install --global gatsby-cli && gatsby telemetry --disable && mkdir /save
 COPY --from=builder /app/node_modules /save/node_modules
