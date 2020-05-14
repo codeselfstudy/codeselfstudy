@@ -4,6 +4,9 @@
 # This isn't being used at the moment, since there is no SSL certificate.
 #########################################################################
 
+# Run this script from the top level (next to the docker-compose.production.yml file):
+# ./containers/nginx/init-letsencrypt.sh
+
 if ! [ -x "$(command -v docker-compose)" ]; then
     echo 'Error: docker-compose is not installed.' >&2
     exit 1
@@ -11,7 +14,7 @@ fi
 
 domains=(codeselfstudy.com www.codeselfstudy.com)
 rsa_key_size=4096
-data_path="./data/certbot"
+data_path="./containers/nginx/data/certbot"
 email="contact@codeselfstudy.com" # Adding a valid address is strongly recommended
 staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
