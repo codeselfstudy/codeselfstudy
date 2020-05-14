@@ -58,7 +58,7 @@ const Navbar = () => {
                         <div className="navbar-item">
                             <div className="buttons">
                                 <a
-                                    className="button"
+                                    className="button is-primary"
                                     href="https://forum.codeselfstudy.com/signup"
                                     rel="nofollow"
                                 >
