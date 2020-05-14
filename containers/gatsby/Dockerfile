@@ -14,13 +14,16 @@ RUN mkdir -p ~/.config/gatsby/
 COPY ./misc/config.json ~/.config/gatsby/
 
 COPY ./package.json ./
-RUN rm -rf ./.cache
+
 RUN mkdir node_modules && npm install
 COPY . .
+
+# The .cache dir might be there from previous builds.
+RUN rm -rf ./.cache
 COPY ./src/content/files ./static/
 RUN npm run build
 
 FROM nginx:alpine
-EXPOSE 8000
+EXPOSE 9000
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/public /usr/share/nginx/html
