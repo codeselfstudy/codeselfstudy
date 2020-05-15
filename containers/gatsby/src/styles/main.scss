@@ -1,6 +1,6 @@
-@import './variables.scss';
-@import './backgrounds.scss';
-@import '~bulma/bulma.sass';
+@import "./variables.scss";
+@import "./backgrounds.scss";
+@import "~bulma/bulma.sass";
 @import "~text-spinners/spinners.scss";
 
 // If you need the bulma extensions, I think you can import them in the
@@ -9,7 +9,7 @@
 
 // custom SCSS goes here
 
-@import url('https://fonts.googleapis.com/css?family=Anton|Quicksand|Open+Sans|Source+Code+Pro|Gruppo&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Anton|Quicksand|Open+Sans|Source+Code+Pro|Gruppo&display=swap");
 
 // I couldn't find this rule in the old site, but it keeps the H1 from
 // appearing beneath the navbar.
@@ -19,12 +19,12 @@ main {
 
 h1.title,
 h2.title {
-    font-family: 'Anton', sans-serif;
+    font-family: "Anton", sans-serif;
     font-weight: 400 !important;
 }
 
 h3.title {
-    font-family: 'Gruppo', Helvetica, sans-serif;
+    font-family: "Gruppo", Helvetica, sans-serif;
     font-weight: bold;
     text-transform: uppercase;
     background-color: #eee;
@@ -33,11 +33,11 @@ h3.title {
 }
 
 h4.title {
-    font-family: 'Source Code Pro', monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 .subtitle {
-    font-family: 'Quicksand', sans-serif !important;
+    font-family: "Quicksand", sans-serif !important;
 }
 
 body {
