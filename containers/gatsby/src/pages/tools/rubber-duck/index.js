@@ -59,33 +59,6 @@ const RubberDuck = () => {
             <section className="section">
                 <div className="container content">
                     <h1 className="title is-1">Rubber Duck Debugging Tool</h1>
-                    <p>
-                        Progrmaming is about solving problems. If you get stuck
-                        with a problem, it's okay to ask for help, but
-                        fundamentally, your job is to learn how to solve
-                        problems. This tool is designed to help teach you the
-                        steps on how to solve problems.
-                    </p>
-                    <p>
-                        <strong>
-                            Before asking a programming question, you should
-                            carefully go through every step here.
-                        </strong>{" "}
-                        If you haven't solved the problem by the time you get to
-                        the end of the checklist below, you will be able to
-                        submit it as a question to a large community of
-                        programmers who will try to help you.
-                    </p>
-                    <p>
-                        There are no shortcuts. If you ask your question without
-                        going through all of these steps, people are going to
-                        send you back here to go through these steps. It might
-                        seem annoying to go through these steps, but that is a
-                        fundamental aspect of programming, and it's what you
-                        need to know how to do. Programmers get paid to answer
-                        questions, so it's important to train yourself to have
-                        that mindset.
-                    </p>
                     <form>
                         <div className="step">
                             <div className="instructions">
