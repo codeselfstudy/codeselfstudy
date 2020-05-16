@@ -14,7 +14,7 @@ module.exports = {
         {
             userAgent: "*",
             allow: ["/"],
-            disallow: ["/cdn-cgi/", "/api/"],
+            disallow: ["/cdn-cgi/"],
         },
     ],
 };
