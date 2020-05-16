@@ -7,8 +7,7 @@ const crypto = require("crypto");
 const axios = require("axios");
 const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
 const DISCOURSE_API_USER = process.env.DISCOURSE_API_USER;
-console.log("HERE", DISCOURSE_API_USER);
-console.log("SESSION_SECRET", `*${process.env.SESSION_SECRET}*`);
+
 /**
  * Generate an authorization URL.
  *

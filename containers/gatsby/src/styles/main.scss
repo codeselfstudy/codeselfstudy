@@ -1,13 +1,10 @@
 @import "./variables.scss";
 @import "./backgrounds.scss";
 @import "~bulma/bulma.sass";
+@import "~bulma-steps-component/bulma-steps.sass";
 @import "~text-spinners/spinners.scss";
 
-// If you need the bulma extensions, I think you can import them in the
-// same way that the index file does here:
-@import '~bulma-extensions/src/sass/index.sass';
-
-// custom SCSS goes here
+// custom SCSS goes below
 
 @import url("https://fonts.googleapis.com/css?family=Anton|Quicksand|Open+Sans|Source+Code+Pro|Gruppo&display=swap");
 
