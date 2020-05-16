@@ -22,6 +22,7 @@
         "mongoose-type-url": "^1.0.7",
         "mongoose-url-slugs": "^1.0.2",
         "morgan": "~1.9.1",
+        "ramda": "^0.27.0",
         "redis": "^2.8.0",
         "sanitize-html": "^1.21.1"
     },
