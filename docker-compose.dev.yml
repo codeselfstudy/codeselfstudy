@@ -50,6 +50,8 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - SESSION_SECRET="this is only for development"
+        env_file:
+            - ./.env/express_api
 
     # The MERN database
     mongo:

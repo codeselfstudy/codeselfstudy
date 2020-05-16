@@ -1,17 +1,17 @@
-SESSION_SECRET="put a strong secret here in production"
+SESSION_SECRET=put_a_strong_secret_here_in_production
 
 #############
 # DISCOURSE #
 #############
 
 # These settings come from Discourse
-SSO_PROVIDER_SECRET=''
-SSO_SECRET=''
-DISCOURSE_ROOT_URL='https://forum.codeselfstudy.com'
-DISCOURSE_API_KEY=''
-DISCOURSE_API_USER=''
+SSO_PROVIDER_SECRET=
+SSO_SECRET=
+DISCOURSE_ROOT_URL=https://forum.codeselfstudy.com
+DISCOURSE_API_KEY=
+DISCOURSE_API_USER=
 
 # Where Discourse should redirect
-RETURN_URL='http://localhost:4444/api/auth/validate'
+RETURN_URL=http://localhost:4444/api/auth/validate
 
-BASE_URL='http://localhost:4444/api'
+BASE_URL=http://localhost:4444/api

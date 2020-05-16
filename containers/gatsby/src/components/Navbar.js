@@ -1,5 +1,5 @@
+import React, { useState, useEffect } from "react";
 import { Link } from "gatsby";
-import React from "react";
 
 const Navbar = () => {
     const toggleNav = () => {
@@ -8,6 +8,15 @@ const Navbar = () => {
         toggle.classList.toggle("is-active");
         menu.classList.toggle("is-active");
     };
+
+    const [currentUrl, setCurrentUrl] = useState("https://codeselfstudy.com/");
+    useEffect(() => {
+        // `window` doesn't exist in Gatsby during the Node.js build process.
+        if (typeof window !== "undefined") {
+            setCurrentUrl(encodeURI(window.location.href));
+        }
+    }, []);
+
     return (
         <nav
             id="mainNavbar"
@@ -57,6 +66,14 @@ const Navbar = () => {
                     <div className="navbar-end">
                         <div className="navbar-item">
                             <div className="buttons">
+                                {/*
+                                    The current thinking here is that
+                                    people signing up via the top navbar
+                                    can go to the forum, and people
+                                    who are logging in probably want
+                                    to return to the same page. We can
+                                    discuss it in the Github issues.
+                                */}
                                 <a
                                     className="button is-primary"
                                     href="https://forum.codeselfstudy.com/signup"
@@ -66,10 +83,10 @@ const Navbar = () => {
                                 </a>
                                 <a
                                     className="button is-light"
-                                    href="https://forum.codeselfstudy.com/login"
+                                    href={`/api/auth/request?destination=${currentUrl}`}
                                     rel="nofollow"
                                 >
-                                    Log In
+                                    <strong>Log In</strong>
                                 </a>
                             </div>
                         </div>

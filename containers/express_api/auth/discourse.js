@@ -7,7 +7,8 @@ const crypto = require("crypto");
 const axios = require("axios");
 const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
 const DISCOURSE_API_USER = process.env.DISCOURSE_API_USER;
-
+console.log("HERE", DISCOURSE_API_USER);
+console.log("SESSION_SECRET", `*${process.env.SESSION_SECRET}*`);
 /**
  * Generate an authorization URL.
  *
@@ -81,7 +82,7 @@ const validateAuth = (sso, sig, nonceObj, options) => {
         // Make sure the payload.nonce from Discourse === nonceObj.value from Redis
         if (payload.nonce === nonceObj.value) {
             // user can now be logged in
-            // console.log('payload', payload);
+            console.log('payload', payload);
 
             // send the payload back to where it can be saved in the session
             return { isValid: true, payload };

@@ -1,23 +1,40 @@
 const discourse = require("../auth/discourse");
 
 /**
- * Generate an SSO URL and redirect the user to Discourse.
+ * This sends back a response for not found routes.
+ *
+ * If people are getting confused by GET and POST requests for the
+ * different "auth" routes, this could send back a hint.
  */
-const request = (req, res, next) => {
+const lost = (_req, res) => {
+    res.status(404).json({
+        msg: `404 not found`,
+    });
+};
+
+/**
+ * Generate an SSO URL and redirect the user to Discourse.
+ *
+ * Possible URL parameters:
+ *
+ * - `destination`: where to redirect after the user logs in.
+ */
+const request = (req, res) => {
     // If there is a destination URL in the URL parameters, save it.
-    const { destination } = req.query;
+    const { destination } = req.query || null;
     req.session.destination = destination;
 
     const { nonce, destinationUrl } = discourse.generateAuthUrl({
         SSO_PROVIDER_SECRET: process.env.SSO_PROVIDER_SECRET,
+        // `RETURN_URL` will redirect to the validate method below from Discourse.
         RETURN_URL: process.env.RETURN_URL,
         DISCOURSE_ROOT_URL: process.env.DISCOURSE_ROOT_URL,
     });
 
     req.session.nonce = nonce;
     req.session.save();
-
-    res.json({ url: destinationUrl });
+    console.log("nonce, destinationUrl", nonce, destinationUrl);
+    res.redirect(destinationUrl);
 };
 
 /**
@@ -51,6 +68,7 @@ const validate = (req, res, next) => {
         // TODO: create the session here.
         // req.session.whatever = whatever;
         // res.redirect("somewhere?msg=success");
+        res.redirect(destination);
     } else {
         res.json({ msg: "there was a problem" });
     }
@@ -109,6 +127,7 @@ const logout = (req, res, next) => {
 };
 
 module.exports = {
+    lost,
     request,
     validate,
     jwt,
