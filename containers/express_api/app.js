@@ -5,23 +5,26 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const helmet = require("helmet");
 
+// routers
 const indexRouter = require("./routes/index");
 const puzzlesRouter = require("./routes/puzzles");
 const authRouter = require("./routes/auth");
 
+// mongo
 const { isDatabaseSeeded } = require("./db/checkDatabases");
 const loadSeedData = require("./db/loadSeedData");
 
+// initialize app
+const app = express();
+app.use(helmet());
+
+// redis for sessions
 const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
-
 const client = redis.createClient({
     host: "redis",
 });
-const app = express();
-
-app.use(helmet());
 app.use(
     session({
         store: new RedisStore({ client }),
@@ -35,6 +38,7 @@ app.use(
         name: "alice",
     })
 );
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -59,20 +63,13 @@ app.use("/", indexRouter);
 app.use("/puzzles", puzzlesRouter);
 app.use("/auth", authRouter);
 
-// A temporary middleware function to see what URL is being hit.
-// app.use(function(req, res, next) {
-//     console.log("URL", req.originalUrl);
-//     next();
-// });
-
-
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (_req, _res, next) {
     next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, _next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};
