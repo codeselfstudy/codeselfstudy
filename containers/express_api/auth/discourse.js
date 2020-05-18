@@ -9,7 +9,7 @@ const DISCOURSE_API_KEY = process.env.DISCOURSE_API_KEY;
 const DISCOURSE_API_USER = process.env.DISCOURSE_API_USER;
 
 /**
- * Generate an authorization URL.
+ * Generate an authentication URL.
  *
  * The options object should contain:
  *
