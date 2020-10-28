@@ -1,4 +1,4 @@
-FROM node:12-alpine as builder
+FROM node:14-alpine as builder
 RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
 WORKDIR /app
 COPY ./package*.json ./
@@ -12,7 +12,7 @@ COPY ./misc/config.json ~/.config/gatsby/
 RUN mkdir node_modules && npm install
 
 # Get a clean image with gatsby-cli and the pre-built node modules
-FROM node:12-alpine
+FROM node:14-alpine
 
 # Turn off Gatsby telemetry
 ENV GATSBY_TELEMETRY_DISABLED=1
