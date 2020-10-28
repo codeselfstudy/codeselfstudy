@@ -6,21 +6,21 @@ This is an unfinished work in progress. :construction: Attend a meetup to find o
 
 ## Goals:
 
-- help people in the group find something in common to work on
-- meetup activity
-- learn Docker better
+-   help people in the group find something in common to work on
+-   meetup activity
+-   learn Docker better
 
 ### Ideas so far:
 
-- authenticate with the forum
-- send a coding puzzle of the day into the forum, slack, and/or the browser extension so that interested people have a common task to discuss
-- add new puzzles (links to other sites or original puzzles)
-- mark puzzles that you've completed
-- saving puzzles to do later
-- use the browser extension to add new puzzles to the database?
-- fetch puzzle by difficulty and type of problem
-- commenting? (forum integration or separate)
-- voting
+-   authenticate with the forum
+-   send a coding puzzle of the day into the forum, slack, and/or the browser extension so that interested people have a common task to discuss
+-   add new puzzles (links to other sites or original puzzles)
+-   mark puzzles that you've completed
+-   saving puzzles to do later
+-   use the browser extension to add new puzzles to the database?
+-   fetch puzzle by difficulty and type of problem
+-   commenting? (forum integration or separate)
+-   voting
 
 See the [feature board](https://github.com/codeselfstudy/codeselfstudy/projects/1) for more ideas (and add your own).
 
@@ -32,22 +32,22 @@ For the documentation, see the [Code Self Study Wiki](https://github.com/codesel
 
 See the `docker-compose.*.yml` files for an overview of the services that are running.
 
-- Gatsby + markdown files for pages and blog posts
-- Express.js for the API ("MERN Stack")
-- Redis for session storage in Express.js
-- MongoDB for persistent storage
-- Docker for easy development and deployment
-- Web scraping tools in Elixir
-- Coming soon: algorithm & data structure visualzation in Rust/WebAssembly.
-- Coming soon: a Phoenix/Postgres server
+-   Gatsby + markdown files for pages
+-   Express.js for the API ("MERN Stack")
+-   Redis for session storage in Express.js
+-   MongoDB for persistent storage
+-   Docker for easy development and deployment
+-   Web scraping tools in Elixir
+-   Coming soon: algorithm & data structure visualzation in Rust/WebAssembly.
+-   Coming soon: a Phoenix/Postgres server
 
 ### How It Works
 
-- Nginx serves the app in development and production, proxying to the other servers behind it. It serves on port 80, but in development, you can visit it at port 4444.
-- Gatsby serves the main pages (backed by a headless CMS)
-- Express.js is running on port 5000, mounted at `/api`. (`/api` is not visible in the Express code, so that might be confusing if you don't know to expect it. See the nginx configuration files.)
-- A Redis container will handle Express sessions (after users authenticate with [the forum](https://forum.codeselfstudy.com/)).
-- A MongoDB container will store the coding puzzle and user data. (This is an experiment with "MERN stack".)
+-   Nginx serves the app in development and production, proxying to the other servers behind it. It serves on port 80, but in development, you can visit it at port 4444.
+-   Gatsby serves the main pages (backed by a headless CMS)
+-   Express.js is running on port 5000, mounted at `/api`. (`/api` is not visible in the Express code, so that might be confusing if you don't know to expect it. See the nginx configuration files.)
+-   A Redis container will handle Express sessions (after users authenticate with [the forum](https://forum.codeselfstudy.com/)).
+-   A MongoDB container will store the coding puzzle and user data. (This is an experiment with "MERN stack".)
 
 ![General overview](https://wiki.codeselfstudy.com/images/servers.png)
 
@@ -55,9 +55,9 @@ See the `docker-compose.*.yml` files for an overview of the services that are ru
 
 To run the application:
 
-- Load the content submodule: `make initialize`
-- Be sure that you have Docker installed.
-- Start the application with Docker Compose. (Look inside the `Makefile` for commands to boot the app, like `make dev`.)
+-   Load the content submodule: `make initialize`
+-   Be sure that you have Docker installed.
+-   Start the application with Docker Compose. (Look inside the `Makefile` for commands to boot the app, like `make dev`.)
 
 ```text
 $ docker-compose -f docker-compose.dev.yml up --build
