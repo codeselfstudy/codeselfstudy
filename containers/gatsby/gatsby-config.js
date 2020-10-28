@@ -75,6 +75,9 @@ module.exports = {
                     "hero-body",
                     "container",
                     "content",
+                    "button",
+                    "is-large",
+                    "is-link",
                 ],
                 // ignore: ['/ignored.css', 'prismjs/', 'docsearch.js/'], // Ignore files/folders
                 // purgeOnly : ['components/', '/main.css', 'bootstrap/'], // Purge only these files/folders
