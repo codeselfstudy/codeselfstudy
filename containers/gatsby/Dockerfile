@@ -2,7 +2,7 @@
 # and copies the production output into an nginx image. That nginx
 # server runs on port 8000, which is upstream of port 80 on the main
 # user-facing nginx server.
-FROM node:12-alpine as builder
+FROM node:14-alpine as builder
 # RUN apk update && apk add --no-cache --virtual .gyp python make g++
 RUN apk update && apk add build-base autoconf automake libtool pkgconfig nasm
 WORKDIR /app

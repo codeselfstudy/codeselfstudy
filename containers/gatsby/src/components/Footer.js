@@ -20,7 +20,9 @@ export default function Footer({ siteTitle }) {
                                 <Link to="/puzzles/">Coding Puzzles</Link>
                             </li>
                             <li>
-                                <Link to="/blog/">Blog</Link>
+                                <a href="https://blog.codeselfstudy.com/">
+                                    Blog
+                                </a>
                             </li>
                             <li>
                                 <Link to="/school/">School</Link>

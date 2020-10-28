@@ -72,6 +72,8 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
     });
 
     // Create blog posts.
+    // TODO: this code can be removed, since the blog was moved, but I'm leaving
+    // it here as a sample for a possible way to add jobs.
     //
     // You can link to prev and next in the templates:
     // ```jsx
@@ -79,21 +81,21 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
     //     {next.frontmatter.title}
     // </Link>
     // ```
-    each(postEdges, (edge, index) => {
-        const prev =
-            index === postEdges.length - 1 ? null : postEdges[index + 1].node;
-        const next = index === 0 ? null : postEdges[index - 1].node;
+    // each(postEdges, (edge, index) => {
+    //     const prev =
+    //         index === postEdges.length - 1 ? null : postEdges[index + 1].node;
+    //     const next = index === 0 ? null : postEdges[index - 1].node;
 
-        createPage({
-            path: edge.node.frontmatter.path,
-            component: PostTemplate,
-            context: {
-                slug: edge.node.frontmatter.path,
-                prev,
-                next,
-            },
-        });
-    });
+    //     createPage({
+    //         path: edge.node.frontmatter.path,
+    //         component: PostTemplate,
+    //         context: {
+    //             slug: edge.node.frontmatter.path,
+    //             prev,
+    //             next,
+    //         },
+    //     });
+    // });
 
     // Create pages.
     each(pageEdges, (edge, _index) => {
