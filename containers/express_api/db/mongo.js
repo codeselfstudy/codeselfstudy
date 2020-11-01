@@ -1,18 +1,22 @@
 const DB_NAME = "puzzles";
-const mongoose = require("mongoose");
+const { MongoClient } = require("mongodb");
 
-mongoose
-    .connect(`mongodb://mongo/${DB_NAME}`, {
-        useUnifiedTopology: true,
-        useNewUrlParser: true,
-    })
-    .catch(err => console.log("mongo connection error", err));
+const uri = `mongodb://mongo/`;
+let db;
 
-const db = mongoose.connection;
+MongoClient.connect(uri, (err, database) => {
+    if (err) {
+        database.close();
+        throw err;
+    } else {
+        db = database.db(DB_NAME);
+    }
+});
 
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", () => console.log(`connected to mongodb database: ${DB_NAME}`));
-
+// `db.collection("challenges").findOnde({}, (err, result) => {
+//  if (err) { throw err; }
+//  do something with result here
+// })`
 module.exports = {
     db,
 };

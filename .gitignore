@@ -1,6 +1,7 @@
 containers/express_api/db/seed_data/
 TMP/
 puzzle_client_PENDING_DELETION/
+models_PENDING_DELETION/
 .env
 .env/
 data/certbot

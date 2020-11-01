@@ -1,6 +1,6 @@
-const { Puzzle } = require("../models/puzzle");
+const db = require("../db/mongo");
 
-function index(req, res, next) {
+function index(req, res, _next) {
     // Puzzle.find({})
     //     .select(["title", "slug", "unsafe_html", "url", "difficulty"])
     //     .limit(20)
@@ -10,7 +10,11 @@ function index(req, res, next) {
     res.json({ msg: "Coming soon" });
 }
 
-function detail(req, res, next) {
+function search(req, res) {
+    res.json({ msg: "search coming soon" });
+}
+
+function detail(req, res, _next) {
     // const slug = req.params.slug;
     // console.log("=======");
     // console.log("slug", slug);
@@ -27,15 +31,7 @@ function detail(req, res, next) {
     res.json({ msg: "Coming soon" });
 }
 
-function save(req, res) {
-    const slug = req.params.slug;
-    // User.puzzles.push(slug);
-    // res.json({ msg: `you saved puzzle: ${slug}` });
-    res.json({ msg: "Coming soon" });
-}
-
 module.exports = {
     index,
     detail,
-    save,
 };

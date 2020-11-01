@@ -101,3 +101,18 @@ Quick tip: use `docker system prune` to clean up stopped containers, dangling im
 ## LICENSES
 
 The code is licensed under a BSD licensed (see the `./LICENSES` directory). Other sections of the code may have their own licenses. (Search for files named `LICENSE` if you want to generate a list without looking in the directories.)
+
+
+## NOTES
+
+How to import into Mongo that is running in a Docker container. Only use `--jsonArray` if the objects are in a JSON array. If the objects are separated with newlines, then you can leave that off. Copy the JSON file into the container with `docker container cp my_file.json <container_id>:/`.
+
+```text
+$ docker container exec <container_id> mongoimport -d <db_name> -c <collection_name> --file /some_json_file.json --jsonArray
+```
+
+To export data from Mongo in a container, [see here](https://gist.github.com/JaniAnttonen/90945058ed41616f96d2cfa5f131bd09).
+
+```text
+$ mongoexport -d <database-name> -c <collection-name> --out output.json
+```

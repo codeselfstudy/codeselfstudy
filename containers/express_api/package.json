@@ -17,9 +17,7 @@
         "forever": "^2.0.0",
         "helmet": "^3.23.3",
         "http-errors": "~1.6.3",
-        "mongoose": "^5.10.11",
-        "mongoose-type-url": "^1.0.7",
-        "mongoose-url-slugs": "^1.0.2",
+        "mongodb": "^3.6.2",
         "morgan": "~1.9.1",
         "redis": "^2.8.0",
         "sanitize-html": "^1.27.5"

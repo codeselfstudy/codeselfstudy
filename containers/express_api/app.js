@@ -9,8 +9,8 @@ const indexRouter = require("./routes/index");
 const puzzlesRouter = require("./routes/puzzles");
 const authRouter = require("./routes/auth");
 
-const { isDatabaseSeeded } = require("./db/checkDatabases");
-const loadSeedData = require("./db/loadSeedData");
+// const { isDatabaseSeeded } = require("./db/checkDatabases");
+// const loadSeedData = require("./db/loadSeedData");
 
 const redis = require("redis");
 const session = require("express-session");
@@ -46,13 +46,13 @@ app.use(express.static(path.join(__dirname, "public")));
 // inserted object to see if it exists before inserting it. The problem
 // with that is that this file reloads every time a file is changed due
 // to nodemon.
-const { shouldSeedProjectEuler } = isDatabaseSeeded({ projectEuler: true });
-if (shouldSeedProjectEuler) {
-    console.log("loading seed data");
-    loadSeedData();
-} else {
-    console.log("NOT loading seed data");
-}
+// const { shouldSeedProjectEuler } = isDatabaseSeeded({ projectEuler: true });
+// if (shouldSeedProjectEuler) {
+//     console.log("loading seed data");
+//     loadSeedData();
+// } else {
+//     console.log("NOT loading seed data");
+// }
 
 // Mount the routers
 app.use("/", indexRouter);
@@ -65,14 +65,13 @@ app.use("/auth", authRouter);
 //     next();
 // });
 
-
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};
