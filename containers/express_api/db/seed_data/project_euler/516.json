@@ -1,6 +1,0 @@
-{
-    "body": "<p>\n5-smooth numbers are numbers whose largest prime factor doesn&apos;t exceed 5.<br/>\n5-smooth numbers are also called Hamming numbers.<br/>\nLet S(L) be the sum of the numbers n not exceeding L such that Euler&apos;s totient function φ(n) is a Hamming number.<br/>\nS(100)=3728.\n</p><p>\nFind S(10<sup>12</sup>). Give your answer modulo 2<sup>32</sup>.\n</p>",
-    "id": "516",
-    "title": "5-smooth totients",
-    "url": "https://projecteuler.net/problem=516"
-}

@@ -1,6 +1,0 @@
-{
-    "body": "<p>Let $S_n$ be an integer sequence produced with the following pseudo-random number generator:</p>\n\\[\n\\begin{equation}\n\\begin{split}\nS_0 &amp; = 290797 \\\\\nS_{n+1} &amp; = S_n^2 \\bmod 50515093\n\\end{split}\n\\end{equation}\n\\]\n\n<p>\nLet $A(i, j)$ be the minimum of the numbers $S_i, S_{i+1}, \\ldots, S_j$ for $i\\le j$.<br/>\nLet $M(N) = \\sum A(i, j)$ for $1 \\le i \\le j \\le N$.<br/>\nWe can verify that $M(10) = 432256955$ and $M(10\\,000) = 3264567774119$.</p><p>\nFind $M(2\\,000\\,000\\,000)$.\n</p>",
-    "id": "375",
-    "title": "Minimum of subsequences",
-    "url": "https://projecteuler.net/problem=375"
-}

@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nFor every positive number $n$ we define the function  $streak(n)=k$   as the smallest positive integer $k$ such that $n+k$ is not divisible by $k+1$.<br/>\nE.g:<br/>\n13 is divisible by 1 <br/>\n14 is divisible by 2 <br/>\n15 is divisible by 3 <br/>\n16 is divisible by 4 <br/>\n17 is NOT divisible by 5 <br/>\nSo $streak(13) = 4$. <br/> \nSimilarly:<br/>\n120 is divisible by 1 <br/>\n121 is NOT divisible by 2 <br/>\nSo $streak(120) = 1$.</p><p>\n\nDefine $P(s, N)$ to be the number of integers $n$, $1 &lt; n &lt; N$, for which $streak(n) = s$.<br/>\nSo $P(3, 14) = 1$ and $P(6, 10^6) = 14286$.\n</p><p>\nFind the sum, as $i$ ranges from 1 to 31, of $P(i, 4^i)$.\n</p>",
-    "id": "601",
-    "title": "Divisibility streaks",
-    "url": "https://projecteuler.net/problem=601"
-}

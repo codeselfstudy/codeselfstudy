@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nThe McCarthy 91 function is defined as follows:\n$$\nM_{91}(n) = \n    \\begin{cases}\n        n - 10 &amp; \\text{if } n &gt; 100 \\\\\n        M_{91}(M_{91}(n+11)) &amp; \\text{if } 0 \\leq n \\leq 100\n    \\end{cases}\n$$\n</p><p>\nWe can generalize this definition by abstracting away the constants into new variables:\n\n$$\nM_{m,k,s}(n) = \n    \\begin{cases}\n        n - s &amp; \\text{if } n &gt; m \\\\\n        M_{m,k,s}(M_{m,k,s}(n+k)) &amp; \\text{if } 0 \\leq n \\leq m\n    \\end{cases}\n$$\n</p><p>\nThis way, we have $M_{91} = M_{100,11,10}$.\n</p><p>\nLet $F_{m,k,s}$ be the set of fixed points of $M_{m,k,s}$. That is, \n\n$$F_{m,k,s}= \\left\\{ n \\in \\mathbb{N} \\, | \\, M_{m,k,s}(n) = n \\right\\}$$\n</p><p>\nFor example, the only fixed point of $M_{91}$ is $n = 91$. In other words, $F_{100,11,10}= \\{91\\}$.\n</p><p>\nNow, define $SF(m,k,s)$ as the sum of the elements in $F_{m,k,s}$ and let $S(p,m) = \\displaystyle \\sum_{1 \\leq s &lt; k \\leq p}{SF(m,k,s)}$.\n</p><p>\nFor example, $S(10, 10) = 225$ and $S(1000, 1000)=208724467$.\n</p><p>\nFind $S(10^6, 10^6)$.\n</p>",
-    "id": "555",
-    "title": "McCarthy 91 function",
-    "url": "https://projecteuler.net/problem=555"
-}

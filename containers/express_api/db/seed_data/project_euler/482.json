@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nABC is an integer sided triangle with incenter I and perimeter p.<br/>\nThe segments IA, IB and IC have integral length as well. \n</p><p>\nLet L = p + |IA| + |IB| + |IC|. \n</p><p>\nLet S(P) = <span style=\"font-size:larger;\"><span style=\"font-size:larger;\">∑</span></span> L for all such triangles where p ≤ P. For example, S(10<sup>3</sup>) = 3619.\n</p><p>\nFind S(10<sup>7</sup>).\n</p>",
-    "id": "482",
-    "title": "The incenter of a triangle",
-    "url": "https://projecteuler.net/problem=482"
-}

@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nABC is an integral sided triangle with sides a≤b≤c.<br/>\nm<sub>c</sub> is the median connecting C and the midpoint of AB. <br/>\nF(n) is the number of such triangles with  c≤n for which m<sub>c</sub> has integral length as well.<br/>\nF(10)=3 and F(50)=165.</p><p>\nFind F(100000).\n</p>",
-    "id": "513",
-    "title": "Integral median",
-    "url": "https://projecteuler.net/problem=513"
-}

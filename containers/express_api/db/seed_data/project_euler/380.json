@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nAn m×n maze is an m×n rectangular grid with walls placed between grid cells such that there is exactly one path from the top-left square to any other square. <br/>The following are examples of a 9×12 maze and a 15×20 maze:\n</p><p style=\"text-align:center;\"><img src=\"project/images/p380_mazes.gif\" class=\"dark_img\" alt=\"p380_mazes.gif\"/></p><p>\nLet C(m,n) be the number of distinct m×n mazes. Mazes which can be formed by rotation and reflection from another maze are considered distinct.\n</p><p>\nIt can be verified that C(1,1) = 1, C(2,2) = 4, C(3,4) = 2415, and C(9,12) = 2.5720e46 (in scientific notation rounded to 5 significant digits).<br/>\nFind C(100,500) and write your answer in scientific notation rounded to 5 significant digits.\n</p><p>\nWhen giving your answer, use a lowercase e to separate mantissa and exponent.\nE.g. if the answer is 1234567891011 then the answer format would be 1.2346e12.\n\n</p>",
-    "id": "380",
-    "title": "Amazing Mazes!",
-    "url": "https://projecteuler.net/problem=380"
-}

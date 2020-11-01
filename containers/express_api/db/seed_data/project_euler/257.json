@@ -1,6 +1,0 @@
-{
-    "body": "<span style=\"font-size:11pt;\"></span><p>Given is an integer sided triangle ABC with sides a ≤ b ≤ c. \n(AB = c, BC = a and AC = b).<br/>\nThe angular bisectors of the triangle intersect the sides at points E, F and G (see picture below).\n</p><div align=\"center\"><img src=\"project/images/p257_bisector.gif\" class=\"dark_img\" alt=\"p257_bisector.gif\"/><br/></div><p>\nThe segments EF, EG and FG partition the triangle ABC into four smaller triangles: AEG, BFE, CGF and EFG.<br/>\nIt can be proven that for each of these four triangles the ratio area(ABC)/area(subtriangle) is rational.<br/>\nHowever, there exist triangles for which some or all of these ratios are integral.\n</p><p>\nHow many triangles ABC with perimeter≤100,000,000 exist so that the ratio area(ABC)/area(AEG) is integral?\n</p>",
-    "id": "257",
-    "title": "Angular Bisectors",
-    "url": "https://projecteuler.net/problem=257"
-}

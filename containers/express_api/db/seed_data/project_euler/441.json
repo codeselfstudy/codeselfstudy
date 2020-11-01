@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nFor an integer <var>M</var>, we define R(<var>M</var>) as the sum of 1/(<var>p</var>·<var>q</var>) for all the integer pairs <var>p</var> and <var>q</var> which satisfy all of these conditions:\n</p><ul><li> 1 ≤ <var>p</var> &lt; <var>q</var> ≤ <var>M</var></li><li><var>p</var> + <var>q</var> ≥ <var>M</var></li><li><var>p</var> and <var>q</var> are coprime.</li></ul><p>\nWe also define S(<var>N</var>) as the sum of R(<var>i</var>) for 2 ≤ <var>i</var> ≤ <var>N</var>.<br/>\nWe can verify that S(2) = R(2) = 1/2, S(10) ≈ 6.9147 and S(100) ≈ 58.2962.\n</p><p>\nFind S(10<sup>7</sup>). Give your answer rounded to four decimal places.\n</p>",
-    "id": "441",
-    "title": "The inverse summation of coprime couples",
-    "url": "https://projecteuler.net/problem=441"
-}

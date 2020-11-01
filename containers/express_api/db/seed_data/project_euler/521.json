@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nLet smpf(<var>n</var>) be the smallest prime factor of <var>n</var>.<br/>\nsmpf(91)=7 because 91=7×13 and smpf(45)=3 because 45=3×3×5.<br/>\nLet S(<var>n</var>) be the sum of smpf(<var>i</var>) for 2 ≤ <var>i</var> ≤ <var>n</var>.<br/>\nE.g. S(100)=1257.\n</p><p>\nFind S(10<sup>12</sup>) mod 10<sup>9</sup>.\n</p>",
-    "id": "521",
-    "title": "Smallest prime factor",
-    "url": "https://projecteuler.net/problem=521"
-}

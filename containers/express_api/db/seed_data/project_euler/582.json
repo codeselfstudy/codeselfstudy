@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nLet a, b and c be the sides of an integer sided triangle with one angle of 120 degrees, a≤b≤c and b-a≤100.<br/>\nLet T(<var>n</var>) be the number of such triangles with c≤<var>n</var>.<br/>\nT(1000)=235 and T(10<sup>8</sup>)=1245.<br/>\nFind T(10<sup>100</sup>).\n</p>",
-    "id": "582",
-    "title": "Nearly isosceles 120 degree triangles",
-    "url": "https://projecteuler.net/problem=582"
-}

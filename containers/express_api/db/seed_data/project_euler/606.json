@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nA <b>gozinta chain</b> for <var>n</var> is a sequence {1,a,b,...,<var>n</var>} where each element properly divides the next. <br/>\nFor example, there are eight distinct gozinta chains for 12: <br/>\n{1,12}, {1,2,12}, {1,2,4,12}, {1,2,6,12}, {1,3,12}, {1,3,6,12}, {1,4,12} and {1,6,12}.\n</p><p>\nLet S(<var>n</var>) be the sum of all numbers, <var>k</var>, not exceeding <var>n</var>, which have 252 distinct gozinta chains. <br/>\nYou are given S(10<sup>6</sup>)=8462952 and S(10<sup>12</sup>)=623291998881978.\n</p><p>\nFind S(10<sup>36</sup>), giving the last nine digits of your answer.\n</p>",
-    "id": "606",
-    "title": "Gozinta Chains II",
-    "url": "https://projecteuler.net/problem=606"
-}

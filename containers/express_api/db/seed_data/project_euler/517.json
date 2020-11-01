@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nFor every real number $a \\gt 1$ is given the sequence $g_a$ by:<br/>\n$g_{a}(x)=1$ for $x \\lt a$<br/>\n$g_{a}(x)=g_{a}(x-1)+g_a(x-a)$ for $x \\ge a$<br/>\n\n$G(n)=g_{\\sqrt {n}}(n)$<br/>\n$G(90)=7564511$.</p><p>\nFind $\\sum G(p)$ for $p$ prime and $10000000 \\lt p \\lt 10010000$<br/>\nGive your answer modulo 1000000007.\n</p>",
-    "id": "517",
-    "title": "A real recursion",
-    "url": "https://projecteuler.net/problem=517"
-}

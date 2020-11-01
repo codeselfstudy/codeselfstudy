@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nThe smallest number m such that 10 divides m! is m=5.<br/>\nThe smallest number m such that 25 divides m! is m=10.<br/></p><p>\nLet s(<var>n</var>) be the smallest number m such that <var>n</var> divides m!.<br/>\nSo s(10)=5 and s(25)=10.<br/>\nLet S(<var>n</var>) be ∑s(<var>i</var>) for 2 ≤ <var>i</var> ≤ <var>n</var>.<br/>\nS(100)=2012.\n</p><p>\nFind S(10<sup>8</sup>).\n</p>",
-    "id": "549",
-    "title": "Divisibility of factorials",
-    "url": "https://projecteuler.net/problem=549"
-}

@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nA definition for an ellipse is:<br/>\nGiven a circle c with centre M and radius r and a point G such that d(G,M)&lt;r, the locus of the points that are equidistant from c and G form an ellipse.\n</p>\nThe construction of the points of the ellipse is shown below.\n\n<div style=\"text-align:center;\"><img src=\"project/images/p246_anim.gif\" class=\"dark_img\" alt=\"\"/></div><p>\nGiven are the points M(-2000,1500) and G(8000,1500).<br/> \nGiven is also the circle c with centre M and radius 15000.<br/>\nThe locus of the points that are equidistant from G and c form an ellipse e.<br/>\nFrom a point P outside e the two tangents t<sub>1</sub> and t<sub>2</sub> to the ellipse are drawn.<br/>\nLet the points where t<sub>1</sub> and t<sub>2</sub> touch the ellipse be R and S.\n</p><div style=\"text-align:center;\"><img src=\"project/images/p246_ellipse.gif\" class=\"dark_img\" alt=\"\"/></div><p>\nFor how many lattice points P is angle RPS greater than 45 degrees?\n</p>",
-    "id": "246",
-    "title": "Tangents to an ellipse",
-    "url": "https://projecteuler.net/problem=246"
-}

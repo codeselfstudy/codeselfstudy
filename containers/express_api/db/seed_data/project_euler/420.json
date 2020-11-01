@@ -1,6 +1,0 @@
-{
-    "body": "<p>A <i>positive integer matrix</i> is a matrix whose elements are all positive integers.<br/>\nSome positive integer matrices can be expressed as a square of a positive integer matrix in two different ways. Here is an example:</p>\n\n$$\\begin{pmatrix}\n40 &amp; 12\\\\\n48 &amp; 40\n\\end{pmatrix} =\n\\begin{pmatrix}\n2 &amp; 3\\\\\n12 &amp; 2\n\\end{pmatrix}^2 =\n\\begin{pmatrix}\n6 &amp; 1\\\\\n4 &amp; 6\n\\end{pmatrix}^2\n$$\n\n<p>\nWe define F(<var>N</var>) as the number of the 2x2 positive integer matrices which have a <dfn title=\"the sum of the elements on the main diagonal\">trace</dfn> less than <var>N</var> and which can be expressed as a square of a positive integer matrix in two different ways.<br/>\nWe can verify that F(50) = 7 and F(1000) = 1019.\n</p><p>\nFind F(10<sup>7</sup>).\n</p>",
-    "id": "420",
-    "title": "2x2 positive integer matrix",
-    "url": "https://projecteuler.net/problem=420"
-}

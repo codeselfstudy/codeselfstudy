@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nThe coefficients in the expansion of $(x+1)^k$ are called <b>binomial coefficients</b>.<br/>\nAnaloguously the coefficients in the expansion of $(x^4+x^3+x^2+x+1)^k$ are called <b>quintinomial coefficients</b>.<br/> (quintus= Latin for fifth).\n</p><p>\nConsider the expansion of $(x^4+x^3+x^2+x+1)^3$:<br/>\n$x^{12}+3x^{11}+6x^{10}+10x^9+15x^8+18x^7+19x^6+18x^5+15x^4+10x^3+6x^2+3x+1$<br/>\nAs we can see 7 out of the 13 quintinomial coefficients for $k=3$ are odd.\n</p><p>\nLet $Q(k)$ be the number of odd coefficients in the expansion of $(x^4+x^3+x^2+x+1)^k$.<br/>\nSo $Q(3)=7$.\n</p><p>\nYou are given $Q(10)=17$ and $Q(100)=35$.\n</p><p>Find  $\\sum_{k=1}^{18}Q(10^k) $.\n</p>",
-    "id": "588",
-    "title": "Quintinomial coefficients",
-    "url": "https://projecteuler.net/problem=588"
-}

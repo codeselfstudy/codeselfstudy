@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nAn even positive integer N will be called admissible, if it is a power of 2 or its distinct prime factors are consecutive primes.<br/>\nThe first twelve admissible numbers are 2,4,6,8,12,16,18,24,30,32,36,48.\n</p><p>\nIf N is admissible, the smallest integer M &gt; 1 such that N+M is prime, will be called the pseudo-Fortunate number for N.\n</p><p>\nFor example, N=630 is admissible since it is even and its distinct prime factors are the consecutive primes 2,3,5 and 7.<br/> \nThe next prime number after 631 is 641; hence, the pseudo-Fortunate number for 630 is M=11.<br/>\nIt can also be seen that the pseudo-Fortunate number for 16 is 3.\n</p><p>\nFind the sum of all distinct pseudo-Fortunate numbers for admissible numbers N less than 10<sup>9</sup>.\n</p>",
-    "id": "293",
-    "title": "Pseudo-Fortunate Numbers",
-    "url": "https://projecteuler.net/problem=293"
-}

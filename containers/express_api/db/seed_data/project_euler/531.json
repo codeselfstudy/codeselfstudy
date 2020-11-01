@@ -1,6 +1,0 @@
-{
-    "body": "<p>\nLet g(<var>a,n,b,m</var>) be the smallest non-negative solution <var>x</var> to the system:<br/><var>x = a</var> mod <var>n</var><br/><var>x = b</var> mod <var>m</var><br/>\nif such a solution exists, otherwise 0.\n</p><p>\nE.g. g(2,4,4,6)=10, but g(3,4,4,6)=0.\n</p><p>\nLet φ(<var>n</var>) be Euler&apos;s totient function.\n</p><p>\nLet f(n,m)=g(φ(n),n,φ(m),m)\n</p><p>\nFind <span style=\"font-size:larger;\"><span style=\"font-size:larger;\">∑</span></span> f(n,m) for 1000000 ≤ n &lt; m &lt; 1005000\n</p>",
-    "id": "531",
-    "title": "Chinese leftovers",
-    "url": "https://projecteuler.net/problem=531"
-}
