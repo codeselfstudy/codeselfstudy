@@ -34,6 +34,8 @@ def slack_slash_command():
         payload = slack.extract_payload(data)
         if payload:
             query = json.dumps(slack.raw_text_to_query(payload["text"]))
+            print("payload", payload)
+            print("query", query)
             return jsonify({
                 "blocks": [
                     {
@@ -52,8 +54,11 @@ def slack_slash_command():
                     }
                 ]
             })
+        else:
+            print("####### there wasn't a payload")
+            abort(404)
     else:
-        print("******* signature invalid")
+        print("####### signature invalid")
         abort(404)
 
 

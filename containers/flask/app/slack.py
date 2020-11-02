@@ -39,9 +39,8 @@ def extract_payload(payload):
     This also checks that it was sent by the correct (our) slack app.
     """
     data = parse_qs(payload)
-    print("parsed payload", data)
     if data["api_app_id"] == environ.get("SLACK_APP_ID"):
-        return {
+        result = {
             "user_id": safe_list_get(data.get("user_id", None), 0, None),
             "user_name": safe_list_get(data.get("user_name", None), 0, None),
             "text": safe_list_get(data.get("text", None), 0, None),
@@ -50,6 +49,8 @@ def extract_payload(payload):
             "channel_id": safe_list_get(data.get("channel_id", None), 0, None),
             "command": safe_list_get(data.get("command", None), 0, None),
         }
+        print("result is", result)
+        return result
     else:
         print(f"the payload has the wrong app id: {data['api_app_id']}")
         return None
