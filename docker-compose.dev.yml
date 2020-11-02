@@ -35,6 +35,16 @@ services:
         working_dir: /app
         command: ./entrypoint.sh
 
+    flask:
+        build:
+            dockerfile: Dockerfile
+            context: ./containers/flask
+        depends_on:
+            - mongo
+        volumes:
+            - ./containers/flask:/app
+        env_file: .env/flask
+
     # The API for the puzzle server
     express_api:
         depends_on:

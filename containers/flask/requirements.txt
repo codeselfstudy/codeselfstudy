@@ -1,0 +1,13 @@
+# web
+Flask==1.1.2
+
+# databases
+pymongo==3.11.0
+
+# tools
+python-dotenv==0.15.0
+requests==2.24.0
+
+# code
+flake8==3.8.4
+jedi==0.17.2

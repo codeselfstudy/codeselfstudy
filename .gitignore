@@ -1,9 +1,18 @@
+# seed data
+containers/mongo/seed_data/
 containers/express_api/db/seed_data/
+
+
+# tmp files
 TMP/
-puzzle_client_PENDING_DELETION/
-models_PENDING_DELETION/
+*_PENDING_DELETION
+containers/flask/supervisord.pid
+
+# secrets
 .env
 .env/
+
+# SSL cert
 data/certbot
 containers/nginx/data/certbot/
 
@@ -60,7 +69,3 @@ my_app-*.tar
 # we ignore priv/static. You may want to comment
 # this depending on your deployment strategy.
 /priv/static/
-scrapers_PENDING_DELETION/
-puzzle_client_PENDING_DELETION/
-docs_PENDING_DELETION/
-containers/mongo/seed_data/
