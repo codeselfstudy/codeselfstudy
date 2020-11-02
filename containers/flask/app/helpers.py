@@ -20,6 +20,6 @@ def format_codewars_puzzle_message(puzzle):
         f"{puzzle['url']}"
         f"\n",
         f"> *available in:* {languages}",
-        f"> *category:* {puzzle['category']})"
+        f"> *category:* {puzzle['category']}"
     ]
     return "\n".join(lines)
