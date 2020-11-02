@@ -1,17 +1,10 @@
 """This module gets puzzles out of the database."""
 from flask_pymongo import PyMongo
 from app import app
+from .helpers import safe_list_get
 
 app.config["MONGO_URI"] = "mongodb://mongo/codeselfstudy"
 mongo = PyMongo(app)
-
-
-def safe_list_get(lst, idx, default):
-    """A helper function to safely get the first element of a list."""
-    try:
-        return lst[idx]
-    except IndexError:
-        return default
 
 
 def get_puzzle(source, puzzle_id=None):
