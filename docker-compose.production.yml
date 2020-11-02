@@ -8,7 +8,7 @@ services:
     nginx:
         restart: always
         depends_on:
-            - express_api
+            - flask
             - gatsby
         build:
             dockerfile: Dockerfile
@@ -27,28 +27,22 @@ services:
             dockerfile: Dockerfile
             context: ./containers/gatsby
         depends_on:
-            - express_api
+            - flask
         environment:
             - NODE_ENV=production
             - GATSBY_WEBPACK_PUBLICPATH=/
         working_dir: /app
 
-    # The API for the puzzle server
-    express_api:
-        depends_on:
-            - mongo
-            - redis
+    flask:
         build:
             dockerfile: Dockerfile
-            context: ./containers/express_api
-        environment:
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - NODE_ENV=production
-        env_file:
-            - ./.env/express_api
+            context: ./containers/flask
+        depends_on:
+            - mongo
+        volumes:
+            - ./containers/flask:/app
+        env_file: .env/flask
 
-    # The MERN database
     mongo:
         build:
             dockerfile: Dockerfile
@@ -56,7 +50,7 @@ services:
         volumes:
             - mongo:/data/db
 
-    # Express.js sessions
+    # TODO: it might be okay to remove this if flask won't use it.
     redis:
         image: "redis:latest"
         volumes:

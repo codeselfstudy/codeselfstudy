@@ -9,8 +9,7 @@ services:
     nginx:
         restart: always
         depends_on:
-            - express_api
-            # - puzzle_client
+            - flask
             - gatsby
         build:
             dockerfile: Dockerfile.dev
@@ -25,7 +24,7 @@ services:
             context: ./containers/gatsby
         # It might eventually pull data from Express, so wait for that container to boot.
         depends_on:
-            - express_api
+            - flask
         volumes:
             - /app/node_modules
             - ./containers/gatsby:/app
@@ -45,23 +44,6 @@ services:
             - ./containers/flask:/app
         env_file: .env/flask
 
-    # The API for the puzzle server
-    express_api:
-        depends_on:
-            - mongo
-            - redis
-        build:
-            dockerfile: Dockerfile.dev
-            context: ./containers/express_api
-        volumes:
-            - /app/node_modules
-            - ./containers/express_api:/app
-        environment:
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - SESSION_SECRET="this is only for development"
-
-    # The MERN database
     mongo:
         build:
             dockerfile: Dockerfile
@@ -69,7 +51,7 @@ services:
         volumes:
             - mongo:/data/db
 
-    # Express.js sessions
+    # TODO: it might be okay to remove this, since express.js is gone.
     redis:
         image: "redis:latest"
         volumes:

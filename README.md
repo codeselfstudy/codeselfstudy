@@ -33,8 +33,8 @@ For the documentation, see the [Code Self Study Wiki](https://github.com/codesel
 See the `docker-compose.*.yml` files for an overview of the services that are running.
 
 -   Gatsby + markdown files for pages
--   Express.js for the API ("MERN Stack")
--   Redis for session storage in Express.js
+-   Flask for the puzzle API
+-   Redis for caching (might be removed)
 -   MongoDB for persistent storage
 -   Docker for easy development and deployment
 -   Web scraping tools in Elixir
@@ -45,9 +45,9 @@ See the `docker-compose.*.yml` files for an overview of the services that are ru
 
 -   Nginx serves the app in development and production, proxying to the other servers behind it. It serves on port 80, but in development, you can visit it at port 4444.
 -   Gatsby serves the main pages (backed by a headless CMS)
--   Express.js is running on port 5000, mounted at `/api`. (`/api` is not visible in the Express code, so that might be confusing if you don't know to expect it. See the nginx configuration files.)
--   A Redis container will handle Express sessions (after users authenticate with [the forum](https://forum.codeselfstudy.com/)).
--   A MongoDB container will store the coding puzzle and user data. (This is an experiment with "MERN stack".)
+-   Flask is running on port 80 in its container, mounted at `/api`. (`/api` is not visible in the Flask code, so that might be confusing if you don't know to expect it. See the nginx configuration files.)
+-   A Redis container might handle Flask sessions (after users authenticate with [the forum](https://forum.codeselfstudy.com/)).
+-   A MongoDB container will store the coding puzzle and user data.
 
 ![General overview](https://wiki.codeselfstudy.com/images/servers.png)
 
