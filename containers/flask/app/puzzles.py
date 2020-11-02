@@ -20,12 +20,22 @@ def get_puzzle(source, puzzle_id=None):
     elif source == "projecteuler":
         return _get_projecteuler_puzzle(puzzle_id)
     elif source == "leetcode":
-        return None  # not implemented yet
+        return _get_leetcode_puzzle(puzzle_id)
     else:
         return None
 
 
+def _search_codewars_puzzles(query_dict):
+    pass
+
+
 def _get_projecteuler_puzzle(puzzle_id):
+    # TODO: implement this
+    return None
+
+
+def _get_leetcode_puzzle(puzzle_id):
+    # TODO: implement this
     return None
 
 
