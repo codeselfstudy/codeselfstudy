@@ -20,6 +20,7 @@ def home():
     return render_template("home.html")
 
 
+@app.route("/puzzles", defaults={"source": None, "puzzle_id": None})
 @app.route("/puzzles/<source>", defaults={"puzzle_id": None})
 @app.route("/puzzles/<source>/<puzzle_id>")
 def detail(source, puzzle_id):
@@ -38,7 +39,7 @@ def detail(source, puzzle_id):
                     },
                 },
             {"$sample": {"size": 1}},
-            ]))
+        ]))
 
         print("q", q)
         puzzle = safe_list_get(q, 0, None)
