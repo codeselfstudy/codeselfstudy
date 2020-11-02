@@ -148,7 +148,7 @@ def _generate_codewars_query(words):
     query = {
         "languages": []
     }
-    pattern = re.compile(r"^(\d{1,2})(kyu|votes?|stars?)$")
+    pattern = re.compile(r"^(\d{1,})(kyu|votes?|stars?)$")
 
     for w in words:
         m = re.match(pattern, w)
