@@ -116,3 +116,12 @@ To export data from Mongo in a container, [see here](https://gist.github.com/Jan
 ```text
 $ mongoexport -d <database-name> -c <collection-name> --out output.json
 ```
+
+If the database isn't already seeded on application boot, you should be able to do something like this to load the data into mongo:
+
+```text
+docker container exec codeselfstudy_mongo_1 mongoimport -d codeselfstudy -c puzzles --file /seed_data/project_euler/projecteuler_mongo.json
+docker container exec codeselfstudy_mongo_1 mongoimport -d codeselfstudy -c puzzles --file /seed_data/codewars/codewars_mongo.json
+```
+
+TODO: put that functionality into a script in the Dockerfile.

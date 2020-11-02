@@ -1,5 +1,6 @@
-const DB_NAME = "puzzles";
 const { MongoClient } = require("mongodb");
+
+const DB_NAME = "codeselfstudy";
 
 const uri = `mongodb://mongo/`;
 let db;

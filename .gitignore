@@ -63,3 +63,4 @@ my_app-*.tar
 scrapers_PENDING_DELETION/
 puzzle_client_PENDING_DELETION/
 docs_PENDING_DELETION/
+containers/mongo/seed_data/

@@ -53,7 +53,9 @@ services:
 
     # The MERN database
     mongo:
-        image: mongo
+        build:
+            dockerfile: Dockerfile
+            context: ./containers/mongo
         volumes:
             - mongo:/data/db
 
