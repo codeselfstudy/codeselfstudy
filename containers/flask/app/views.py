@@ -1,3 +1,4 @@
+import json
 from flask import render_template, jsonify, abort, request
 from app import app
 from . import slack
@@ -28,25 +29,29 @@ def slack_slash_command():
     data = request.get_data().decode()
     # print("data", data)
     if slack.verify_signature(slack_signature, slack_ts, data):
-        print("******* signature valid")
-        return jsonify({
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "*It's 80 degrees right now.*"
+        print("signature valid")
+
+        payload = slack.extract_payload(data)
+        if payload:
+            query = json.dumps(slack.raw_text_to_query(payload["text"]))
+            return jsonify({
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*{payload['user_name']}* requested a coding puzzle:"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"```{query}```"
+                        }
                     }
-                },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "Partly cloudy today and tomorrow"
-                    }
-                }
-            ]
-        })
+                ]
+            })
     else:
         print("******* signature invalid")
         abort(404)

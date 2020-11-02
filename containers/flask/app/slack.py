@@ -168,6 +168,9 @@ def verify_signature(slack_signature, ts, request_body):
 
     See the documentation here:
     https://api.slack.com/authentication/verifying-requests-from-slack
+
+    also this tutorial:
+    https://the-digital-owl.co.uk/2020/05/22/verifying-slack-requests-in-python/
     """
     if (int(time.time()) - int(ts)) > 60:
         print("slack timestamp is too old", ts)
