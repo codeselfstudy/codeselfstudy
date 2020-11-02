@@ -19,43 +19,38 @@ def home():
     return render_template("home.html")
 
 
-@app.route("/<source>/<puzzle_id>", defaults={"puzzle_id": None})
+@app.route("/<source>", defaults={"puzzle_id": None})
+@app.route("/<source>/<puzzle_id>")
 def detail(source, puzzle_id):
-    """
-    This example query gets a random puzzle out of the 700 puzzles that
-    have a voteScore of over 400 and that are available in both JS and
-    Python.
-    ```
-    db.puzzles.aggregate([
-        {
-            $match: {
-                source: "codewars",
-                voteScore: { $gt: 400 },
-                languages: { $all: ["python", "javascript"] },
-            },
-        },
-        { $sample: { size: 1 } },
-    ]);
-    ```
-    """
     if puzzle_id:
         puzzle = mongo.db.puzzles.find_one({"source": source, "id": str(puzzle_id)})
     else:
-        puzzle = mongo.db.puzzles.find_one({"source": source})
-    if puzzle:
-        print("puzzle", puzzle)
+        # This query gets a random puzzle out of the 700 puzzles that
+        # have a voteScore of over 400 and that are available in both JS
+        # and Python. Adjust as desired.
+        puzzle = list(mongo.db.puzzles.aggregate([
+            {
+                "$match": {
+                    "source": "codewars",
+                    "voteScore": {"$gt": 400},
+                    "languages": {"$all": ["python", "javascript"]},
+                    },
+                },
+            {"$sample": {"size": 1}},
+            ]))[0]
 
-# {'_id': ObjectId('5f9f1ff4144695653459dbaf'), 'source': 'codewars', 'id': '50654ddff44f800200000004', 'name': 'Multiply', 'slug': 'multiply', 'category': 'bug_fixes', 'publishedAt': '2013-05-18T18:40:17.975Z', 'approvedAt': '2013-12-03T15:41:04.738Z', 'languages': ['javascript', 'coffeescript', 'ruby', 'python', 'haskell', 'clojure', 'java', 'csharp', 'elixir', 'cpp', 'typescript', 'php', 'crystal', 'dart', 'rust', 'fsharp', 'swift', 'go', 'shell', 'c', 'lua', 'sql', 'bf', 'r', 'nim', 'erlang', 'objc', 'scala', 'kotlin', 'solidity', 'groovy', 'fortran', 'nasm', 'julia', 'powershell', 'purescript', 'elm', 'ocaml', 'reason', 'idris', 'racket', 'agda', 'coq', 'vb', 'forth', 'factor', 'prolog', 'cfml', 'lean', 'cobol', 'haxe', 'commonlisp', 'raku', 'perl'], 'url': 'https://www.codewars.com/kata/50654ddff44f800200000004', 'rank': {'id': -8, 'name': '8 kyu', 'color': 'white'}, 'createdAt': '2012-09-28T07:12:31.171Z', 'approvedBy': {'username': 'alchemy', 'url': 'https://www.codewars.com/users/alchemy'}, 'description': 'This code does not execute properly. Try to figure out why.', 'totalAttempts': 3962887, 'totalCompleted': 3130189, 'totalStars': 1062, 'voteScore': 7822, 'tags': ['Bugs'], 'contributorsWanted': True, 'unresolved': {'issues': 4, 'suggestions': 1}}
+    # return the puzzle if it was found, otherwise return a 404
+    if puzzle:
         return jsonify({
-            "id": puzzle["id"],
-            "url": puzzle["url"],
-            "name": puzzle["name"],
-            "languages": puzzle["languages"],
-            "kyu": abs(puzzle["rank"]["id"]),
-            "votes": puzzle["voteScore"],
-            "stars": puzzle["totalStars"],
-            "category": puzzle["category"],
-            "tags": puzzle["tags"],
+            "id": puzzle.get("id", None),
+            "url": puzzle.get("url", None),
+            "name": puzzle.get("name", None),
+            "languages": puzzle.get("languages", None),
+            "kyu": abs(puzzle.get("rank", None).get("id", None)),
+            "votes": puzzle.get("voteScore", None),
+            "stars": puzzle.get("totalStars", None),
+            "category": puzzle.get("category", None),
+            "tags": puzzle.get("tags", None),
         })
     else:
         abort(404)
