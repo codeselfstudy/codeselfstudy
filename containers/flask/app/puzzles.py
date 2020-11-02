@@ -36,11 +36,11 @@ def _query_codewars_puzzle(query):
         },
     }
     # {"source": "codewars", "languages": ["python"], "kyu": 4, "stars": 100}
-    if query["votes"]:
+    if query.get("votes", None):
         q["$match"]["voteScore"] = {"$gt": query["votes"]}
-    if query["kyu"]:
+    if query.get("kyu", None):
         q["$match"]["rank.id"] = -query["kyu"]
-    if query["stars"]:
+    if query.get("stars", None):
         q["$match"]["totalStars"] = {"$gt": query["votes"]}
     if len(query["languages"]) > 0:
         q["$match"]["languages"] = {"$all": query["languages"]}
