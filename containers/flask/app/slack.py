@@ -156,7 +156,7 @@ def _generate_codewars_query(words):
             # example:
             # level: "6", key: "kyu"
             level, key = m.groups()
-            query[key] = level
+            query[key] = int(level)
         else:
             if valid_languages.get(w, None):
                 query["languages"].append(w)
