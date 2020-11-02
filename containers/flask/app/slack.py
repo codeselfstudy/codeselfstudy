@@ -6,7 +6,7 @@ import hmac
 import time
 import hashlib
 from os import environ
-# from .helpers import safe_list_get
+from .helpers import safe_list_get
 from urllib.parse import parse_qs
 
 # Example payload:
@@ -42,13 +42,13 @@ def extract_payload(payload):
     print("parsed payload", data)
     if data["api_app_id"] == environ.get("SLACK_APP_ID"):
         return {
-            "user_id": data["user_id"],
-            "user_name": data["user_name"],
-            "text": data["text"],
-            "response_url": data["response_url"],
-            "channel_name": data["channel_name"],
-            "channel_id": data["channel_id"],
-            "command": data["command"],
+            "user_id": safe_list_get(data.get("user_id", None), 0, None),
+            "user_name": safe_list_get(data.get("user_name", None), 0, None),
+            "text": safe_list_get(data.get("text", None), 0, None),
+            "response_url": safe_list_get(data.get("response_url", None), 0, None),
+            "channel_name": safe_list_get(data.get("channel_name", None), 0, None),
+            "channel_id": safe_list_get(data.get("channel_id", None), 0, None),
+            "command": safe_list_get(data.get("command", None), 0, None),
         }
     else:
         print(f"the payload has the wrong app id: {data['api_app_id']}")
