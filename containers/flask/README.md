@@ -1,4 +1,4 @@
-I used [this guide](https://www.digitalocean.com/community/tutorials/how-to-build-and-deploy-a-flask-application-using-docker-on-ubuntu-18-04) to help with setting up Flask with Docker, but I didn't use sudo on anything. (**Tip:** you can set up Docker so that it doesn't need sudo. Look it up.) Also, this app runs on `localhost:1999`, not port `56733`. I changed the Dockerfile a bit and will add Docker Compose.
+I used [this guide](https://www.digitalocean.com/community/tutorials/how-to-build-and-deploy-a-flask-application-using-docker-on-ubuntu-18-04) to help with setting up Flask with Docker, but I didn't use sudo on anything. (**Tip:** you can set up Docker so that it doesn't need `sudo`.)
 
 Alternatively, you can reload the app with this:
 

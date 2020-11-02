@@ -13,9 +13,12 @@ def home():
     return render_template("home.html")
 
 
-@app.route("/<source>/<puzzle_id>")
+@app.route("/<source>/<puzzle_id>", defaults={"puzzle_id": None})
 def detail(source, puzzle_id):
-    puzzle = collection.find_one({"source": source, "id": puzzle_id})
+    if puzzle_id:
+        puzzle = collection.find_one({"source": source, "id": puzzle_id})
+    else:
+        puzzle = collection.find_one({"source": source})
     if puzzle:
         return jsonify(puzzle)
     else:
@@ -24,6 +27,10 @@ def detail(source, puzzle_id):
 
 @app.route("/search/codewars")
 def search_codewars():
+    # languages = request.args.get("languages").split(",")
+    # db_query = collection.find({
+    #     "languages"
+    # })
     pass
 
 
