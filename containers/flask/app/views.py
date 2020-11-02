@@ -6,12 +6,13 @@ from app import app
 app.config["MONGO_URI"] = "mongodb://mongo/codeselfstudy"
 mongo = PyMongo(app)
 
-# client = MongoClient("mongo", 27017)
-# db = client["codeselfstudy"]
-# collection = db["puzzles"]
-# client = pymongo.MongoClient("mongodb://localhost:27017/")
-# r = collection.find_one()
-# print("#######", r)
+
+def safe_list_get(lst, idx, default):
+    """A helper function to safely get the first element of a list."""
+    try:
+        return lst[idx]
+    except IndexError:
+        return default
 
 
 @app.route("/")
@@ -28,7 +29,7 @@ def detail(source, puzzle_id):
         # This query gets a random puzzle out of the 700 puzzles that
         # have a voteScore of over 400 and that are available in both JS
         # and Python. Adjust as desired.
-        puzzle = list(mongo.db.puzzles.aggregate([
+        q = list(mongo.db.puzzles.aggregate([
             {
                 "$match": {
                     "source": "codewars",
@@ -37,7 +38,10 @@ def detail(source, puzzle_id):
                     },
                 },
             {"$sample": {"size": 1}},
-            ]))[0]
+            ]))
+
+        print("q", q)
+        puzzle = safe_list_get(q, 0, None)
 
     # return the puzzle if it was found, otherwise return a 404
     if puzzle:
