@@ -93,6 +93,12 @@ def _generate_codewars_query(words):
     # these were extracted from the mongo database
     # it's a dict for faster lookup
     valid_languages = {
+        # these could probably be changed to something like:
+        # "vb": "vb",
+        # "visualbasic": "vb"
+        # "javascript": "javascript",
+        # "js": "javascript",
+        # that way alternate names would still work
         "vb": True,
         "forth": True,
         "swift": True,
