@@ -52,7 +52,7 @@ def _query_codewars_puzzle(query):
 
     print("q", q)
     print("result", result)
-    puzzle = safe_list_get(q, 0, None)
+    puzzle = safe_list_get(result, 0, None)
 
     # TODO: refactor this, because it's a repeat of some code below
     if puzzle:
