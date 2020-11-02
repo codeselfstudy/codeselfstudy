@@ -55,13 +55,13 @@ def slack_slash_command():
                             "text": format_codewars_puzzle_message(puzzle)
                         }
                     },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"debug: ```{query}```"
-                        }
-                    }
+                    # {
+                    #     "type": "section",
+                    #     "text": {
+                    #         "type": "mrkdwn",
+                    #         "text": f"debug: ```{query}```"
+                    #     }
+                    # },
                 ]
             })
         else:
