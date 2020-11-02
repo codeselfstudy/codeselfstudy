@@ -173,7 +173,7 @@ def verify_signature(slack_signature, ts, request_body):
         print("slack timestamp is too old", ts)
         return False
 
-    SLACK_SIGNING_SECRET = environ("SLACK_SIGNING_SECRET")
+    SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
     # secret = bytes(SLACK_SIGNING_SECRET, "utf-8")
 
     # # Create a basestring by concatenating the version, the request
