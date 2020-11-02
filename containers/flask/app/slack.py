@@ -159,7 +159,7 @@ def _generate_codewars_query(words):
             query[key] = level
         else:
             if valid_languages.get(w, None):
-                query.languages.append(w)
+                query["languages"].append(w)
 
     print("generated query", query)
     return query
