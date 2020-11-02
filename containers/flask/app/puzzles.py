@@ -18,6 +18,59 @@ def get_puzzle(source, puzzle_id=None):
         return None
 
 
+def query_puzzles(query):
+    if query["source"] == "codewars":
+        return _query_codewars_puzzle(query)
+    # elif source == "projecteuler":
+    #     return _query_projecteuler_puzzle(query)
+    # elif source == "leetcode":
+    #     return _query_leetcode_puzzle(query)
+    else:
+        return None
+
+
+def _query_codewars_puzzle(query):
+    q = {
+        "$match": {
+            "source": "codewars",
+        },
+    }
+    # {"source": "codewars", "languages": ["python"], "kyu": 4, "stars": 100}
+    if query["votes"]:
+        q["$match"]["voteScore"] = {"$gt": query["votes"]}
+    if query["kyu"]:
+        q["$match"]["rank.id"] = -query["kyu"]
+    if query["stars"]:
+        q["$match"]["totalStars"] = {"$gt": query["votes"]}
+    if len(query["languages"]) > 0:
+        q["$match"]["languages"] = {"$all": query["languages"]}
+
+    result = list(mongo.db.puzzles.aggregate([
+        q,
+        {"$sample": {"size": 1}},
+    ]))
+
+    print("q", q)
+    print("result", result)
+    puzzle = safe_list_get(q, 0, None)
+
+    # TODO: refactor this, because it's a repeat of some code below
+    if puzzle:
+        return {
+            "id": puzzle.get("id", None),
+            "url": puzzle.get("url", None),
+            "name": puzzle.get("name", None),
+            "languages": puzzle.get("languages", None),
+            "kyu": abs(puzzle.get("rank", None).get("id", None)),
+            "votes": puzzle.get("voteScore", None),
+            "stars": puzzle.get("totalStars", None),
+            "category": puzzle.get("category", None),
+            "tags": puzzle.get("tags", None),
+        }
+    else:
+        return None
+
+
 def _search_codewars_puzzles(query_dict):
     pass
 
