@@ -6,6 +6,8 @@ client = MongoClient("mongo", 27017)
 db = client["codeselfstudy"]
 collection = db["puzzles"]
 # client = pymongo.MongoClient("mongodb://localhost:27017/")
+# r = collection.find_one()
+# print("#######", r)
 
 
 @app.route("/")
@@ -33,7 +35,7 @@ def detail(source, puzzle_id):
     ```
     """
     if puzzle_id:
-        puzzle = collection.find_one({"source": source, "id": puzzle_id})
+        puzzle = collection.find_one({"source": source, "id": str(puzzle_id)})
     else:
         puzzle = collection.find_one({"source": source})
     if puzzle:
@@ -48,14 +50,14 @@ def search_codewars():
     # db_query = collection.find({
     #     "languages"
     # })
-    pass
+    return jsonify({"msg": "not implemented"})
 
 
 @app.route("/search/projecteuler")
 def search_projecteuler():
-    pass
+    return jsonify({"msg": "not implemented"})
 
 
 @app.route("/search/leetcode")
 def search_leetcode():
-    pass
+    return jsonify({"msg": "not implemented"})
