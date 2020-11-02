@@ -13,6 +13,7 @@ MongoClient.connect(uri, (err, database) => {
         db = database.db(DB_NAME);
     }
 });
+console.log("####### db in the connection file", db)
 
 // `db.collection("challenges").findOnde({}, (err, result) => {
 //  if (err) { throw err; }
