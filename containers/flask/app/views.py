@@ -15,6 +15,23 @@ def home():
 
 @app.route("/<source>/<puzzle_id>", defaults={"puzzle_id": None})
 def detail(source, puzzle_id):
+    """
+    This example query gets a random puzzle out of the 700 puzzles that
+    have a voteScore of over 400 and that are available in both JS and
+    Python.
+    ```
+    db.puzzles.aggregate([
+        {
+            $match: {
+                source: "codewars",
+                voteScore: { $gt: 400 },
+                languages: { $all: ["python", "javascript"] },
+            },
+        },
+        { $sample: { size: 1 } },
+    ]);
+    ```
+    """
     if puzzle_id:
         puzzle = collection.find_one({"source": source, "id": puzzle_id})
     else:
