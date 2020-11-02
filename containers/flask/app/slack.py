@@ -39,6 +39,7 @@ def extract_payload(payload):
     This also checks that it was sent by the correct (our) slack app.
     """
     data = parse_qs(payload)
+    print("parsed payload", data)
     if data["api_app_id"] == environ.get("SLACK_APP_ID"):
         return {
             "user_id": data["user_id"],
