@@ -16,10 +16,10 @@ def format_codewars_puzzle_message(puzzle):
     print("helper got puzzle", puzzle)
     languages = ", ".join(puzzle["languages"])
     lines = [
-        f"*{puzzle['name']}* ({puzzle['kyu']} kyu",
-        f"url: {puzzle['url']}"
+        f"*{puzzle['name']}* ({puzzle['kyu']} kyu)",
+        f"{puzzle['url']}"
         f"\n",
-        f"*available in:* {languages}",
-        f"*category:* {puzzle['category']})"
+        f"> *available in:* {languages}",
+        f"> *category:* {puzzle['category']})"
     ]
     return "\n".join(lines)
