@@ -3,6 +3,7 @@ Flask==1.1.2
 
 # databases
 pymongo==3.11.0
+Flask-PyMongo==2.3.0
 
 # tools
 python-dotenv==0.15.0
