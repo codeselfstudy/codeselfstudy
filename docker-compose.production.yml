@@ -50,7 +50,6 @@ services:
         volumes:
             - mongo:/data/db
 
-    # TODO: it might be okay to remove this if flask won't use it.
     redis:
         image: "redis:latest"
         volumes:

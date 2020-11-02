@@ -22,7 +22,6 @@ services:
         build:
             dockerfile: Dockerfile.dev
             context: ./containers/gatsby
-        # It might eventually pull data from Express, so wait for that container to boot.
         depends_on:
             - flask
         volumes:
@@ -51,7 +50,6 @@ services:
         volumes:
             - mongo:/data/db
 
-    # TODO: it might be okay to remove this, since express.js is gone.
     redis:
         image: "redis:latest"
         volumes:
