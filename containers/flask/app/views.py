@@ -41,13 +41,13 @@ def slack_slash_command():
             return jsonify({
                 "response_type": "in_channel",
                 "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"*{payload['user_name']}* requested a coding puzzle."
-                        }
-                    },
+                    # {
+                    #     "type": "section",
+                    #     "text": {
+                    #         "type": "mrkdwn",
+                    #         "text": f"*{payload['user_name']}* requested a coding puzzle."
+                    #     }
+                    # },
                     {
                         "type": "section",
                         "text": {
