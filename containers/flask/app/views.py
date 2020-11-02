@@ -26,12 +26,27 @@ def slack_slash_command():
     slack_signature = request.headers.get("X-Slack-Signature")
     slack_ts = request.headers.get("X-Slack-Request-Timestamp")
     data = request.get_data().decode()
-
-    print("data", data)
-    return jsonify({})
+    # print("data", data)
     if slack.verify_signature(slack_signature, slack_ts, data):
         print("******* signature valid")
-        return jsonify({})
+        return jsonify({
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*It's 80 degrees right now.*"
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Partly cloudy today and tomorrow"
+                    }
+                }
+            ]
+        })
     else:
         print("******* signature invalid")
         abort(404)
