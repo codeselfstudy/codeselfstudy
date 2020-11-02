@@ -146,6 +146,7 @@ def _generate_codewars_query(words):
         "c": True,
     }
     query = {
+        "source": "codewars",
         "languages": []
     }
     pattern = re.compile(r"^(\d{1,})(kyu|votes?|stars?)$")
