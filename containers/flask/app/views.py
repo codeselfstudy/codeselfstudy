@@ -34,7 +34,7 @@ def slack_slash_command():
         payload = slack.extract_payload(data)
         if payload:
             query = json.dumps(slack.raw_text_to_query(payload["text"]))
-            puzzle = puzzles.query_puzzles(query)
+            puzzle = p.query_puzzles(query)
             print("payload", payload)
             print("query", query)
             return jsonify({
