@@ -3,6 +3,7 @@ from flask import render_template, jsonify, abort, request
 from app import app
 from . import slack
 from . import puzzles as p
+from .helpers import format_codewars_puzzle_message
 
 
 @app.route("/")
@@ -51,8 +52,7 @@ def slack_slash_command():
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            # TODO: fix this - move to a function or something
-                            "text": f"*{puzzle['name']}*\n- kyu: {puzzle['kyu']}\n- languages: {','.join(puzzle['languages'])}\n- category: {puzzle['category']}\n- url: {puzzle['url']}"
+                            "text": format_codewars_puzzle_message(puzzle)
                         }
                     },
                     {
