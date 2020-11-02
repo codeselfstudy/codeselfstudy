@@ -58,6 +58,9 @@ def extract_payload(payload):
 
 def raw_text_to_query(text):
     """Turns the `text` field of a Slack message into a query."""
+    if not text:
+        return None
+
     # extract words and remove empty spaces
     words = [w.strip().lower() for w in text.split(" ") if w.strip()]
 
