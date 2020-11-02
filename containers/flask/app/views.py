@@ -20,8 +20,8 @@ def home():
     return render_template("home.html")
 
 
-@app.route("/<source>", defaults={"puzzle_id": None})
-@app.route("/<source>/<puzzle_id>")
+@app.route("/puzzles/<source>", defaults={"puzzle_id": None})
+@app.route("/puzzles/<source>/<puzzle_id>")
 def detail(source, puzzle_id):
     if puzzle_id:
         puzzle = mongo.db.puzzles.find_one({"source": source, "id": str(puzzle_id)})
@@ -60,7 +60,7 @@ def detail(source, puzzle_id):
         abort(404)
 
 
-@app.route("/search/codewars")
+@app.route("/puzzles/search/codewars")
 def search_codewars():
     # languages = request.args.get("languages").split(",")
     # db_query = collection.find({
@@ -69,11 +69,11 @@ def search_codewars():
     return jsonify({"msg": "not implemented"})
 
 
-@app.route("/search/projecteuler")
+@app.route("/puzzles/search/projecteuler")
 def search_projecteuler():
     return jsonify({"msg": "not implemented"})
 
 
-@app.route("/search/leetcode")
+@app.route("/puzzles/search/leetcode")
 def search_leetcode():
     return jsonify({"msg": "not implemented"})
