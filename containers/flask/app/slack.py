@@ -174,7 +174,7 @@ def verify_signature(slack_signature, ts, request_body):
         return False
 
     SLACK_SIGNING_SECRET = environ.get("SLACK_SIGNING_SECRET")
-    # secret = bytes(SLACK_SIGNING_SECRET, "utf-8")
+    secret = bytes(SLACK_SIGNING_SECRET, "utf-8")
 
     # # Create a basestring by concatenating the version, the request
     #   timestamp, and the request body
@@ -182,7 +182,7 @@ def verify_signature(slack_signature, ts, request_body):
     # Hash the basestring using your signing secret, take the hex
     # digest, and prefix with the version number
     my_signature = (
-        "v0=" + hmac.new(SLACK_SIGNING_SECRET, basestring, hashlib.sha256).hexdigest()
+        "v0=" + hmac.new(secret, basestring, hashlib.sha256).hexdigest()
     )
     # # Compare the resulting signature with the signature on the request to verify the request
     if hmac.compare_digest(my_signature, slack_signature):
