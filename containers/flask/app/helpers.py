@@ -14,12 +14,10 @@ def safe_list_get(lst, idx, default):
 
 def format_codewars_puzzle_message(puzzle):
     print("helper got puzzle", puzzle)
-    languages = ",".join(puzzle["languages"])
+    languages = ", ".join(puzzle["languages"])
     lines = [
-        f"*{puzzle['name']}",
-        f"- kyu: {puzzle['kyu']}",
-        f"- languages: {languages}",
-        f"- category: {puzzle['category']}",
-        f"- url: {puzzle['url']}"
+        f"*{puzzle['name']}* ({puzzle['kyu']} kyu - {puzzle['category']})",
+        f"available in: {languages}",
+        f"url: {puzzle['url']}"
     ]
     return "\n".join(lines)
