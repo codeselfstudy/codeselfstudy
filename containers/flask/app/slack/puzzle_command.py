@@ -6,7 +6,7 @@ import hmac
 import time
 import hashlib
 from os import environ
-from .helpers import safe_list_get
+from helpers import safe_list_get
 from urllib.parse import parse_qs
 
 # Example payload:
