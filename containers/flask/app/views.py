@@ -1,7 +1,7 @@
 import json
 from flask import render_template, jsonify, abort, request
 from app import app
-from slack import signature, puzzle_command
+from .slack import signature, puzzle_command
 from . import puzzles as p
 from .helpers import format_codewars_puzzle_message
 
