@@ -29,12 +29,12 @@ def slack_slash_command():
     slack_ts = request.headers.get("X-Slack-Request-Timestamp")
     data = request.get_data().decode()
     # print("data", data)
-    if slack.verify_signature(slack_signature, slack_ts, data):
+    if slack.signature.verify_signature(slack_signature, slack_ts, data):
         print("signature valid")
 
-        payload = slack.extract_payload(data)
+        payload = slack.puzzle_command.extract_payload(data)
         if payload:
-            query = slack.raw_text_to_query(payload["text"])
+            query = slack.puzzle_command.raw_text_to_query(payload["text"])
             puzzle = p.query_puzzles(query)
             print("payload", payload)
             print("query", query)
