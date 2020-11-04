@@ -40,6 +40,7 @@ def extract_payload(payload):
     """
     data = parse_qs(payload)
     if data["api_app_id"][0] == environ.get("SLACK_APP_ID"):
+        print("extracting payload")
         result = {
             "user_id": safe_list_get(data.get("user_id", None), 0, None),
             "user_name": safe_list_get(data.get("user_name", None), 0, None),

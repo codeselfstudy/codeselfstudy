@@ -28,7 +28,7 @@ def slack_slash_command():
     slack_signature = request.headers.get("X-Slack-Signature")
     slack_ts = request.headers.get("X-Slack-Request-Timestamp")
     data = request.get_data().decode()
-    # print("data", data)
+    print("data in controller", data)
     if signature.verify_signature(slack_signature, slack_ts, data):
         print("signature valid")
 
