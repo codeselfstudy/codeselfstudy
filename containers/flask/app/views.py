@@ -32,6 +32,11 @@ def slack_slash_command():
     if signature.verify_signature(slack_signature, slack_ts, data):
         print("signature valid")
 
+        if not puzzle:
+            return jsonify({
+                "text": "Your query wasn't formatted correctly. Try something like:\n>_/puzzle codewars js python elixir 5kyu"
+            })
+
         payload = puzzle_command.extract_payload(data)
         if payload:
             query = puzzle_command.raw_text_to_query(payload["text"])
