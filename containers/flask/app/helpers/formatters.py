@@ -39,27 +39,28 @@ def format_codewars_puzzle_for_discourse(puzzle):
     if description:
         description = description.replace(r"```", "\n```\n")
     # `dedent` wasn't working for me with format strings, so I'm removing the indents manually
-    lines = f"""**{puzzle["name"]}** is a coding puzzle that people can be attempted in the following languages:
-        {languages}
+    lines = f"""**{puzzle["name"]}** is a coding puzzle that people can be attempted in the following languages: {languages}.
 
         - **Difficulty:** {puzzle.get("kyu", "unknown")} kyu
         - **Stars:** {puzzle.get("stars", "unknown")}
         - **Votes:** {puzzle.get("votes", "unknown")}
+        - **Category:** {puzzle.get("category", "unknown")}
         - **Tags:** {tags}
+        - **Source:** [codewars](https://codeselfstudy.com/codewars)
 
-        ## Description
+        # Description
 
         {description}
 
-        ## Link
+        # Link
 
         {puzzle["url"]}
 
-        ## Notes
+        # Notes
 
         You can discuss the problem and solutions in the comments below. Use the "hide details" feature in the editor to avoid spoilers.
 
-        This puzzle was posted by a Slackbot. If you want to help work on the app, send a message to @Josh.
+        This puzzle was posted by a Slackbot via a slash command. If you want to help work on the app, send a message to @Josh.
 
         If you don't want to see the coding puzzles in the forum, you can go into [your settings](https://forum.codeselfstudy.com/my/preferences/categories) and mute the puzzles category."
         """.split("\n")
