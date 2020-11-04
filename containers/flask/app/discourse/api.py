@@ -25,7 +25,7 @@ headers = {
 }
 
 
-def create_post(payload):
+def create_forum_post(payload):
     """Create a forum post.
 
     Sample payload:

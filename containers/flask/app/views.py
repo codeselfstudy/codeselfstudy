@@ -3,7 +3,8 @@ from flask import render_template, jsonify, abort, request
 from app import app
 from app.slack import puzzle_command, signature
 import app.puzzles as p
-from app.helpers.formatters import format_codewars_puzzle_message, format_slack_error_message
+from app.helpers.formatters import format_codewars_puzzle_message, format_slack_error_message, format_codewars_puzzle_for_discourse
+from app.discourse.api import create_forum_post
 
 
 @app.route("/")
@@ -45,6 +46,10 @@ def slack_slash_command():
                 })
             else:
                 print("puzzle data", puzzle)
+                forum_post_data = format_codewars_puzzle_for_discourse(puzzle)
+                print("forum post data", forum_post_data)
+                discourse_response = create_forum_post(forum_post_data)
+                print("discourse response", discourse_response)
                 return jsonify({
                     "response_type": "in_channel",
                     "blocks": [
