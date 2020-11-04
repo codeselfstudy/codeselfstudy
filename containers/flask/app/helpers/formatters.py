@@ -38,7 +38,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
     tags = ", ".join(puzzle['tags'])
 
     # convert to markdown just to strip out any fancy HTML that might be there
-    description_md = markdown(puzzle.get("description", None))
+    description_md = markdown(puzzle.get("description", None)).replace(r"```", "\n```\n")
     print("description markdown", description_md)
     body = dedent(f"""\
     "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
