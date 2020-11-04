@@ -41,7 +41,7 @@ def slack_slash_command():
             print("query", query)
             if not puzzle:
                 return jsonify({
-                    "text": "Your query wasn't formatted correctly or there was another error. Try typing something like this:\n```/puzzle codewars js python elixir 5kyu```\n\nParameters can look like this:\n- languages: `python javascript fortran` (optional)\n- difficulty: `5kyu` (optional)\n- minimum votes: `100votes` (optional)\n- minimum stars: `100stars` (optional)"
+                    "text": "Your query wasn't formatted correctly or there was another error. Try typing something like this:\n```/puzzle codewars js python elixir 5kyu```\n\nParameters can look like this:\n- *source:* `codewars` (required)\n- *languages:* `python javascript fortran` (optional)\n- *difficulty:* `5kyu` (optional)\n- *minimum votes:* `100votes` (optional)\n- *minimum stars:* `100stars` (optional)\n\n*Tip:* if you want people to join you, form the query with some popular languages like `javascript python elixir` so that more people will be interested in solving the puzzle. If you want to contribute to the development of this app, join the #engine-room channel."
                 })
             else:
                 print("puzzle data", puzzle)
