@@ -20,7 +20,7 @@ def get_puzzle(source, puzzle_id=None):
 
 def query_puzzles(query):
     print("query", query)
-    if query.get("source", None) == "codewars":
+    if query && query.get("source", None) == "codewars":
         return _query_codewars_puzzle(query)
     # elif source == "projecteuler":
     #     return _query_projecteuler_puzzle(query)
