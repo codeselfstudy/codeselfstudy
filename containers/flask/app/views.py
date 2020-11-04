@@ -32,11 +32,6 @@ def slack_slash_command():
     if signature.verify_signature(slack_signature, slack_ts, data):
         print("signature valid")
 
-        if not puzzle:
-            return jsonify({
-                "text": "Your query wasn't formatted correctly. Try something like:\n>_/puzzle codewars js python elixir 5kyu"
-            })
-
         payload = puzzle_command.extract_payload(data)
         if payload:
             query = puzzle_command.raw_text_to_query(payload["text"])
@@ -44,32 +39,31 @@ def slack_slash_command():
             puzzle = p.query_puzzles(query)
             print("payload", payload)
             print("query", query)
-            return jsonify({
-                "response_type": "in_channel",
-                "blocks": [
-                    # {
-                    #     "type": "section",
-                    #     "text": {
-                    #         "type": "mrkdwn",
-                    #         "text": f"*{payload['user_name']}* requested a coding puzzle."
-                    #     }
-                    # },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": format_codewars_puzzle_message(puzzle)
-                        }
-                    },
-                    # {
-                    #     "type": "section",
-                    #     "text": {
-                    #         "type": "mrkdwn",
-                    #         "text": f"debug: ```{query}```"
-                    #     }
-                    # },
-                ]
-            })
+            if not puzzle:
+                return jsonify({
+                    "text": "Your query wasn't formatted correctly or there was another error. Try typing something like this:\n```/puzzle codewars js python elixir 5kyu```\n\nParameters can look like this:\n- languages: `python javascript fortran` (optional)\n- difficulty: `5kyu` (optional)\n- minimum votes: `100votes` (optional)\n- minimum stars: `100stars` (optional)"
+                })
+            else:
+                print("puzzle data", puzzle)
+                return jsonify({
+                    "response_type": "in_channel",
+                    "blocks": [
+                        # {
+                        #     "type": "section",
+                        #     "text": {
+                        #         "type": "mrkdwn",
+                        #         "text": f"*{payload['user_name']}* requested a coding puzzle."
+                        #     }
+                        # },
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": format_codewars_puzzle_message(puzzle)
+                            }
+                        },
+                    ]
+                })
         else:
             print("####### there wasn't a payload")
             abort(404)
