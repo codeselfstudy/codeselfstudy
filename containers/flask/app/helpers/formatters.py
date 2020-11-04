@@ -39,7 +39,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
     if description:
         description = description.replace(r"```", "\n```\n")
     # `dedent` wasn't working for me with format strings, so I'm removing the indents manually
-    lines = f"""**{puzzle["name"]}** is a coding puzzle that people can be attempted in the following languages: {languages}.
+    lines = f""""**{puzzle["name"]}**" is a coding puzzle that people can be attempted in the following languages: {languages}.
 
         - **Difficulty:** {puzzle.get("kyu", "unknown")} kyu
         - **Stars:** {puzzle.get("stars", "unknown")}
