@@ -15,6 +15,9 @@ def safe_list_get(lst, idx, default):
 
 def format_codewars_puzzle_message(puzzle):
     print("helper got puzzle", puzzle)
+    if not puzzle:
+        return None
+
     languages = ", ".join(puzzle["languages"])
     lines = [
         f"*{puzzle['name']}* ({puzzle['kyu']} kyu)",
