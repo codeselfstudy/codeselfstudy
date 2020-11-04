@@ -27,12 +27,12 @@ ARG pandoc_commit=master
 RUN git clone --branch=$pandoc_commit --depth=1 --quiet \
     https://github.com/jgm/pandoc /usr/src/pandoc
 
-COPY ./freeze/pandoc-$pandoc_commit.project.freeze \
+COPY ./docker/pandoc-$pandoc_commit.project.freeze \
      /usr/src/pandoc/cabal.project.freeze
 
 # Copy placeholder for pandoc-citeproc. This might be overwritten with a
 # proper binary later.
-COPY ./common/placeholder-pandoc-citeproc.sh \
+COPY ./docker/placeholder-pandoc-citeproc.sh \
     /usr/local/bin/pandoc-citeproc
 
 # Install Haskell dependencies
