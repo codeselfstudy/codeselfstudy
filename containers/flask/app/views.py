@@ -3,7 +3,7 @@ from flask import render_template, jsonify, abort, request
 from app import app
 from app.slack import puzzle_command, signature
 import app.puzzles as p
-from app.helpers import format_codewars_puzzle_message
+from app.helpers.formatters import format_codewars_puzzle_message
 
 
 @app.route("/")
