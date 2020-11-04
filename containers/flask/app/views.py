@@ -5,6 +5,7 @@ from app.slack import puzzle_command, signature
 import app.puzzles as p
 from app.helpers.formatters import format_codewars_puzzle_message, format_slack_error_message, format_codewars_puzzle_for_discourse
 from app.discourse.api import create_forum_post
+from app.discourse.helpers import construct_topic_url
 
 
 @app.route("/")
@@ -50,6 +51,12 @@ def slack_slash_command():
                 print("forum post data", forum_post_data)
                 discourse_response = create_forum_post(forum_post_data)
                 print("discourse response", discourse_response)
+
+                link_to_forum_topic = construct_topic_url(discourse_response.get("topic_id", None), topic_slug=discourse_response.get("topic_slug", None), short=True)
+
+                body = format_codewars_puzzle_message(puzzle)
+                body += f"\n\nForum discussion:\n{link_to_forum_topic}"
+
                 return jsonify({
                     "response_type": "in_channel",
                     "blocks": [
@@ -64,7 +71,7 @@ def slack_slash_command():
                             "type": "section",
                             "text": {
                                 "type": "mrkdwn",
-                                "text": format_codewars_puzzle_message(puzzle)
+                                "text": body
                             }
                         },
                     ]

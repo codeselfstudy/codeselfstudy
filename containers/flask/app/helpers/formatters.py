@@ -2,7 +2,7 @@
 Useful functions for formatting text.
 """
 import os
-# from textwrap import dedent
+from textwrap import dedent
 
 DISCOURSE_PUZZLES_CATEGORY = os.getenv("DISCOURSE_PUZZLES_CATEGORY")
 print("puzzles category", DISCOURSE_PUZZLES_CATEGORY)
