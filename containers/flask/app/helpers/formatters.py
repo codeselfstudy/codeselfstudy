@@ -31,17 +31,14 @@ def format_codewars_puzzle_for_discourse(puzzle):
     if not puzzle:
         return None
 
-    title = f"Coding Challenge: {puzzle['name']}"
+    title = f"Puzzle: {puzzle['name']}"
     languages = ", ".join(puzzle["languages"])
     tags = ", ".join(puzzle['tags'])
 
-    # convert to markdown just to strip out any fancy HTML that might be there
     description = puzzle.get("description", None)
-    # description_md = pypandoc.convert_text(raw_description, "md", format="html")
     if description:
         description = description.replace(r"```", "\n```\n")
-    body = dedent(f"""\
-    "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
+    body = dedent(f"""    "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
 
     > {languages}
 
