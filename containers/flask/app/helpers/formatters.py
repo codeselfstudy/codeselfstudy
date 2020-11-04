@@ -31,7 +31,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
     if not puzzle:
         return None
 
-    title = f"Puzzle: {puzzle['name']} ({puzzle['category']})"
+    title = f"Puzzle: {puzzle['name']} [{puzzle['category']}]"
     languages = ", ".join(puzzle["languages"])
     tags = ", ".join(puzzle['tags'])
 
@@ -57,9 +57,11 @@ def format_codewars_puzzle_for_discourse(puzzle):
 
         ## Notes
 
+        You can discuss the problem and solutions in the comments below. Use the "hide details" feature in the editor to avoid spoilers.
+
         This puzzle was posted by a Slackbot. If you want to help work on the app, send a message to @Josh.
 
-        You can discuss the problem and solutions in the comments below. Use the "hide details" feature in the editor to avoid spoilers.
+        If you don't want to see the coding puzzles in the forum, you can go into [your settings](https://forum.codeselfstudy.com/my/preferences/categories) and mute the puzzles category."
         """.split("\n")
 
     cleaned_lines = [line.strip() for line in lines]
