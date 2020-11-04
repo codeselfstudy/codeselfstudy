@@ -46,7 +46,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
         - **Votes:** {puzzle.get("votes", "unknown")}
         - **Category:** {puzzle.get("category", "unknown")}
         - **Tags:** {tags}
-        - **Source:** [codewars](https://codeselfstudy.com/codewars)
+        - **Source:** [codewars]({puzzle["url"]})
 
         # Description
 
