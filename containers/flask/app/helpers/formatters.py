@@ -1,9 +1,13 @@
 """
 Useful functions for formatting text.
 """
+import os
 from textwrap import dedent
 
 from markdown import markdown
+
+DISCOURSE_PUZZLES_CATEGORY = os.getenv("DISCOURSE_PUZZLES_CATEGORY")
+print("puzzles category", DISCOURSE_PUZZLES_CATEGORY)
 
 def format_codewars_puzzle_message(puzzle):
     """This formats a codewars puzzle for Slack."""
@@ -54,7 +58,8 @@ def format_codewars_puzzle_for_discourse(puzzle):
 
     return {
         "title": title,
-        "body": body
+        "raw": body,
+        "category": DISCOURSE_PUZZLES_CATEGORY
     }
 
 
