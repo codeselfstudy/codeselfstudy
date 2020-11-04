@@ -1,6 +1,10 @@
 # web
 Flask==1.1.2
 
+# tools
+bleach==3.2.1
+Markdown==3.3.3
+
 # databases
 pymongo==3.11.0
 Flask-PyMongo==2.3.0

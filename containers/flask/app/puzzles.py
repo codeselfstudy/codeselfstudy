@@ -1,7 +1,10 @@
 """This module gets puzzles out of the database."""
 from flask_pymongo import PyMongo
+
+import bleach
+
 from app import app
-from app.helpers.formatters import safe_list_get
+from app.helpers.utilities import safe_list_get
 
 app.config["MONGO_URI"] = "mongodb://mongo/codeselfstudy"
 mongo = PyMongo(app)
@@ -56,12 +59,16 @@ def _query_codewars_puzzle(query):
     puzzle = safe_list_get(result, 0, None)
 
     # TODO: refactor this, because it's a repeat of some code below
+    description = puzzle.get("description", None)
+    if description:
+        description = bleach.clean(description)
     if puzzle:
         return {
             "id": puzzle.get("id", None),
             "url": puzzle.get("url", None),
             "name": puzzle.get("name", None),
             "languages": puzzle.get("languages", None),
+            "description": description,
             "kyu": abs(puzzle.get("rank", None).get("id", None)),
             "votes": puzzle.get("voteScore", None),
             "stars": puzzle.get("totalStars", None),
@@ -107,11 +114,15 @@ def _get_codewars_puzzle(puzzle_id):
         print("q", q)
         puzzle = safe_list_get(q, 0, None)
     if puzzle:
+        description = puzzle.get("description", None)
+        if description:
+            description = bleach.clean(description)
         return {
             "id": puzzle.get("id", None),
             "url": puzzle.get("url", None),
             "name": puzzle.get("name", None),
             "languages": puzzle.get("languages", None),
+            "description": description,
             "kyu": abs(puzzle.get("rank", None).get("id", None)),
             "votes": puzzle.get("voteScore", None),
             "stars": puzzle.get("totalStars", None),
