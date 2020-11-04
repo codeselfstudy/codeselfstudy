@@ -60,11 +60,12 @@ def extract_payload(payload):
 def raw_text_to_query(text):
     """Turns the `text` field of a Slack message into a query."""
     if not text:
+        print("raw_text_to_query didn't get `text`", text)
         return None
 
     # extract words and remove empty spaces
     words = [w.strip().lower() for w in text.split(" ") if w.strip()]
-
+    print("words", words)
     # TODO: if the first word is "help" then it should return help information
 
     # figure out what kind of mongo query should be generated
@@ -78,6 +79,8 @@ def raw_text_to_query(text):
     for s in sites:
         if s in words:
             site = s
+
+    print("site is", site)
 
     if site == "codewars":
         return _generate_codewars_query(words)
