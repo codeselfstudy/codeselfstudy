@@ -3,7 +3,7 @@ Flask==1.1.2
 
 # tools
 bleach==3.2.1
-Markdown==3.3.3
+pypandoc==1.5
 
 # databases
 pymongo==3.11.0

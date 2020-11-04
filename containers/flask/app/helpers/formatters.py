@@ -4,7 +4,7 @@ Useful functions for formatting text.
 import os
 from textwrap import dedent
 
-from markdown import markdown
+import pypandoc
 
 DISCOURSE_PUZZLES_CATEGORY = os.getenv("DISCOURSE_PUZZLES_CATEGORY")
 print("puzzles category", DISCOURSE_PUZZLES_CATEGORY)
@@ -38,7 +38,8 @@ def format_codewars_puzzle_for_discourse(puzzle):
     tags = ", ".join(puzzle['tags'])
 
     # convert to markdown just to strip out any fancy HTML that might be there
-    description_md = markdown(puzzle.get("description", None)).replace(r"```", "\n```\n")
+    raw_description = puzzle.get("description", None)
+    description_md = pypandoc.convert_text(raw_description, "md", format="html").replace(r"```", "\n```\n")
     print("description markdown", description_md)
     body = dedent(f"""\
     "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
