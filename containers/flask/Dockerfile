@@ -1,42 +1,102 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.6-alpine3.7
-RUN apk --update add bash vim
-
 # BEGIN PANDOC SECTION
-# from here: https://hub.docker.com/r/portown/alpine-pandoc/dockerfile
-ENV PANDOC_VERSION 2.0.2
-ENV PANDOC_DOWNLOAD_URL https://github.com/jgm/pandoc/archive/$PANDOC_VERSION.tar.gz
-ENV PANDOC_DOWNLOAD_SHA512 5830e0d8670a0bf80d9e8a84412d9f3782d5a6d9cf384fc7a853ad7f4e41a94ed51322ca73b86ad93528a7ec82eaf343704db811ece3455e68f1049761544a88
-ENV PANDOC_ROOT /usr/local/pandoc
+# Base #########################################################################
+FROM alpine:3.12 AS alpine-builder-base
+WORKDIR /app
 
-RUN apk add --no-cache \
-    gmp \
-    libffi \
- && apk add --no-cache --virtual build-dependencies \
-    --repository "http://nl.alpinelinux.org/alpine/edge/community" \
-    ghc \
-    cabal \
-    linux-headers \
-    musl-dev \
-    zlib-dev \
-    curl \
- && mkdir -p /pandoc-build && cd /pandoc-build \
- && curl -fsSL "$PANDOC_DOWNLOAD_URL" -o pandoc.tar.gz \
- && echo "$PANDOC_DOWNLOAD_SHA512  pandoc.tar.gz" | sha512sum -c - \
- && tar -xzf pandoc.tar.gz && rm -f pandoc.tar.gz \
- && ( cd pandoc-$PANDOC_VERSION && cabal update && cabal install --only-dependencies \
-    && cabal configure --prefix=$PANDOC_ROOT \
-    && cabal build \
-    && cabal copy \
-    && cd .. ) \
- && rm -Rf pandoc-$PANDOC_VERSION/ \
- && apk del --purge build-dependencies \
- && rm -Rf /root/.cabal/ /root/.ghc/ \
- && cd / && rm -Rf /pandoc-build
+RUN apk --no-cache add \
+        alpine-sdk \
+        bash \
+        ca-certificates \
+        cabal \
+        fakeroot \
+        ghc \
+        git \
+        gmp-dev \
+        lua5.3-dev \
+        pkgconfig \
+        zlib-dev
 
-ENV PATH $PATH:$PANDOC_ROOT/bin
+COPY cabal.root.config /root/.cabal/config
+RUN cabal --version \
+    && ghc --version \
+    && cabal new-update
+
+# Builder ######################################################################
+FROM alpine-builder-base as alpine-builder
+ARG pandoc_commit=master
+RUN git clone --branch=$pandoc_commit --depth=1 --quiet \
+    https://github.com/jgm/pandoc /usr/src/pandoc
+
+COPY ./alpine/freeze/pandoc-$pandoc_commit.project.freeze \
+     /usr/src/pandoc/cabal.project.freeze
+
+# Copy placeholder for pandoc-citeproc. This might be overwritten with a
+# proper binary later.
+COPY ./common/placeholder-pandoc-citeproc.sh \
+    /usr/local/bin/pandoc-citeproc
+
+# Install Haskell dependencies
+WORKDIR /usr/src/pandoc
+# Add pandoc-crossref to project
+ARG without_crossref=
+RUN test -n "$without_crossref" || \
+    printf "extra-packages: pandoc-crossref\n" > cabal.project.local;
+
+# Additional projects to compile alongside pandoc
+ARG extra_packages="pandoc-citeproc pandoc-crossref"
+
+RUN cabal new-update \
+    && cabal new-build \
+        --disable-tests \
+        --jobs \
+        . $extra_packages
+
+# Cabal's exec stripping doesn't seem to work reliably, let's do it here.
+RUN find dist-newstyle \
+         -name 'pandoc*' -type f -perm -u+x \
+         -exec strip '{}' ';' \
+         -exec cp '{}' /usr/local/bin/ ';'
+
+# Core #########################################################################
+FROM alpine:3.12 AS alpine-core
+ARG pandoc_version=edge
+LABEL maintainer='Albert Krewinkel <albert+pandoc@zeitkraut.de>'
+LABEL org.pandoc.maintainer='Albert Krewinkel <albert+pandoc@zeitkraut.de>'
+LABEL org.pandoc.author "John MacFarlane"
+LABEL org.pandoc.version "$pandoc_version"
+
+WORKDIR /data
+ENTRYPOINT ["/usr/local/bin/pandoc"]
+
+COPY --from=alpine-builder \
+  /usr/local/bin/pandoc \
+  /usr/local/bin/pandoc-citeproc \
+  /usr/local/bin/
+
+# Reinstall any system packages required for runtime.
+RUN apk --no-cache add \
+        gmp \
+        libffi \
+        lua5.3 \
+        lua5.3-lpeg
+
+# Crossref #####################################################################
+# FROM alpine-core AS alpine-crossref
+FROM tiangolo/uwsgi-nginx-flask:python3.6-alpine3.7 AS alpine-crossref
+COPY --from=alpine-builder \
+  /usr/local/bin/pandoc-crossref \
+  /usr/local/bin/
 # END PANDOC SECTION
 
+RUN apk --update add bash vim
 ENV STATIC_URL /static
 ENV STATIC_PATH /app/app/static
 COPY ./requirements.txt /var/www/requirements.txt
 RUN pip install -r /var/www/requirements.txt
+
+# FROM tiangolo/uwsgi-nginx-flask:python3.6-alpine3.7
+# RUN apk --update add bash vim
+# ENV STATIC_URL /static
+# ENV STATIC_PATH /app/app/static
+# COPY ./requirements.txt /var/www/requirements.txt
+# RUN pip install -r /var/www/requirements.txt
