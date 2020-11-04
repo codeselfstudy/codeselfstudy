@@ -54,6 +54,10 @@ def format_codewars_puzzle_for_discourse(puzzle):
     {puzzle["url"]}
 
     **Tags:** {tags}
+
+    This puzzle was posted by a Slackbot. If you want to help work on the app, send a message to @Josh.
+
+    You can discuss the problem and solutions in the comments below. Use the "hide details" feature in the editor to avoid spoilers.
     """)
 
     return {
