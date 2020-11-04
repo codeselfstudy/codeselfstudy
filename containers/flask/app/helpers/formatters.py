@@ -32,7 +32,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
         return None
 
     title = f"Puzzle: {puzzle['name']} [{puzzle['category']}]"
-    languages = ", ".join(puzzle["languages"])
+    languages = "{}, and {}".format(", ".join(puzzle["languages"][:-1]), puzzle["languages"][-1])
     tags = ", ".join(puzzle['tags'])
 
     description = puzzle.get("description", None)
