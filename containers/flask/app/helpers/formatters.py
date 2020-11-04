@@ -52,7 +52,9 @@ def format_codewars_puzzle_for_discourse(puzzle):
 
         {description}
 
-        # Link
+        # Solve It Here
+
+        Click this link to solve it on Codewars:
 
         {puzzle["url"]}
 
