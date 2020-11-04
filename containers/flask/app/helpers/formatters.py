@@ -2,7 +2,7 @@
 Useful functions for formatting text.
 """
 import os
-from textwrap import dedent
+# from textwrap import dedent
 
 DISCOURSE_PUZZLES_CATEGORY = os.getenv("DISCOURSE_PUZZLES_CATEGORY")
 print("puzzles category", DISCOURSE_PUZZLES_CATEGORY)
@@ -38,9 +38,8 @@ def format_codewars_puzzle_for_discourse(puzzle):
     description = puzzle.get("description", None)
     if description:
         description = description.replace(r"```", "\n```\n")
-    body = dedent(
-        f"""\
-        "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
+    # `dedent` wasn't working for me with format strings, so I'm removing the indents manually
+    lines = f""""{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
 
         > {languages}
 
@@ -57,11 +56,14 @@ def format_codewars_puzzle_for_discourse(puzzle):
         This puzzle was posted by a Slackbot. If you want to help work on the app, send a message to @Josh.
 
         You can discuss the problem and solutions in the comments below. Use the "hide details" feature in the editor to avoid spoilers.
-        """)
+        """).split("\n")
+
+    cleaned_lines = [line.strip() for line in lines]
+    raw = "\n".join(cleaned_lines)
 
     return {
         "title": title,
-        "raw": body,
+        "raw": raw,
         "category": DISCOURSE_PUZZLES_CATEGORY
     }
 
