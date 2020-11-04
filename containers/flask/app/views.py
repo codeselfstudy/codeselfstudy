@@ -55,7 +55,7 @@ def slack_slash_command():
                 link_to_forum_topic = construct_topic_url(discourse_response.get("topic_id", None), topic_slug=discourse_response.get("topic_slug", None), short=True)
 
                 body = format_codewars_puzzle_message(puzzle)
-                body += f"\n\nForum discussion:\n{link_to_forum_topic}"
+                body += f"\n\nForum discussion: {link_to_forum_topic}"
 
                 return jsonify({
                     "response_type": "in_channel",
