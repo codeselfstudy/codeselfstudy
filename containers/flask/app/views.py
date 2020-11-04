@@ -35,6 +35,7 @@ def slack_slash_command():
         payload = puzzle_command.extract_payload(data)
         if payload:
             query = puzzle_command.raw_text_to_query(payload["text"])
+            print("query in the controller", query)
             puzzle = p.query_puzzles(query)
             print("payload", payload)
             print("query", query)
