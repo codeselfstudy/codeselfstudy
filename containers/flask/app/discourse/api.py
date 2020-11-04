@@ -30,9 +30,20 @@ def create_forum_post(payload):
     Sample payload:
     ```
     {
+        # these three fields are required
         "title": "string",
-        "raw": "string",
-        "category": 0,
+        "raw": "string",  # markdown
+        "category": 0,    # the puzzle category is stored in an environment var
+
+        # this is only used if posting to an existing topic
+        "topic_id": 0,
+
+        # these fields are only for creating private messages
+        "target_recipients": "discourse1,discourse2",
+        "archetype": "private_message",
+
+        # this is only used if you want the change the `created_at` time
+        "created_at": "2017-01-31"
     }
     ```
 
@@ -42,16 +53,9 @@ def create_forum_post(payload):
     can get the `topic_id` and `topic_slug` fields and link to
     f"{DISCOURSE_ROOT_URL}/t/{topic_slug}/{topic_id}"
     """
-    # params = {}
-    # param_string = urlencode(params, quote_via=quote_plus)
-    # endpoint = "{}/posts.json?{}".format(BASE_URL, param_string)
     endpoint = f"{DISCOURSE_ROOT_URL}/posts.json"
-    # logging.info(f"making request to {endpoint}")
 
-    res = requests.post(endpoint, headers=headers, data=payload)
-    t = res.json()
-    # print(json.dumps(t, indent=4))
-    # topic_url = f"{DISCOURSE_ROOT_URL}/t/{t.topic_slug}/{t.topic_id}"
-    return t
+    discourse_response = requests.post(endpoint, headers=headers, data=payload)
+    return discourse_response.json()
 
 

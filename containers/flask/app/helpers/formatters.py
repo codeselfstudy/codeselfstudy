@@ -54,7 +54,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
 
         # Solve It Here
 
-        Click this link to solve it on Codewars:
+        Click the link below to solve it on Codewars:
 
         {puzzle["url"]}
 
