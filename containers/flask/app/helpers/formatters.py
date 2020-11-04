@@ -3,7 +3,7 @@ Useful functions for formatting text.
 """
 from textwrap import dedent
 
-import markdown
+from markdown import markdown
 
 def format_codewars_puzzle_message(puzzle):
     """This formats a codewars puzzle for Slack."""
