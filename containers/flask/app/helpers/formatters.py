@@ -38,24 +38,26 @@ def format_codewars_puzzle_for_discourse(puzzle):
     description = puzzle.get("description", None)
     if description:
         description = description.replace(r"```", "\n```\n")
-    body = dedent(f"""    "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
+    body = dedent(
+        f"""\
+        "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
 
-    > {languages}
+        > {languages}
 
-    - **Difficulty:** {puzzle.get("kyu", "unknown")} kyu
-    - **Stars:** {puzzle.get("stars", "unknown")}
-    - **Votes:** {puzzle.get("votes", "unknown")}
+        - **Difficulty:** {puzzle.get("kyu", "unknown")} kyu
+        - **Stars:** {puzzle.get("stars", "unknown")}
+        - **Votes:** {puzzle.get("votes", "unknown")}
 
-    > {description}
+        > {description}
 
-    {puzzle["url"]}
+        {puzzle["url"]}
 
-    **Tags:** {tags}
+        **Tags:** {tags}
 
-    This puzzle was posted by a Slackbot. If you want to help work on the app, send a message to @Josh.
+        This puzzle was posted by a Slackbot. If you want to help work on the app, send a message to @Josh.
 
-    You can discuss the problem and solutions in the comments below. Use the "hide details" feature in the editor to avoid spoilers.
-    """)
+        You can discuss the problem and solutions in the comments below. Use the "hide details" feature in the editor to avoid spoilers.
+        """)
 
     return {
         "title": title,
