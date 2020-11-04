@@ -33,14 +33,14 @@ def format_codewars_puzzle_for_discourse(puzzle):
     if not puzzle:
         return None
 
-    title = f"Coding puzzle: {puzzle['name']} (level {puzzle['kyu']})"
+    title = f"Coding Challenge: {puzzle['name']}"
     languages = ", ".join(puzzle["languages"])
     tags = ", ".join(puzzle['tags'])
 
     # convert to markdown just to strip out any fancy HTML that might be there
     description_md = markdown(puzzle.get("description", None))
-
-    body = dedent(f"""
+    print("description markdown", description_md)
+    body = dedent(f"""\
     "{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
 
     > {languages}
