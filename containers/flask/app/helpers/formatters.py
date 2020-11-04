@@ -31,7 +31,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
     if not puzzle:
         return None
 
-    title = f"Puzzle: {puzzle['name']}"
+    title = f"Puzzle: {puzzle['name']} ({puzzle['category']})"
     languages = ", ".join(puzzle["languages"])
     tags = ", ".join(puzzle['tags'])
 
@@ -39,19 +39,23 @@ def format_codewars_puzzle_for_discourse(puzzle):
     if description:
         description = description.replace(r"```", "\n```\n")
     # `dedent` wasn't working for me with format strings, so I'm removing the indents manually
-    lines = f""""{puzzle["name"]}" is a coding puzzle that can be solved in any of the following languages:
-
-        > {languages}
+    lines = f"""**{puzzle["name"]}** is a coding puzzle that people can be attempted in the following languages:
+        {languages}
 
         - **Difficulty:** {puzzle.get("kyu", "unknown")} kyu
         - **Stars:** {puzzle.get("stars", "unknown")}
         - **Votes:** {puzzle.get("votes", "unknown")}
+        - **Tags:** {tags}
 
-        > {description}
+        ## Description
+
+        {description}
+
+        ## Link
 
         {puzzle["url"]}
 
-        **Tags:** {tags}
+        ## Notes
 
         This puzzle was posted by a Slackbot. If you want to help work on the app, send a message to @Josh.
 
