@@ -62,7 +62,7 @@ def format_codewars_puzzle_for_discourse(puzzle):
 
         This puzzle was posted by a Slackbot via a slash command. If you want to help work on the app, send a message to @Josh.
 
-        If you don't want to see the coding puzzles in the forum, you can go into [your settings](https://forum.codeselfstudy.com/my/preferences/categories) and mute the puzzles category."
+        If you don't want to see the coding puzzles when you visit the forum, you can go into [your settings](https://forum.codeselfstudy.com/my/preferences/categories) and mute the puzzles category.
         """.split("\n")
 
     cleaned_lines = [line.strip() for line in lines]
