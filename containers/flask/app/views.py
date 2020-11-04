@@ -1,6 +1,7 @@
 import json
 from flask import render_template, jsonify, abort, request
-from app import app, slack
+from app import app
+from app.slack import puzzle_command, signature
 import app.puzzles as p
 from app.helpers import format_codewars_puzzle_message
 
@@ -28,12 +29,12 @@ def slack_slash_command():
     slack_ts = request.headers.get("X-Slack-Request-Timestamp")
     data = request.get_data().decode()
     # print("data", data)
-    if slack.signature.verify_signature(slack_signature, slack_ts, data):
+    if signature.verify_signature(slack_signature, slack_ts, data):
         print("signature valid")
 
-        payload = slack.puzzle_command.extract_payload(data)
+        payload = puzzle_command.extract_payload(data)
         if payload:
-            query = slack.puzzle_command.raw_text_to_query(payload["text"])
+            query = puzzle_command.raw_text_to_query(payload["text"])
             puzzle = p.query_puzzles(query)
             print("payload", payload)
             print("query", query)
