@@ -1,5 +1,8 @@
 """
 Useful functions for formatting text.
+
+TODO: some of these should probably be moved into their packages -- like
+Discourse messages could be formatted in the discourse package, etc.
 """
 import os
 from textwrap import dedent
@@ -16,9 +19,10 @@ def format_codewars_puzzle_message(puzzle):
     languages = ", ".join(puzzle["languages"])
     # TODO: this hack could be cleaned up with the `dedent` function
     lines = [
+        "Try solving this puzzle on codewars:",
         f"*{puzzle['name']}* ({puzzle['kyu']} kyu)",
         f"{puzzle['url']}"
-        f"\n",
+        "\n",
         f"> *available in:* {languages}",
         f"> *category:* {puzzle['category']}"
     ]
