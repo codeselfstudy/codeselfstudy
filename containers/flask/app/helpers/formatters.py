@@ -19,7 +19,7 @@ def format_codewars_puzzle_message(puzzle):
     languages = ", ".join(puzzle["languages"])
     # TODO: this hack could be cleaned up with the `dedent` function
     lines = [
-        "Try solving this puzzle on codewars:",
+        "Try solving this puzzle on codewars:\n",
         f"*{puzzle['name']}* ({puzzle['kyu']} kyu)",
         f"{puzzle['url']}"
         "\n",
