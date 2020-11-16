@@ -1,0 +1,24 @@
+{
+    "name": "@codeselfstudy/django",
+    "version": "0.1.0",
+    "description": "Code Self Study Django backend",
+    "main": "index.js",
+    "scripts": {
+        "start": "parcel static/src/parcel-entry.js --hmr-port 34471 --out-dir static/dist --out-file main",
+        "build": "parcel build static/src/parcel-entry.js --no-source-maps --out-dir static/dist --out-file main",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "J. Cohen <hostelmarketing@gmail.com> (https://github.com/j127)",
+    "license": "BSD-3-Clause",
+    "private": true,
+    "devDependencies": {
+        "parcel-bundler": "^1.12.4",
+        "sass": "^1.29.0",
+        "typescript": "^4.0.5"
+    },
+    "dependencies": {
+        "bulma": "^0.9.1",
+        "lodash": "^4.17.20",
+        "mjml": "^4.7.1"
+    }
+}
