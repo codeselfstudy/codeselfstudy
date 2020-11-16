@@ -3,6 +3,7 @@ version: "3"
 volumes:
     mongo:
     redis:
+    postgres:
 
 services:
     # The app is going to run on the host machine's port 4444 in development
@@ -42,6 +43,24 @@ services:
         volumes:
             - ./containers/flask:/app
         env_file: .env/flask
+
+    django:
+        build:
+            dockerfile: dev.Dockerfile
+            context: ./containers/django
+        depends_on:
+            - postgres
+        volumes:
+            - ./containers/django:/app
+        env_file: .env/django
+        command: python manage.py runserver 0.0.0.0:8000
+
+    postgres:
+        build:
+            dockerfile: Dockerfile
+            context: ./containers/postgres
+            volumes: postgres:/var/lib/postgresql/data
+        env_file: .env/postgres
 
     mongo:
         build:

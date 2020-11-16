@@ -1,0 +1,20 @@
+# Copy this file to `.env/django` and fill in your settings.
+# Every developer has their own copy of this file.
+DEBUG=True
+
+# generate a secret key with the following line
+# python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+DJANGO_SECRET_KEY=
+
+SLACK_SIGNING_SECRET=
+SLACK_APP_ID=
+
+#############
+# DISCOURSE #
+#############
+
+DISCOURSE_ROOT_URL=https://forum.codeselfstudy.com
+DISCOURSE_API_KEY=
+DISCOURSE_API_USER=content_bot
+# The muted bot test category is 44. The live puzzles category is 6
+DISCOURSE_PUZZLES_CATEGORY=44
