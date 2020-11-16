@@ -9,6 +9,14 @@ DJANGO_SECRET_KEY=
 SLACK_SIGNING_SECRET=
 SLACK_APP_ID=
 
+# postgres
+DATABASE_NAME=
+DATABASE_USER=
+DATABASE_PASSWORD=
+# the host is the name of the service in the docker-compose file
+DATABASE_HOST=postgres
+DATABASE_PORT=5432
+
 #############
 # DISCOURSE #
 #############
