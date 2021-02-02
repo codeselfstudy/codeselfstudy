@@ -2,7 +2,7 @@
 Flask==1.1.2
 
 # tools
-bleach==3.2.1
+bleach==3.3.0
 
 # databases
 pymongo==3.11.0
