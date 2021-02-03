@@ -6,7 +6,8 @@ defmodule Scrapers.ProjectEuler do
 
   @base_url "https://projecteuler.net/problem="
   # TODO: this may have changed:
-  @output_dir File.cwd!() <> "/../containers/mongo/seed_data/project_euler"
+  # @output_dir File.cwd!() <> "/../containers/mongo/seed_data/project_euler"
+  @output_dir "./data"
   # Milliseconds to wait between fetches
   @delay 1000 * 1
 
