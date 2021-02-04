@@ -40,8 +40,8 @@
         "start": "npm run develop",
         "serve": "gatsby serve",
         "clean": "gatsby clean",
-        "stage" :"npm run build && netlify deploy --dir=public",
-        "deploy" :"npm run build && netlify deploy --dir=public --prod",
+        "stage" :"npm run clean && npm run build && netlify deploy --dir=public",
+        "deploy" :"npm run clean && npm run build && netlify deploy --dir=public --prod",
         "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
     }
 }
