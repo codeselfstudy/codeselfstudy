@@ -2,7 +2,7 @@
     "name": "gatsby-starter-default",
     "private": true,
     "description": "This app services content on the Code Self Study website.",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "author": "The Code Self Study community",
     "dependencies": {
         "bulma": "^0.8.2",
@@ -40,6 +40,8 @@
         "start": "npm run develop",
         "serve": "gatsby serve",
         "clean": "gatsby clean",
+        "stage" :"npm run build && netlify deploy --dir=public",
+        "deploy" :"npm run build && netlify deploy --dir=public --prod",
         "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
     }
 }
