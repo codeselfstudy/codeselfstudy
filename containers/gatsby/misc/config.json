@@ -1,9 +1,0 @@
-{
-    "telemetry": {
-        "enabled": false,
-        "machineId": "no"
-    },
-    "cli": {
-        "packageManager": "npm"
-    }
-}

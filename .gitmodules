@@ -1,3 +1,0 @@
-[submodule "containers/gatsby/src/content"]
-	path = containers/gatsby/src/content
-	url = https://github.com/codeselfstudy/codeselfstudy_content.git

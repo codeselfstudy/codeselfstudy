@@ -1,0 +1,57 @@
+title = "Code Self Study"
+html_title = "Learn Computer Programming, Python, JavaScript at Our Bootcamp Alternative"
+is_home = true
+
+body = """
+<div class="hero homepage-hero bg-circuit-board">
+    <div class="hero-body container content">
+        <h1 class="title is-1">Code Self Study</h1>
+        <h2 class="subtitle is-4">Self-study computer programming in a community of like-minded people</h2>
+        <p> We're a friendly programming community made up of over 5,000 programmers in Berkeley and the San Francisco Bay Area. All programming languages and levels of experience are welcome!</p>
+
+        <a class="button is-large is-link" href="https://forum.codeselfstudy.com/signup" rel="nofollow">Join the Community</a>
+    </div>
+</div>
+<section class="section" style="padding-bottom: 0">
+    <div class="container content">
+        <div class="columns">
+            <div class="column">
+                <h2 class="title is-2">Community</h2>
+                <p>We meet <a href="/events/">every Wednesday and Saturday</a> in Berkeley. Get out of your room and meet like-minded programmers. If you can't make it to the events in California, you can still join our <a href="https://forum.codeselfstudy.com/">online community</a> from anywhere in the world.</p>
+            </div>
+            <div class="column">
+                <h2 class="title is-2">Get Help</h2>
+                <p>The experienced members in the group help the beginners. Bring your programming questions, and don't hesitate to ask. We can also help you design study plans. The model is self-study with mentorship.</p>
+            </div>
+            <div class="column">
+                <h2 class="title is-2">Networking</h2>
+                <p>It's easier to get a job when you know people in the industry. Many people in the group have gotten jobs through networking or through tips they've acquired from other group members.</p>
+            </div>
+        </div>
+        <hr />
+    </div>
+</section>
+<section class="section" style="padding-top: 17px">
+    <div class="container content">
+        <h2 class="title is-2">What We Do</h2>
+
+        <p>There are dozens of local meetup groups that teach people how to code. Here are some ways that we are different from most other groups:</p>
+
+        <ul>
+            <li>We are building a local community of friendly, creative, highly-motivated programmers in the Berkeley area.</li>
+            <li>We're open to all programming languages, all levels of ability, and all types of programming (machine learning, scientific computing, hardware, systems programming, Web development, game programming, computer graphics, WebAssembly and more). If you like things like data science, lisps, logic, puzzles, esolangs, and mathematics you will probably find like-minded people here.</li>
+            <li>We're working towards the establishment of a local programming space and educational center in Berkeley.</li>
+            <li>If you are looking for a job, we would like to help you find a job -- and if you're just programming because you love programming, or you are interested in entrepreneurship instead of getting a job, this community is ideal for those things as well.</li>
+            <li>The format is self study with advice and mentorship from the more experienced members. We can help you with study plans and guidance &mdash; just let us know at a meetup or in the forum.</li>
+            <li>We have extra events and resources for people <a href="/autism/" class="muted-link"> on the autism spectrum</a>.</li>
+        </ul>
+
+        <p>Some of the languages our members have been working with are: Python, JavaScript, Rust, WebAssembly, Java, Scheme, Racket, Haskell, Clojure, Common Lisp, C, C++, C#, F#, Lua, Elixir, Erlang, Elm, Purescript, Ruby, Scala, PHP, Go, R, HTML/CSS, Octave, SQL and more. We're open to anything that is computer-related.</p>
+
+        <h2 class="title is-2">Coding Bootcamp Supplement</h2>
+        <p>You can attend our meetings as a self-directed, coding bootcamp supplement or alternative. Experienced programmers in the group can offer mentorship on a project-based approach to learning.</p>
+
+        <p>This community is self-directed &mdash; if you would like assistance with forming a study plan, let us know in the forum, chatroom, and/or at the meetups.</p>
+    </div>
+</section>
+"""

@@ -1,8 +1,2 @@
-node_modules/
-.git/
-tags
-tags.*
-*PENDING_DELETION*
-.cache/
-TMP/
-docs/book/
+.cache
+public
