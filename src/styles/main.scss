@@ -76,6 +76,18 @@ a.muted-link {
     text-decoration: underline;
 }
 
+// responsive buttons
+@media screen and (max-width: 768px) {
+    .button {
+        max-width: 95%;
+        border-radius: 2px;
+
+        &.is-large {
+            font-size: 1rem;
+        }
+    }
+}
+
 .quote-hero .hero-body blockquote {
     color: #666;
     font-size: $size-5;
