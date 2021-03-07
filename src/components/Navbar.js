@@ -1,13 +1,13 @@
 import { Link } from "gatsby";
-import React from "react";
+import React, { useState } from "react";
 
 const Navbar = () => {
+    const [navIsOpen, setNavIsOpen] = useState(false);
+
     const toggleNav = () => {
-        const toggle = document.querySelector(".navbar-burger");
-        const menu = document.querySelector(".navbar-menu");
-        toggle.classList.toggle("is-active");
-        menu.classList.toggle("is-active");
+        setNavIsOpen(!navIsOpen);
     };
+
     return (
         <nav
             id="mainNavbar"
@@ -24,7 +24,9 @@ const Navbar = () => {
                     {/* eslint-disable-next-line */}
                     <a
                         role="button"
-                        className="navbar-burger burger"
+                        className={`navbar-burger burger ${
+                            navIsOpen ? "is-active" : ""
+                        }`}
                         onClick={toggleNav}
                         aria-label="menu"
                         aria-expanded="false"
@@ -36,7 +38,10 @@ const Navbar = () => {
                     </a>
                 </div>
 
-                <div id="codeselfstudyNavbar" className="navbar-menu">
+                <div
+                    id="codeselfstudyNavbar"
+                    className={`navbar-menu ${navIsOpen ? "is-active" : ""}`}
+                >
                     <div className="navbar-start">
                         <Link to="/about/" className="navbar-item">
                             About
