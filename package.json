@@ -5,7 +5,7 @@
     "version": "0.3.0",
     "author": "The Code Self Study community",
     "dependencies": {
-        "@j127/embed-discourse": "^0.2.4",
+        "@j127/embed-discourse": "^0.3.0",
         "bulma": "^0.8.2",
         "bulma-extensions": "^6.2.7",
         "gatsby": "^2.32.11",
