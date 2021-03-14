@@ -29,6 +29,22 @@ module.exports = {
         //     },
         // },
         {
+            resolve: `gatsby-plugin-google-gtag`,
+            options: {
+                trackingIds: [
+                    "UA-37305501-3", // Google Analytics
+                ],
+                gtagConfig: {
+                    anonymize_ip: true,
+                },
+                pluginConfig: {
+                    head: true,
+                    respectDNT: true,
+                    exclude: [],
+                },
+            },
+        },
+        {
             resolve: `gatsby-source-filesystem`,
             options: {
                 name: `pages`,
