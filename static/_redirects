@@ -8,6 +8,8 @@
 /presentations/    /contact/
 /presentations-schedule    /events/
 
+/blog/*    https://blog.codeselfstudy.com/blog/:splat
+
 # RSS/Atom feeds -- these are broken at the moment
 /rss    /feeds/all.atom.xml
 /blog/feed  /feeds/all.atom.xml
@@ -42,6 +44,7 @@
 /wiki/             https://wiki.codeselfstudy.com/
 /w                 https://wiki.codeselfstudy.com/
 /w/                https://wiki.codeselfstudy.com/
+/wiki/*            https://wiki.codeselfstudy.com/
 /programming-notes-wiki/    https://wiki.codeselfstudy.com/
 /python-web-scraping-selenium.html  https://wiki.codeselfstudy.com/
 
