@@ -83,6 +83,9 @@ module.exports = {
                 // The whitelist rules match any prefix (class, id, element).
                 // https://purgecss.com/whitelisting.html#specific-selectors
                 whitelist: [
+                    ".discourse-topic-link",
+                    "li.discourse-topic-link",
+                    "li.discourse-topic-link a",
                     "blockquote",
                     "hr",
                     "hero",
