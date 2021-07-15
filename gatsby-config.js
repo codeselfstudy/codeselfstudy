@@ -52,12 +52,6 @@ module.exports = {
             },
         },
         `gatsby-transformer-remark`,
-        {
-            resolve: `gatsby-plugin-robots-txt`,
-            options: {
-                configFile: `robots-txt.config.js`,
-            },
-        },
         `gatsby-transformer-sharp`,
         `gatsby-plugin-sharp`,
         {
