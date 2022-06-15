@@ -10,12 +10,6 @@ const sponsors = [
         src: digitaloceanLogo,
         href: "/sponsor/digital-ocean/",
     },
-    {
-        id: 2,
-        name: "Fullstack Rust", // don't remove until Nov 2020
-        src: fullstackRustLogo,
-        href: "https://www.newline.co/fullstack-rust",
-    },
 ];
 
 function Sponsor({ name, src, href }) {

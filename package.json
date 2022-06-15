@@ -5,12 +5,11 @@
     "version": "0.3.0",
     "author": "The Code Self Study community",
     "dependencies": {
-        "@j127/embed-discourse": "^0.3.4",
-        "bulma": "^0.8.2",
+        "bulma": "^0.9.4",
         "bulma-extensions": "^6.2.7",
         "gatsby": "^2.32.11",
         "gatsby-image": "^2.11.0",
-        "gatsby-plugin-google-gtag": "^3.11.0",
+        "gatsby-plugin-google-gtag": "^2.8.0",
         "gatsby-plugin-manifest": "^2.12.1",
         "gatsby-plugin-offline": "^3.10.2",
         "gatsby-plugin-purgecss": "^4.0.1",
@@ -23,15 +22,18 @@
         "gatsby-transformer-sharp": "^2.12.1",
         "gatsby-transformer-toml": "^2.11.0",
         "lodash": "^4.17.21",
-        "node-sass": "^4.14.1",
         "prop-types": "^15.7.2",
         "react": "^16.14.0",
         "react-dom": "^16.14.0",
         "react-helmet": "^5.2.1",
         "react-icons": "^3.11.0",
-        "text-spinners": "^1.0.5"
+        "react-text-spinners": "^2.0.1",
+        "sass": "^1.52.3",
+        "text-spinners": "^1.0.5",
+        "wretch": "^1.7.10"
     },
     "devDependencies": {
+        "netlify-cli": "^10.5.1",
         "prettier": "^1.19.1"
     },
     "license": "BSD",
