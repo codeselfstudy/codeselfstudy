@@ -33,19 +33,19 @@
         "wretch": "^1.7.10"
     },
     "devDependencies": {
-        "netlify-cli": "^10.5.1",
-        "prettier": "^1.19.1"
+        "netlify-cli": "^11.5.1",
+        "prettier": "^2.7.1"
     },
     "license": "BSD",
     "scripts": {
         "build": "gatsby build",
         "develop": "gatsby develop",
         "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
-        "start": "npm run develop",
+        "start": "yarn develop",
         "serve": "gatsby serve",
         "clean": "gatsby clean",
-        "stage": "npm run clean && npm run build && netlify deploy --dir=public",
-        "deploy": "npm run clean && npm run build && netlify deploy --dir=public --prod",
+        "stage": "yarn clean && yarn build && netlify deploy --dir=public",
+        "deploy": "yarn clean && yarn build && netlify deploy --dir=public --prod",
         "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
     }
 }
