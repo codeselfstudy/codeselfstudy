@@ -40,7 +40,7 @@
     "scripts": {
         "build": "gatsby build",
         "develop": "gatsby develop",
-        "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
+        "format": "prettier --write '**/*.{md,mdx,ts,js,jsx,tsx,yaml,yml,json,html,css,scss}'",
         "start": "yarn develop",
         "serve": "gatsby serve",
         "clean": "gatsby clean",
