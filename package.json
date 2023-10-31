@@ -33,8 +33,8 @@
         "wretch": "^1.7.10"
     },
     "devDependencies": {
-        "netlify-cli": "^11.5.1",
-        "prettier": "^2.7.1"
+        "prettier": "^2.7.1",
+        "wrangler": "^3.15.0"
     },
     "license": "BSD",
     "scripts": {
@@ -44,7 +44,7 @@
         "start": "yarn develop",
         "serve": "gatsby serve",
         "clean": "gatsby clean",
-        "deploy": "yarn build && netlify deploy --dir=public --prod",
+        "deploy": "yarn build && wrangler pages deploy public",
         "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
     }
 }
