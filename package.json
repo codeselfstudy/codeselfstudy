@@ -38,14 +38,13 @@
     },
     "license": "BSD",
     "scripts": {
-        "build": "gatsby build",
+        "build": "yarn clean && gatsby build",
         "develop": "gatsby develop",
         "format": "prettier --write '**/*.{md,mdx,ts,js,jsx,tsx,yaml,yml,json,html,css,scss}'",
         "start": "yarn develop",
         "serve": "gatsby serve",
         "clean": "gatsby clean",
-        "stage": "yarn clean && yarn build && netlify deploy --dir=public",
-        "deploy": "yarn clean && yarn build && netlify deploy --dir=public --prod",
+        "deploy": "yarn build && netlify deploy --dir=public --prod",
         "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
     }
 }
