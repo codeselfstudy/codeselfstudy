@@ -49,7 +49,7 @@ export default function DiscountsBox() {
                 to our group members.
             </p>
             <div className="columns" style={{ margin: "27px 17px" }}>
-                {sponsors.map(s => (
+                {sponsors.map((s) => (
                     <Sponsor
                         className="column"
                         key={s.id}

@@ -1,56 +1,48 @@
 export const quotes = [
     {
-        quote:
-            'The Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform.',
-        author: 'Ada Lovelace',
-        link: undefined // TODO: link to a page about the author
+        quote: "The Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform.",
+        author: "Ada Lovelace",
+        link: undefined, // TODO: link to a page about the author
     },
     {
-        quote:
-            'Be curious. Read widely. Try new things. I think a lot of what people call intelligence boils down to curiosity.',
-        author: 'Aaron Swartz',
+        quote: "Be curious. Read widely. Try new things. I think a lot of what people call intelligence boils down to curiosity.",
+        author: "Aaron Swartz",
     },
     {
-        quote: 'How one does anything is how one does everything.',
-        author: 'Anon',
+        quote: "How one does anything is how one does everything.",
+        author: "Anon",
     },
     {
-        quote:
-            "The computing scientist's main challenge is not to get confused by the complexities of his own making.",
-        author: 'Edsger W. Dijkstra',
+        quote: "The computing scientist's main challenge is not to get confused by the complexities of his own making.",
+        author: "Edsger W. Dijkstra",
     },
     {
-        quote: 'I would rather die of passion than of boredom.',
-        author: 'Vincent Van Gogh',
+        quote: "I would rather die of passion than of boredom.",
+        author: "Vincent Van Gogh",
     },
     {
-        quote:
-            "If you don't fail at least 90% of the time, you're not aiming high enough.",
-        author: 'Alan Kay',
+        quote: "If you don't fail at least 90% of the time, you're not aiming high enough.",
+        author: "Alan Kay",
     },
     {
         quote: "If you don't finish then you're just busy, not productive.",
-        author: 'Anon',
+        author: "Anon",
     },
     {
-        quote:
-            'A good programmer is someone who always looks both ways before crossing a one-way street.',
-        author: 'Doug Linder',
+        quote: "A good programmer is someone who always looks both ways before crossing a one-way street.",
+        author: "Doug Linder",
     },
     {
-        quote:
-            "If you don't make mistakes, you're not working on hard enough problems.",
-        author: 'Frank Wilczek',
+        quote: "If you don't make mistakes, you're not working on hard enough problems.",
+        author: "Frank Wilczek",
     },
     {
-        quote:
-            'Almost every programming language is overrated by its practitioners.',
-        author: 'Larry Wall',
+        quote: "Almost every programming language is overrated by its practitioners.",
+        author: "Larry Wall",
     },
     {
-        quote:
-            'Developing tolerance for imperfection is the key factor in turning chronic starters into consistent finishers.',
-        author: 'Jon Acuff',
+        quote: "Developing tolerance for imperfection is the key factor in turning chronic starters into consistent finishers.",
+        author: "Jon Acuff",
     },
 ];
 

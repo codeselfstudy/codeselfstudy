@@ -17,12 +17,12 @@ export default function ForumPosts(props) {
         const base_url = "https://forum.codeselfstudy.com";
         await wretch(`${base_url}/latest.json`)
             .get()
-            .json(data => {
+            .json((data) => {
                 const ts = data["topic_list"]["topics"];
                 console.log("got topics", ts);
                 setTopics(ts);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error("ERROR", err);
                 setError(`${err.name}: ${err.message}`);
             });

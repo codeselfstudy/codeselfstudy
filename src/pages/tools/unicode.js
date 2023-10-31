@@ -12,7 +12,7 @@ export default function Unicode() {
     function handleOnKeyUp(e) {
         const chars = e.target.value;
         const translated = [...chars]
-            .map(char => {
+            .map((char) => {
                 console.log("char", char);
                 return sansSerif[char] || char;
             })

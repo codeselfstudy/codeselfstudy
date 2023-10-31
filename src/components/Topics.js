@@ -30,12 +30,12 @@ export default function Topics({ topics, offset = 0, numTopics = 14 }) {
     return (
         <>
             <div className="column">
-                {leftTopics.map(t => (
+                {leftTopics.map((t) => (
                     <Topic data={t} />
                 ))}
             </div>
             <div className="column">
-                {rightTopics.map(t => (
+                {rightTopics.map((t) => (
                     <Topic data={t} />
                 ))}
             </div>

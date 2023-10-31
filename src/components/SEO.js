@@ -5,10 +5,10 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
-import { useStaticQuery, graphql } from 'gatsby';
+import React from "react";
+import PropTypes from "prop-types";
+import Helmet from "react-helmet";
+import { useStaticQuery, graphql } from "gatsby";
 
 function SEO({ description, lang, meta, title, isHome, isNoindex }) {
     const { site } = useStaticQuery(
@@ -34,7 +34,7 @@ function SEO({ description, lang, meta, title, isHome, isNoindex }) {
             ? `${site.siteMetadata.title} | %s`
             : `%s | ${site.siteMetadata.title}`;
 
-    const metaRobots = isNoindex === true ? 'noindex,nofollow' : 'index,follow';
+    const metaRobots = isNoindex === true ? "noindex,nofollow" : "index,follow";
     return (
         <Helmet
             htmlAttributes={{

@@ -64,10 +64,10 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
 
     // Separate the collection types (pages and posts).
     const allEdges = result.data.allMarkdownRemark.edges;
-    const postEdges = allEdges.filter(edge => {
+    const postEdges = allEdges.filter((edge) => {
         return edge.node.fields.collection === "posts";
     });
-    const pageEdges = allEdges.filter(edge => {
+    const pageEdges = allEdges.filter((edge) => {
         return edge.node.fields.collection === "pages";
     });
 
