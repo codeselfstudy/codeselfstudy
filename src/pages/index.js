@@ -16,7 +16,7 @@ export default function IndexPage({ data }) {
         <Layout isHome={true}>
             <SEO isHome={true} title={page.html_title} />
             <div dangerouslySetInnerHTML={{ __html: page.body }}></div>
-            <ForumTopics />
+            {/* <ForumTopics /> */}
         </Layout>
     );
 }

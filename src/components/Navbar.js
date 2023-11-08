@@ -51,15 +51,15 @@ const Navbar = () => {
                             Events
                         </Link>
 
-                        <a
+                        {/* <a
                             href="https://forum.codeselfstudy.com/"
                             className="navbar-item"
                         >
                             Forum
-                        </a>
+                        </a> */}
                     </div>
 
-                    <div className="navbar-end">
+                    {/* <div className="navbar-end">
                         <div className="navbar-item">
                             <div className="buttons">
                                 <a
@@ -78,7 +78,7 @@ const Navbar = () => {
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </nav>
