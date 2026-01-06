@@ -1,103 +1,80 @@
-import { useState } from "react";
+import * as React from "react";
 import { Link } from "@tanstack/react-router";
+import { Menu } from "lucide-react";
+
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const LINKS = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/events", label: "Events" },
+  // { href: "/contact", label: "Contact" },
 ];
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   return (
     <nav className="fixed top-0 left-0 z-10 w-full border-b border-gray-100 bg-white shadow-sm">
       <div className="mx-auto max-w-[1344px] px-4 sm:px-6 lg:px-8">
-        <div className="flex h-[58px] justify-between">
-          <div className="flex">
-            <div className="flex shrink-0 items-center">
-              <Link
-                to="/"
-                className="text-lg font-bold text-[#4a4a4a] hover:text-[#363636]"
-                id="siteLogoText"
-              >
-                Code Self Study
-              </Link>
-            </div>
+        <div className="flex h-[58px] items-center justify-between">
+          <div className="flex shrink-0 items-center">
+            <Link
+              to="/"
+              className="text-lg font-bold text-[#4a4a4a] hover:text-[#363636]"
+              id="siteLogoText"
+            >
+              Code Self Study
+            </Link>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <div className="hidden sm:flex sm:space-x-4">
             {LINKS.map((link) => (
               <Link
                 key={link.label}
                 to={link.href}
-                className="inline-flex items-center px-[13.5px] py-[9px] text-[1rem] leading-6 font-medium text-[#4a4a4a] hover:bg-gray-50 hover:text-[#363636]"
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "text-[1rem] font-medium text-[#4a4a4a]"
+                )}
               >
                 {link.label}
               </Link>
             ))}
           </div>
-          <div className="-mr-2 flex items-center sm:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none focus:ring-inset"
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Open main menu</span>
-              {!isOpen ? (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
-            </button>
+          <div className="sm:hidden">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger
+                className={buttonVariants({ variant: "ghost", size: "icon" })}
+              >
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Open main menu</span>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <SheetTitle>Menu</SheetTitle>
+                <div className="mt-6 flex flex-col space-y-4">
+                  {LINKS.map((link) => (
+                    <Link
+                      key={link.label}
+                      to={link.href}
+                      className="text-lg font-medium text-[#4a4a4a] hover:text-[#363636]"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
-
-      {isOpen && (
-        <div className="sm:hidden" id="mobile-menu">
-          <div className="space-y-1 pt-2 pb-3">
-            {LINKS.map((link) => (
-              <Link
-                key={link.label}
-                to={link.href}
-                className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-[#4a4a4a] hover:border-gray-300 hover:bg-gray-50 hover:text-[#363636]"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
