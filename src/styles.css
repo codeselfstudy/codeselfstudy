@@ -148,6 +148,9 @@ code {
   h2 {
     @apply mb-4 text-2xl font-bold;
   }
+  a {
+    @apply text-blue-600 hover:underline;
+  }
 }
 
 .bg-circuit-board {

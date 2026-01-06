@@ -9,13 +9,8 @@ function Discounts() {
       <p className="mb-6">These companies offer discounts to our members.</p>
       <ul className="list-disc space-y-2 pl-6">
         <li>
-          <Link
-            to="/discounts/digitalocean"
-            className="text-blue-600 hover:underline"
-          >
-            DigitalOcean
-          </Link>{" "}
-          (free hosting credits)
+          <Link to="/discounts/digitalocean">DigitalOcean</Link> (free hosting
+          credits)
         </li>
       </ul>
     </div>

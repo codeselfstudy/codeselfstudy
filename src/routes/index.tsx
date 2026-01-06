@@ -38,10 +38,7 @@ function App() {
             <div>
               <h2>Community</h2>
               <p>
-                We meet{" "}
-                <Link to="/events" className="text-blue-600 hover:underline">
-                  every Wednesday and Saturday
-                </Link>{" "}
+                We meet <Link to="/events">every Wednesday and Saturday</Link>{" "}
                 in Berkeley. Get out of your room and meet like-minded
                 programmers.
               </p>

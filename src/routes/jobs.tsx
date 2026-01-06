@@ -12,10 +12,7 @@ function Jobs() {
       </p>
       <p>
         It's free to list a job here &mdash; just{" "}
-        <Link to="/contact" className="text-blue-600 hover:underline">
-          send us a message
-        </Link>
-        .
+        <Link to="/contact">send us a message</Link>.
       </p>
     </div>
   );

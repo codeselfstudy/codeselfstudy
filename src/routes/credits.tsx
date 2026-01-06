@@ -7,38 +7,20 @@ function Credits() {
     <div className="container mx-auto px-4 py-12">
       <h1 className="mb-6">Credits</h1>
       <p className="mb-6">
-        Please support{" "}
-        <Link to="/sponsors" className="text-blue-600 hover:underline">
-          our sponsors
-        </Link>
-        .
+        Please support <Link to="/sponsors">our sponsors</Link>.
       </p>
       <p className="mb-6">
         SVG backgrounds are from{" "}
-        <a
-          href="https://www.heropatterns.com/"
-          className="text-blue-600 hover:underline"
-        >
-          Hero Patterns
-        </a>{" "}
-        and used under the{" "}
-        <a
-          href="https://creativecommons.org/licenses/by/4.0/"
-          className="text-blue-600 hover:underline"
-        >
+        <a href="https://www.heropatterns.com/">Hero Patterns</a> and used under
+        the{" "}
+        <a href="https://creativecommons.org/licenses/by/4.0/">
           CC by 4.0 license
         </a>
         .
       </p>
       <p className="mb-6">
         The website framework is{" "}
-        <a
-          href="https://tanstack.com/"
-          className="text-blue-600 hover:underline"
-        >
-          TanStack Start
-        </a>
-        .
+        <a href="https://tanstack.com/">TanStack Start</a>.
       </p>
     </div>
   );
