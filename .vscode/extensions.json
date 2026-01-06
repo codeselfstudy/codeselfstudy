@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "austenc.tailwind-docs",
+    "EditorConfig.EditorConfig",
+    "oven.bun-vscode",
+    "esbenp.prettier-vscode"
+  ]
+}
