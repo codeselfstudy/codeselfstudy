@@ -7,5 +7,6 @@
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
-  }
+  },
+  "css.lint.unknownAtRules": "ignore"
 }
