@@ -9,13 +9,11 @@ function App() {
     <>
       <div className="bg-circuit-board hero homepage-hero bg-cover bg-center py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="mb-4 text-5xl font-bold text-[#363636]">
-            Code Self Study
-          </h1>
-          <h2 className="mb-6 text-2xl font-light text-[#363636]">
+          <h1>Code Self Study</h1>
+          <h2 className="font-light">
             Self-study computer programming in a community of like-minded people
           </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-[#363636]">
+          <p className="mx-auto mb-8 max-w-2xl text-lg">
             We're a friendly programming community made up of over 5,000
             programmers in Berkeley and the San Francisco Bay Area. All
             programming languages and levels of experience are welcome!
@@ -38,9 +36,7 @@ function App() {
         <div className="container mx-auto px-4">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
-              <h2 className="mb-4 text-2xl font-bold text-[#363636]">
-                Community
-              </h2>
+              <h2>Community</h2>
               <p>
                 We meet{" "}
                 <Link to="/events" className="text-blue-600 hover:underline">
@@ -51,9 +47,7 @@ function App() {
               </p>
             </div>
             <div>
-              <h2 className="mb-4 text-2xl font-bold text-[#363636]">
-                Get Help
-              </h2>
+              <h2>Get Help</h2>
               <p>
                 The experienced members in the group help the beginners. Bring
                 your programming questions, and don't hesitate to ask. We can
@@ -62,9 +56,7 @@ function App() {
               </p>
             </div>
             <div>
-              <h2 className="mb-4 text-2xl font-bold text-[#363636]">
-                Networking
-              </h2>
+              <h2>Networking</h2>
               <p>
                 It's easier to get a job when you know people in the industry.
                 Many people in the group have gotten jobs through networking or
@@ -78,7 +70,7 @@ function App() {
 
       <section className="pb-12">
         <div className="container mx-auto px-4">
-          <h2 className="mb-6 text-2xl font-bold text-[#363636]">What We Do</h2>
+          <h2>What We Do</h2>
           <p className="mb-6">
             There are dozens of local meetup groups that teach people how to
             code. Here are some ways that we are different from most other
@@ -121,9 +113,7 @@ function App() {
             more. We're open to anything that is computer-related.
           </p>
 
-          <h2 className="mb-6 text-2xl font-bold text-[#363636]">
-            Coding Bootcamp Supplement
-          </h2>
+          <h2>Coding Bootcamp Supplement</h2>
           <p className="mb-6">
             You can attend our meetings as a self-directed, coding bootcamp
             supplement or alternative. Experienced programmers in the group can

@@ -142,6 +142,12 @@ code {
   html {
     @apply font-sans;
   }
+  h1 {
+    @apply mb-4 text-5xl font-bold;
+  }
+  h2 {
+    @apply mb-4 text-2xl font-bold;
+  }
 }
 
 .bg-circuit-board {
