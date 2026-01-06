@@ -4,13 +4,18 @@ export const Route = createFileRoute("/contact")({ component: Contact });
 
 function Contact() {
   return (
-    <>
-      <h1>Contact</h1>
-      <p>
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vitae error
-        quia autem enim accusamus nesciunt temporibus nisi quae sunt, cupiditate
-        velit fugit harum assumenda sit qui eligendi. Illum, fuga nesciunt.
+    <div className="container mx-auto px-4 py-12">
+      <h1>Contact Us</h1>
+      <p className="mb-6">
+        Send us an email:{" "}
+        <a
+          href="mailto:contact@codeselfstudy.com"
+          className="text-blue-600 hover:underline"
+        >
+          contact@codeselfstudy.com
+        </a>
+        .
       </p>
-    </>
+    </div>
   );
 }

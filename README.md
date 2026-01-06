@@ -23,6 +23,20 @@ Attend a meetup to find out how to contribute. :construction:
 
 See the [feature board](https://github.com/codeselfstudy/codeselfstudy/projects/1) for more ideas (and add your own).
 
-## LICENSES
+## Licenses
 
-The code is licensed under a BSD licensed (see the `./LICENSES` directory). Other sections of the code may have their own licenses. (Search for files named `LICENSE` if you want to generate a list without looking in the directories.)
+The code is licensed under BSD 3-Clause license. Some of the subdirectories are not licensed under BSD 3-Clause license. To see the licenses of individual subdirectories, please look for the `LICENSE.md` files in subdirectories.
+
+You can use this command to see their locations:
+
+```bash
+find . -name "LICENSE.md" -not -path "*/node_modules/*"
+```
+
+or with `just`:
+
+```bash
+just find_licenses
+```
+
+Basically, all the computer code is BSD 3-Clause licensed, except that the website's rendered text content and images are not licensed and cannot be reused, because they are unique to this website and brand (Code Self Study).

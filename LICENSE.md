@@ -3,6 +3,9 @@ BSD 3-Clause License
 Copyright (c) 2020, Code Self Study
 All rights reserved.
 
+This licence only applies to some of the code, not the content. See the
+README.md file for more information.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 

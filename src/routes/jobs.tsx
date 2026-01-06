@@ -1,16 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/jobs")({ component: Jobs });
 
 function Jobs() {
   return (
-    <>
-      <h1>Jobs</h1>
-      <p>
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vitae error
-        quia autem enim accusamus nesciunt temporibus nisi quae sunt, cupiditate
-        velit fugit harum assumenda sit qui eligendi. Illum, fuga nesciunt.
+    <div className="container mx-auto px-4 py-12">
+      <h1>Programming Jobs</h1>
+      <p className="mb-6 max-w-2xl">
+        This page is for tech jobs in the San Francisco Bay Area and elsewhere
+        (if the employees are able to work remotely from the SF Bay Area).
       </p>
-    </>
+      <p>
+        It's free to list a job here &mdash; just{" "}
+        <Link to="/contact" className="text-blue-600 hover:underline">
+          send us a message
+        </Link>
+        .
+      </p>
+    </div>
   );
 }

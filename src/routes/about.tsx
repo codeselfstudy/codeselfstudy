@@ -1,16 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/about")({ component: About });
 
 function About() {
   return (
-    <>
-      <h1>About</h1>
-      <p>
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vitae error
-        quia autem enim accusamus nesciunt temporibus nisi quae sunt, cupiditate
-        velit fugit harum assumenda sit qui eligendi. Illum, fuga nesciunt.
+    <div className="container mx-auto px-4 py-12">
+      <h1>About Us</h1>
+      <p className="mb-6 max-w-2xl">
+        We organize several tech meetup groups in Berkeley, California with over
+        5,000 members in total. We also organize events around the San Francisco
+        Bay Area.
       </p>
-    </>
+      <a
+        href="https://www.meetup.com/codeselfstudy/"
+        target="_blank"
+        rel="noopener noreferrer nofollow"
+        className={cn(buttonVariants({ size: "lg" }))}
+      >
+        Join the Meetup Group
+      </a>
+    </div>
   );
 }
