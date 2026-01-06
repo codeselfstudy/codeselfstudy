@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 const LINKS = [
-  { href: "#", label: "Home" },
-  { href: "#", label: "About" },
-  { href: "#", label: "Contact" },
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function Navbar() {
