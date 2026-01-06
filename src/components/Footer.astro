@@ -2,4 +2,32 @@
 import CurrentYear from "./CurrentYear";
 ---
 
-<footer>&copy; <CurrentYear client:load /> Code Self Study</footer>
+<footer class="bg-[#333] py-[54px] pb-[108px] font-['Open_Sans'] text-[#bbb]">
+  <div class="mx-auto max-w-[1344px] px-4">
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div>
+        <h3 class="mb-4 text-lg font-bold text-white">About</h3>
+        <p class="mb-4">Currently this is a rebuild of the original site.</p>
+      </div>
+      <div>
+        <h3 class="mb-4 text-lg font-bold text-white">Links</h3>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-white">Contact</a></li>
+          <li><a href="#" class="hover:text-white">Jobs</a></li>
+          <li><a href="#" class="hover:text-white">Blog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="mb-4 text-lg font-bold text-white">Social</h3>
+        <ul class="space-y-2">
+          <li>
+            <a href="https://github.com" class="hover:text-white">GitHub</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-8 border-t border-[#444] pt-8 text-center md:text-left">
+      &copy; <CurrentYear client:load /> Code Self Study
+    </div>
+  </div>
+</footer>
