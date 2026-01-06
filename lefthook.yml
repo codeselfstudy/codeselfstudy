@@ -16,7 +16,7 @@ pre-push:
       run: bun run test
     lint:
       glob: "*.{ts,js,mjs,cjs,jsx,tsx,astro}"
-      run: bun run eslint --fix {push_files}
+      run: bun run eslint {push_files}
     stylelint:
       glob: "*.{css,scss}"
-      run: bun run stylelint --fix {push_files}
+      run: bun run stylelint {push_files}
