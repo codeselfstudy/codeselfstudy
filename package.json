@@ -1,0 +1,21 @@
+{
+  "name": "codeselfstudy",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "format": "prettier --write '**/*.{md,mdx,ts,js,mjs,cjs,jsx,tsx,yaml,yml,json,html,css,scss,vue,astro}'"
+  },
+  "dependencies": {
+    "astro": "^5.16.6"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.5",
+    "prettier": "^3.7.4",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.7.2"
+  }
+}
