@@ -1,0 +1,18 @@
+# Refer for explanation to following link:
+# https://lefthook.dev/configuration/
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.{md,mdx,ts,js,mjs,cjs,jsx,tsx,yaml,yml,json,html,css,scss,vue,astro}"
+      run: bun run prettier --write {staged_files}
+      stage_fixed: true
+    lint:
+      glob: "*.{ts,js,mjs,cjs,jsx,tsx,astro}"
+      run: bun run eslint {staged_files}
+
+pre-push:
+  commands:
+    test:
+      run: bun run test
