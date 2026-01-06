@@ -1,10 +1,11 @@
+import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/credits")({ component: Credits });
 
 function Credits() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <PageWrapper>
       <h1 className="mb-6">Credits</h1>
       <p className="mb-6">
         Please support us by using our{" "}
@@ -23,6 +24,6 @@ function Credits() {
         The website framework is{" "}
         <a href="https://tanstack.com/">TanStack Start</a>.
       </p>
-    </div>
+    </PageWrapper>
   );
 }

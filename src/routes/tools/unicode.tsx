@@ -1,3 +1,4 @@
+import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +25,7 @@ function UnicodeTool() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <PageWrapper>
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">
@@ -51,6 +52,6 @@ function UnicodeTool() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageWrapper>
   );
 }

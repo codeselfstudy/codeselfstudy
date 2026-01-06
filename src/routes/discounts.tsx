@@ -1,10 +1,11 @@
+import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/discounts")({ component: Discounts });
 
 function Discounts() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <PageWrapper>
       <h1 className="mb-6">Discounts</h1>
       <p className="mb-6">
         These companies offer discounts to our members. We may make small
@@ -17,6 +18,6 @@ function Discounts() {
           credits)
         </li>
       </ul>
-    </div>
+    </PageWrapper>
   );
 }

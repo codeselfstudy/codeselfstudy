@@ -1,3 +1,4 @@
+import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute } from "@tanstack/react-router";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -6,7 +7,7 @@ export const Route = createFileRoute("/about")({ component: About });
 
 function About() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <PageWrapper>
       <h1>About Us</h1>
       <p className="mb-6 max-w-2xl">
         We organize several tech meetup groups in Berkeley, California with over
@@ -21,6 +22,6 @@ function About() {
       >
         Join the Meetup Group
       </a>
-    </div>
+    </PageWrapper>
   );
 }

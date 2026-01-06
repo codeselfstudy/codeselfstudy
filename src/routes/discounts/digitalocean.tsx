@@ -1,3 +1,4 @@
+import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute } from "@tanstack/react-router";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -8,7 +9,7 @@ export const Route = createFileRoute("/discounts/digitalocean")({
 
 function DigitalOcean() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <PageWrapper>
       <h1 className="mb-6">DigitalOcean</h1>
       <p className="mb-6">
         Digital Ocean hosts parts of our website and offers $50 credit on their
@@ -23,6 +24,6 @@ function DigitalOcean() {
       >
         Sign up for $50 hosting credit
       </a>
-    </div>
+    </PageWrapper>
   );
 }
