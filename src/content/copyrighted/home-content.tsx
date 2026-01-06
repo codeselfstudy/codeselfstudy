@@ -1,6 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
 
 export function HomeContent() {
   return (
