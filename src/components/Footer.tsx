@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Github } from "lucide-react";
+import { SiGithub } from "@icons-pack/react-simple-icons";
+
 import CurrentYear from "./CurrentYear";
 
 export default function Footer() {
@@ -36,8 +37,10 @@ export default function Footer() {
                 href="https://github.com/codeselfstudy/codeselfstudy"
                 className="text-gray-400 transition-colors hover:text-white"
                 aria-label="GitHub"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Github size={32} />
+                <SiGithub size={32} />
               </a>
             </div>
           </div>
