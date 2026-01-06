@@ -1,23 +1,13 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { PageWrapper } from "@/components/PageWrapper";
+import { DiscountsContent } from "@/content/copyrighted/discounts-content";
 
 export const Route = createFileRoute("/discounts")({ component: Discounts });
 
 function Discounts() {
   return (
     <PageWrapper>
-      <h1 className="mb-6">Discounts</h1>
-      <p className="mb-6">
-        These companies offer discounts to our members. We may make small
-        commissions or discounts when you use these links, which helps offset
-        the expenses of running the group.
-      </p>
-      <ul className="list-disc space-y-2 pl-6">
-        <li>
-          <Link to="/discounts/digitalocean">DigitalOcean</Link> (free hosting
-          credits)
-        </li>
-      </ul>
+      <DiscountsContent />
     </PageWrapper>
   );
 }
