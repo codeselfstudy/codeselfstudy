@@ -7,7 +7,8 @@ function Credits() {
     <div className="container mx-auto px-4 py-12">
       <h1 className="mb-6">Credits</h1>
       <p className="mb-6">
-        Please support <Link to="/sponsors">our sponsors</Link>.
+        Please support us by using our{" "}
+        <Link to="/discounts">our discount links</Link>.
       </p>
       <p className="mb-6">
         SVG backgrounds are from{" "}
