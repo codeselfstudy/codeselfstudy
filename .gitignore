@@ -1,5 +1,10 @@
+*.db
 OLD_GATSBY_SITE/
+NEW_ASTRO_SITE/
+src/routeTree.gen.ts
 .env
+.env*
+.env.local
 .envrc
 
 dist/
@@ -79,3 +84,17 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+count.txt
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+todos.json
