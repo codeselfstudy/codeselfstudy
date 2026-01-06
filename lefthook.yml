@@ -8,11 +8,15 @@ pre-commit:
       glob: "*.{md,mdx,ts,js,mjs,cjs,jsx,tsx,yaml,yml,json,html,css,scss,vue,astro}"
       run: bun run prettier --write {staged_files}
       stage_fixed: true
-    lint:
-      glob: "*.{ts,js,mjs,cjs,jsx,tsx,astro}"
-      run: bun run eslint {staged_files}
 
 pre-push:
+  parallel: true
   commands:
     test:
       run: bun run test
+    lint:
+      glob: "*.{ts,js,mjs,cjs,jsx,tsx,astro}"
+      run: bun run eslint {push_files}
+    stylelint:
+      glob: "*.{css,scss}"
+      run: bun x stylelint {push_files}
