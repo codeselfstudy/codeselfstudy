@@ -1,5 +1,3 @@
-NEW_ASTRO_SITE/
-OLD_GATSBY_SITE/
 .tanstack/
 .config/
 coverage/
@@ -12,4 +10,3 @@ tmp/
 app/assets/builds/
 doc/
 *.bak
-

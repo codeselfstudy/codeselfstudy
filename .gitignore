@@ -1,6 +1,5 @@
 *.db
-OLD_GATSBY_SITE/
-NEW_ASTRO_SITE/
+TANK/
 src/routeTree.gen.ts
 .env
 .env*
