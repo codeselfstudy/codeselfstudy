@@ -7,7 +7,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
-    "lint": "eslint",
+    "lint": "eslint --fix && stylelint --fix **/*.{css,scss}",
     "format": "prettier --write '**/*.{md,mdx,ts,js,mjs,cjs,jsx,tsx,yaml,yml,json,html,css,scss,vue,astro}'",
     "check": "prettier --write . && eslint --fix",
     "db:generate": "drizzle-kit generate",
