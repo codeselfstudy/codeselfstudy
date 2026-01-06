@@ -5,6 +5,6 @@ import { tanstackConfig } from "@tanstack/eslint-config";
 export default [
   ...tanstackConfig,
   {
-    ignores: ["TANK/**"],
+    ignores: ["TANK/**", "**/*.bak/**"],
   },
 ];
