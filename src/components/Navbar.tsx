@@ -1,5 +1,11 @@
 import { useState } from "react";
 
+const LINKS = [
+  { href: "#", label: "Home" },
+  { href: "#", label: "About" },
+  { href: "#", label: "Contact" },
+];
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -19,24 +25,15 @@ export default function Navbar() {
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-            <a
-              href="#"
-              className="inline-flex items-center px-[13.5px] py-[9px] text-[1rem] leading-6 font-medium text-[#4a4a4a] hover:bg-gray-50 hover:text-[#363636]"
-            >
-              Home
-            </a>
-            <a
-              href="#"
-              className="inline-flex items-center px-[13.5px] py-[9px] text-[1rem] leading-6 font-medium text-[#4a4a4a] hover:bg-gray-50 hover:text-[#363636]"
-            >
-              About
-            </a>
-            <a
-              href="#"
-              className="inline-flex items-center px-[13.5px] py-[9px] text-[1rem] leading-6 font-medium text-[#4a4a4a] hover:bg-gray-50 hover:text-[#363636]"
-            >
-              Contact
-            </a>
+            {LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="inline-flex items-center px-[13.5px] py-[9px] text-[1rem] leading-6 font-medium text-[#4a4a4a] hover:bg-gray-50 hover:text-[#363636]"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
           <div className="-mr-2 flex items-center sm:hidden">
             <button
@@ -88,24 +85,15 @@ export default function Navbar() {
       {isOpen && (
         <div className="sm:hidden" id="mobile-menu">
           <div className="space-y-1 pt-2 pb-3">
-            <a
-              href="#"
-              className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-[#4a4a4a] hover:border-gray-300 hover:bg-gray-50 hover:text-[#363636]"
-            >
-              Home
-            </a>
-            <a
-              href="#"
-              className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-[#4a4a4a] hover:border-gray-300 hover:bg-gray-50 hover:text-[#363636]"
-            >
-              About
-            </a>
-            <a
-              href="#"
-              className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-[#4a4a4a] hover:border-gray-300 hover:bg-gray-50 hover:text-[#363636]"
-            >
-              Contact
-            </a>
+            {LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-[#4a4a4a] hover:border-gray-300 hover:bg-gray-50 hover:text-[#363636]"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
       )}
