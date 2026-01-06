@@ -1,5 +1,5 @@
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { PageWrapper } from "@/components/PageWrapper";
-import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/discounts")({ component: Discounts });
 

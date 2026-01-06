@@ -1,5 +1,5 @@
-import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute } from "@tanstack/react-router";
+import { PageWrapper } from "@/components/PageWrapper";
 
 export const Route = createFileRoute("/puzzles")({
   component: Puzzles,

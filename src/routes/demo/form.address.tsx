@@ -196,5 +196,5 @@ function AddressForm() {
         </form>
       </div>
     </div>
-  )
+  );
 }

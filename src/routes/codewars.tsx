@@ -1,5 +1,5 @@
-import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute } from "@tanstack/react-router";
+import { PageWrapper } from "@/components/PageWrapper";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

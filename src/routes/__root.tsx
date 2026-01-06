@@ -6,9 +6,6 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-
 import WorkOSProvider from "../integrations/workos/provider";
 
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
@@ -16,6 +13,8 @@ import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 
 interface MyRouterContext {
   queryClient: QueryClient;

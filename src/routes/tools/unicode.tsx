@@ -1,6 +1,6 @@
-import { PageWrapper } from "@/components/PageWrapper";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageWrapper } from "@/components/PageWrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { sansSerif } from "@/data/unicode";
