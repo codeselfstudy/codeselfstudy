@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/about")({ component: About });
 
-function App() {
+function About() {
   return (
     <>
-      <h1>Home</h1>
+      <h1>About</h1>
       <p>
         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Vitae error
         quia autem enim accusamus nesciunt temporibus nisi quae sunt, cupiditate

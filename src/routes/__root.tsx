@@ -6,7 +6,8 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 
-import Header from "../components/Header";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 import WorkOSProvider from "../integrations/workos/provider";
 
@@ -31,7 +32,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: "Code Self Study",
       },
     ],
     links: [
@@ -55,6 +56,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <WorkOSProvider>
           <Header />
           {children}
+          <Footer />
           <TanStackDevtools
             config={{
               position: "bottom-right",
