@@ -1,0 +1,30 @@
+---
+import "@/styles/global.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  lang?: string;
+}
+const { title, description, lang = "en" } = Astro.props;
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body>
+    <Navbar />
+
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
