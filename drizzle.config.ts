@@ -1,12 +1,7 @@
-import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
+import { env } from "@/env";
 
-config({ path: [".env.local", ".env"] });
-
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined");
-}
+const { DATABASE_URL, TURSO_AUTH_TOKEN } = env;
 
 export default defineConfig({
   out: "./drizzle",
@@ -14,5 +9,6 @@ export default defineConfig({
   dialect: "sqlite",
   dbCredentials: {
     url: DATABASE_URL,
+    token: TURSO_AUTH_TOKEN,
   },
 });

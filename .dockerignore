@@ -1,0 +1,79 @@
+fly.toml
+
+**/*.db
+**/TANK
+**/.env
+**/.env*
+**/.env.local
+**/.envrc
+
+**/dist
+**/build
+**/.astro
+
+**/.output/
+**/.tanstack/
+**/.cache
+**/.mypy_cache
+**/.parcel-cache
+**/.netlify
+**/.swc
+**/.gradle
+**/.wrangler
+
+**/*.bak
+**/*.orig
+**/*PENDING_DELETION*
+
+**/*~
+**/tags
+**/tags.*
+**/.idea
+**/.vs
+**/.vim
+**/*.sw[op]
+
+# Haskell
+**/.stack-work
+**/dist-newstyle
+
+# Python
+**/*.py[cod]
+**/__pycache__
+**/.venv
+
+# Ruby
+.bundle
+
+# Node
+**/node_modules
+
+# Elixir
+**/.elixir_ls
+_build
+cover
+deps
+doc
+.fetch
+**/erl_crash.dump
+**/*.ez
+**/my_app-*.tar
+priv/static
+
+# logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+
+# environment variables
+**/.env.production
+**/.DS_Store
+**/dist-ssr
+**/*.local
+**/count.txt
+**/.nitro
+**/.vinxi
+**/todos.json
+
+manual/
