@@ -19,9 +19,4 @@ primary_region = "sjc"
   cpus = 1
   memory_mb = 256
 
-[mounts]
-  source = "data"
-  destination="/data"
-  auto_extend_size_threshold = 80
-  auto_extend_size_increment = "1GB"
-  auto_extend_size_limit = "10GB"
+

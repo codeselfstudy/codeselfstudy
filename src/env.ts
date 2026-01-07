@@ -3,8 +3,10 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    SERVER_URL: z.url(),
+    SERVER_URL: z.url().optional(), // Make optional or ensure it's set in Prod
     WORKOS_API_KEY: z.string(),
+    DATABASE_URL: z.string(),
+    TURSO_AUTH_TOKEN: z.string(),
   },
 
   /**
@@ -14,14 +16,15 @@ export const env = createEnv({
   clientPrefix: "VITE_",
 
   client: {
-    // VITE_APP_TITLE: z.string().min(1).optional(),
+    VITE_WORKOS_CLIENT_ID: z.string().min(1),
+    VITE_WORKOS_API_HOSTNAME: z.string().min(1),
   },
 
   /**
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: import.meta.env,
+  runtimeEnv: process.env,
 
   /**
    * By default, this library will feed the environment variables directly to

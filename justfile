@@ -5,3 +5,23 @@ find_licenses:
 # Deploy to Fly.io using the local .bun-version
 deploy:
 	fly deploy --build-arg BUN_VERSION=$(cat .bun-version)
+
+# Generate a database migration
+db_generate:
+	bun run --bun drizzle-kit generate
+
+# Migrate the database
+db_migrate:
+	bun run --bun drizzle-kit migrate
+
+# Open the database studio
+db_studio:
+	bun run --bun drizzle-kit studio
+
+# Push schema changes directly to the database (prototyping)
+db_push:
+	bun run --bun drizzle-kit push
+
+# Introspect the database to generate schema files
+db_pull:
+	bun run --bun drizzle-kit pull
