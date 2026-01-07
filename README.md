@@ -4,6 +4,8 @@ This is the new [Code Self Study](https://codeselfstudy.com/) website.
 
 Attend a meetup to find out how to contribute. :construction:
 
+See the documentation in [manual](./manual/).
+
 ## Goals:
 
 - help people in the group find something in common to work on
@@ -20,8 +22,6 @@ Attend a meetup to find out how to contribute. :construction:
 - fetch puzzle by difficulty and type of problem
 - commenting? (forum integration or separate)
 - voting
-
-See the [feature board](https://github.com/codeselfstudy/codeselfstudy/projects/1) for more ideas (and add your own).
 
 ## Licenses
 

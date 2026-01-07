@@ -16,7 +16,7 @@ This is a Vite + React (TanStack Start) app with TypeScript.
 
 Use bun. Do not use npm, pnpm, or yarn.lock`.
 
-- `bun run dev`: start the dev server at `http://localhost:3000`.
+- `bun run dev`: start the dev server at `http://localhost:7001`.
 - `bun run build`: create the production build.
 - `bun run preview`: serve the production build locally.
 - `bun run test`: run Vitest once (passes if no tests exist).
