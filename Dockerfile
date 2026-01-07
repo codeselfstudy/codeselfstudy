@@ -29,7 +29,6 @@ RUN rm -rf node_modules && \
 FROM base
 # Copy built application
 COPY --from=build /app /app
-RUN apk update && apk add vim
 COPY dotfiles/* /root/
 EXPOSE 8080
 

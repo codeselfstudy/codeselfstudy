@@ -4,7 +4,7 @@ find_licenses:
 
 # Deploy to Fly.io using the local .bun-version
 deploy:
-  fly deploy --build-arg BUN_VERSION=$(cat .bun-version)
+  if [ -f .bun-version ]; then fly deploy --build-arg BUN_VERSION="$(cat .bun-version)"; else echo "Error: .bun-version file not found in repository root. Please create it or specify BUN_VERSION another way." >&2; exit 1; fi
 
 # SSH into a live Fly machine
 ssh:
