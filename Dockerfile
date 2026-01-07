@@ -16,7 +16,7 @@ ENV PORT="8080"
 
 FROM base AS build
 RUN apk update && \
-  apk add build-base pkgconfig python3 vim
+  apk add build-base pkgconfig python3
 COPY bun.lock package.json ./
 RUN bun install
 COPY . .
@@ -27,7 +27,10 @@ RUN rm -rf node_modules && \
   bun install --ci
 
 FROM base
+# Copy built application
 COPY --from=build /app /app
+RUN apk update && apk add vim
+COPY dotfiles/* /root/
 EXPOSE 8080
 
 CMD [ "bun", "run", "start" ]

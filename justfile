@@ -6,6 +6,10 @@ find_licenses:
 deploy:
   fly deploy --build-arg BUN_VERSION=$(cat .bun-version)
 
+# SSH into a live Fly machine
+ssh:
+  fly ssh console
+
 # Generate a database migration
 db_generate:
   bun run --bun drizzle-kit generate
