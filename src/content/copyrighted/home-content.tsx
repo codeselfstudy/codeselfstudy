@@ -1,11 +1,10 @@
-import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 export function HomeContent() {
   return (
     <>
-      <div className="bg-circuit-board hero homepage-hero bg-cover bg-center py-20">
+      <div className="bg-circuit-board hero homepage-hero bg-gray-200 bg-center py-20">
         <div className="container mx-auto bg-white p-4 px-4 text-center">
           <h1>Code Self Study</h1>
           <h2 className="font-light">
