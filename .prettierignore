@@ -33,3 +33,6 @@ priv/
 
 *.bak
 TANK/
+**/*.min.js
+manual/book/
+
