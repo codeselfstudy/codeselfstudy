@@ -92,5 +92,5 @@
     "vitest": "^3.2.4",
     "web-vitals": "^5.1.0"
   },
-  "version": "1.0.0-alpha.0"
+  "version": "2.0.0-alpha.0"
 }
