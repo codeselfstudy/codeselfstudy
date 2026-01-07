@@ -4,13 +4,13 @@ import { buttonVariants } from "@/components/ui/button";
 export function HomeContent() {
   return (
     <>
-      <div className="bg-circuit-board hero homepage-hero bg-gray-200 bg-center py-20">
-        <div className="container mx-auto bg-white p-4 px-4 text-center">
+      <div className="bg-circuit-board bg-gray-200 bg-center py-20">
+        <div className="container mx-auto rounded bg-white p-4 px-4">
           <h1>Code Self Study</h1>
-          <h2 className="font-light">
+          <p className="text-xl font-bold">
             Self-study computer programming in a community of like-minded people
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg">
+          </p>
+          <p className="mb-8 max-w-2xl text-lg">
             We're a friendly programming community made up of over 5,000
             programmers in Berkeley and the San Francisco Bay Area. All
             programming languages and levels of experience are welcome!

@@ -22,6 +22,7 @@
     "@base-ui/react": "^1.0.0",
     "@faker-js/faker": "^10.2.0",
     "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/anton": "^5.2.7",
     "@icons-pack/react-simple-icons": "^13.8.0",
     "@libsql/client": "^0.15.15",
     "@orpc/client": "^1.13.2",
