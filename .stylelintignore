@@ -1,0 +1,12 @@
+.tanstack/
+.config/
+coverage/
+manual/
+TANK/
+node_modules/
+public/
+storage/
+tmp/
+app/assets/builds/
+doc/
+*.bak

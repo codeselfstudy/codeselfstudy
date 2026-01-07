@@ -1,4 +1,4 @@
-" Some settings to make Vim nicer
+" Some settings to make Vim nicer on remote servers
 set nocompatible
 set number
 set syntax
@@ -10,14 +10,12 @@ set matchtime=4
 set mouse=a
 set lazyredraw
 set smarttab
-set softtabstop=4
-set shiftwidth=4
-set tabstop=4
+set softtabstop=2
+set shiftwidth=2
+set tabstop=2
 set expandtab
-autocmd FileType ruby setlocal shiftwidth=2 tabstop=2 softtabstop=2
-autocmd FileType eruby setlocal shiftwidth=2 tabstop=2 softtabstop=2
-autocmd FileType jade setlocal shiftwidth=2 tabstop=2 softtabstop=2
-autocmd FileType elixir setlocal shiftwidth=2 tabstop=2 softtabstop=2
+autocmd FileType python setlocal shiftwidth=4 tabstop=4 softtabstop=4
+autocmd FileType rust setlocal shiftwidth=4 tabstop=4 softtabstop=4
 autocmd FileType go setlocal shiftwidth=8 tabstop=8 softtabstop=8 noexpandtab
 autocmd BufNewFile,BufRead *.js.es6 set syntax=javascript
 set nojoinspaces
