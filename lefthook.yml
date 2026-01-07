@@ -6,6 +6,7 @@ pre-commit:
   commands:
     format:
       glob: "*.{md,mdx,ts,js,mjs,cjs,jsx,tsx,yaml,yml,json,html,css,scss,vue,astro}"
+      exclude: "CLAUDE.md"
       run: bun run prettier --write {staged_files}
       stage_fixed: true
 

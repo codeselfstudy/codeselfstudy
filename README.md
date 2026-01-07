@@ -4,7 +4,7 @@ This is the new [Code Self Study](https://codeselfstudy.com/) website.
 
 Attend a meetup to find out how to contribute. :construction:
 
-See the documentation in [manual](./manual/).
+See the documentation in [manual](./manual/src/SUMMARY.md).
 
 ## Goals:
 
@@ -13,7 +13,6 @@ See the documentation in [manual](./manual/).
 
 ### Ideas so far:
 
-- authenticate with the forum
 - send a coding puzzle of the day into the forum, slack, and/or the browser extension so that interested people have a common task to discuss
 - add new puzzles (links to other sites or original puzzles)
 - mark puzzles that you've completed
@@ -22,6 +21,7 @@ See the documentation in [manual](./manual/).
 - fetch puzzle by difficulty and type of problem
 - commenting? (forum integration or separate)
 - voting
+- browser extension integration
 
 ## Licenses
 
