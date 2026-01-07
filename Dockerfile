@@ -1,7 +1,6 @@
 # syntax = docker/dockerfile:1
 
-# Adjust BUN_VERSION as desired
-ARG BUN_VERSION=1.3.5
+ARG BUN_VERSION
 FROM oven/bun:${BUN_VERSION}-alpine AS base
 
 LABEL fly_launch_runtime="Bun"
@@ -18,7 +17,7 @@ FROM base AS build
 
 # Install packages needed to build node modules
 RUN apk update && \
-    apk add build-base pkgconfig python3
+    apk add build-base pkgconfig python3 vim
 
 # Install node modules
 COPY bun.lock package.json ./
