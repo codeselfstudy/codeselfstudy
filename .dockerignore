@@ -19,7 +19,6 @@ fly.toml
 **/.netlify
 **/.swc
 **/.gradle
-**/.netlify
 **/.wrangler
 
 **/*.bak
@@ -61,14 +60,6 @@ doc
 **/my_app-*.tar
 priv/static
 
-# build output
-**/dist
-# generated types
-**/.astro
-
-# dependencies
-**/node_modules
-
 # logs
 **/npm-debug.log*
 **/yarn-debug.log*
@@ -76,20 +67,12 @@ priv/static
 **/pnpm-debug.log*
 
 # environment variables
-**/.env
 **/.env.production
-**/.idea
-**/node_modules
 **/.DS_Store
-**/dist
 **/dist-ssr
 **/*.local
 **/count.txt
-**/.env
 **/.nitro
-**/.tanstack
-**/.wrangler
-**/.output
 **/.vinxi
 **/todos.json
 
