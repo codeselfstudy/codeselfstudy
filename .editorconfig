@@ -12,6 +12,9 @@ insert_final_newline = true
 [*.{rs,py,php,swift}]
 indent_size = 4
 
+[justfile]
+indent_size = 2
+
 [Makefile]
 indent_style = tab
 
