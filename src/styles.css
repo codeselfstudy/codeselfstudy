@@ -159,6 +159,10 @@
   blockquote {
     @apply my-6 border-l-4 border-gray-300 pl-4 italic;
   }
+
+  ul {
+    @apply list-disc space-y-2 pl-6;
+  }
 }
 
 @layer components {
