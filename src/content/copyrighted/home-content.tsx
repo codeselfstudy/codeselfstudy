@@ -5,32 +5,35 @@ export function HomeContent() {
   return (
     <>
       <div className="bg-circuit-board bg-gray-200 bg-center py-20">
-        <div className="container mx-auto rounded bg-white p-4 px-4">
-          <h1>Code Self Study</h1>
-          <p className="text-xl font-bold">
-            Self-study computer programming in a community of like-minded people
-          </p>
-          <p className="mb-8 max-w-2xl text-lg">
-            We're a friendly programming community made up of over 5,000
-            programmers in Berkeley and the San Francisco Bay Area. All
-            programming languages and levels of experience are welcome!
-          </p>
-          <a
-            href="https://www.meetup.com/codeselfstudy/"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className={cn(
-              buttonVariants({ size: "lg" }),
-              "bg-blue-600 text-lg text-white hover:bg-blue-700"
-            )}
-          >
-            Join the Community
-          </a>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-fit rounded bg-white p-6">
+            <h1>Code Self Study</h1>
+            <p className="text-xl font-bold">
+              Self-study computer programming in a community of like-minded
+              people
+            </p>
+            <p className="mb-8 max-w-2xl text-lg">
+              We're a friendly programming community made up of over 5,000
+              programmers in Berkeley and the San Francisco Bay Area. All
+              programming languages and levels of experience are welcome!
+            </p>
+            <a
+              href="https://www.meetup.com/codeselfstudy/"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "bg-blue-600 text-lg text-white hover:bg-blue-700"
+              )}
+            >
+              Join the Community
+            </a>
+          </div>
         </div>
       </div>
 
       <section className="py-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
               <h2>Community</h2>
@@ -62,7 +65,7 @@ export function HomeContent() {
       </section>
 
       <section className="pb-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2>What We Do</h2>
           <p>
             There are dozens of local meetup groups that teach people how to
