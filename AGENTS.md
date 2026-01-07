@@ -14,7 +14,11 @@ This is a Vite + React (TanStack Start) app with TypeScript.
 
 ## Build, Test, and Development Commands
 
-Use bun. Do not use npm, pnpm, or yarn.lock`.
+Never commit code unless I specifically request it.
+
+If I ask a question, do not automatically implement a solution. Just answer the question, and I will let you know if I would like you to implement it.
+
+Use bun. Do not use npm, pnpm, or yarn commands.
 
 - `bun run dev`: start the dev server at `http://localhost:7001`.
 - `bun run build`: create the production build.
