@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageWrapper } from "@/components/PageWrapper";
+import { PageWrapper } from "@/components/page-wrapper";
 import { CodewarsContent } from "@/content/copyrighted/codewars-content";
 
 export const Route = createFileRoute("/codewars")({ component: Codewars });

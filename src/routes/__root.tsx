@@ -12,8 +12,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import WorkOSProvider from "@/integrations/workos/provider";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
+import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -52,7 +52,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <WorkOSProvider>
-          <Header />
+          <Navbar />
           {children}
           <Footer />
           <TanStackDevtools

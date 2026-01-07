@@ -18,7 +18,7 @@ const LINKS = [
   // { href: "/contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (

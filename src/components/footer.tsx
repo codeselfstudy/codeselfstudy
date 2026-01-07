@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 
-import CurrentYear from "./CurrentYear";
+import { CurrentYear } from "./current-year";
 
-export default function Footer() {
+export function Footer() {
   return (
     <footer className="bg-gray-900 py-6 pb-16 text-gray-400">
       <div className="mx-auto max-w-7xl px-4">

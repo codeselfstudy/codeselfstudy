@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
  * server-rendered or statically generated content is updated with the current
  * date upon hydration.
  */
-export default function CurrentYear() {
+export function CurrentYear() {
   const [year, setYear] = useState(new Date().getFullYear());
 
   useEffect(() => {

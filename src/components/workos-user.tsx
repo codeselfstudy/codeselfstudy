@@ -1,6 +1,6 @@
 import { useAuth } from "@workos-inc/authkit-react";
 
-export default function SignInButton({ large }: { large?: boolean }) {
+export function SignInButton({ large }: { large?: boolean }) {
   const { user, isLoading, signIn, signOut } = useAuth();
 
   const buttonClasses = `${
