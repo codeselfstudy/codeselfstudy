@@ -3,7 +3,8 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    SERVER_URL: z.url().optional(),
+    SERVER_URL: z.url(),
+    WORKOS_API_KEY: z.string(),
   },
 
   /**
@@ -13,7 +14,7 @@ export const env = createEnv({
   clientPrefix: "VITE_",
 
   client: {
-    VITE_APP_TITLE: z.string().min(1).optional(),
+    // VITE_APP_TITLE: z.string().min(1).optional(),
   },
 
   /**
