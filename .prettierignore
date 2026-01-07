@@ -3,6 +3,8 @@ _site/
 dist/
 build/
 
+CLAUDE.md
+
 # developer tools
 .git/
 node_modules/
