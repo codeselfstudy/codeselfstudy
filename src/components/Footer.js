@@ -43,11 +43,11 @@ export default function Footer({ siteTitle }) {
                             <li>
                                 <Link to="/autism/">Autism Resources</Link>
                             </li>
-                            <li>
+                            {/* <li>
                                 <a href="https://forum.codeselfstudy.com/">
                                     Forum
                                 </a>
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
                     <div className="column icons">
