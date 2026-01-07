@@ -15,7 +15,6 @@ primary_region = "sjc"
   processes = ["app"]
 
 [[vm]]
-  memory = "256mb"
   cpus = 1
   memory_mb = 256
 
