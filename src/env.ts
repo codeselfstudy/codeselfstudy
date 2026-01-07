@@ -27,7 +27,7 @@ export const env = createEnv({
   runtimeEnv:
     typeof window === "undefined"
       ? process.env
-      : { ...process.env, ...(import.meta as any).env },
+      : { ...process.env, ...((import.meta as any).env ?? {}) },
 
   /**
    * By default, this library will feed the environment variables directly to
