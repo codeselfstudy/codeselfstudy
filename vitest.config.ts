@@ -1,12 +1,9 @@
-import { defineConfig } from "vitest/config";
+import { mergeConfig } from "vitest/config";
 import viteReact from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
-export default defineConfig({
-  test: {
-    globals: true,
-  },
+const viteConfig = {
   plugins: [
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
@@ -18,4 +15,10 @@ export default defineConfig({
       },
     }),
   ],
+};
+
+export default mergeConfig(viteConfig, {
+  test: {
+    globals: true,
+  },
 });
