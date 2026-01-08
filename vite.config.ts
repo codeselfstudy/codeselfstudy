@@ -11,6 +11,8 @@ const config = defineConfig({
     devtools(),
     nitro({
       preset: "bun",
+      // TODO: is this right for TanStack Start? It already has a server.
+      serverDir: "src/server",
     }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
