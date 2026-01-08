@@ -75,7 +75,7 @@ export function HomeContent() {
           <ul>
             <li>
               We are building a local community of friendly, creative,
-              highly-motivated programmers in San Francisco Bay Area.
+              highly-motivated programmers in the San Francisco Bay Area.
             </li>
             <li>
               We're open to all programming languages, all levels of ability,

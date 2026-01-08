@@ -25,7 +25,7 @@ interface MyRouterContext {
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   // Redirect system
   beforeLoad: ({ location }) => {
-    const redir = redirects[location.pathname] ?? null;
+    const redir = redirects[location.pathname];
     if (redir) {
       throw redirect({
         to: redir.to,
