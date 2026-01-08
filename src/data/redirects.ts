@@ -1,7 +1,8 @@
 /**
  * This site contains redirects.
  */
-type Redirect = Record<string, { to: string; status: 308 | 307 }>;
+type RedirectConfig = { to: string; status: 308 | 307 };
+type Redirect = Record<string, RedirectConfig>;
 
 const redirects: Redirect = {
   "/book": { to: "/learn", status: 308 },
@@ -59,7 +60,6 @@ const redirects: Redirect = {
   "/wiki/Main_Page": { to: "/contact", status: 308 },
   "/w": { to: "/learn", status: 308 },
   "/w/": { to: "/learn", status: 308 },
-  // TODO: This redirect system doesn't have wildcard support yet.
   "/wiki/*": { to: "/learn", status: 308 },
   "/programming-notes-wiki/": { to: "/learn", status: 308 },
   "/python-web-scraping-selenium.html": { to: "/learn", status: 308 },
@@ -72,5 +72,31 @@ const redirects: Redirect = {
   "/tools/unicode": { to: "/tools", status: 308 },
   "/tools/unicode/": { to: "/tools", status: 308 },
 };
+
+/**
+ * Find a redirect for the given pathname.
+ * Supports both exact matches and wildcard patterns (e.g., "/blog/*").
+ *
+ * @param pathname - The pathname to match
+ * @returns The redirect configuration if found, null otherwise
+ */
+export function findRedirect(pathname: string): RedirectConfig | null {
+  // First, try exact match for performance
+  if (redirects[pathname]) {
+    return redirects[pathname];
+  }
+
+  // Then try wildcard patterns
+  for (const [pattern, config] of Object.entries(redirects)) {
+    if (pattern.endsWith("/*")) {
+      const prefix = pattern.slice(0, -2); // Remove "/*"
+      if (pathname.startsWith(prefix + "/")) {
+        return config;
+      }
+    }
+  }
+
+  return null;
+}
 
 export default redirects;

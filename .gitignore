@@ -46,6 +46,7 @@ __pycache__/
 
 # Node
 node_modules/
+package-lock.json
 
 # Elixir
 .elixir_ls/
