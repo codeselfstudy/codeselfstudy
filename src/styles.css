@@ -42,7 +42,7 @@
 
   /* Don't use --root-font-sans directly */
   --root-font-sans:
-    "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Inter Variable", -apple-system, "BlinkMacSystemFont", "Segoe UI", "Roboto",
     "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
     "Helvetica Neue", sans-serif;
   --header-font: "Anton", var(--root-font-sans);
