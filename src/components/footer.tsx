@@ -3,32 +3,39 @@ import { SiGithub } from "@icons-pack/react-simple-icons";
 
 import { CurrentYear } from "./current-year";
 
+function FooterLink({
+  to,
+  children,
+}: {
+  to: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <li>
+      <Link className="text-gray-300" to={to}>
+        {children}
+      </Link>
+    </li>
+  );
+}
+
 export function Footer() {
   return (
     <footer className="bg-gray-900 py-6 pb-16 text-gray-400">
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div>
-            <ul className="space-y-1">
-              <li>
-                <Link to="/contact">Contact Us</Link>
-              </li>
-              <li>
-                <Link to="/puzzles">Coding Puzzles</Link>
-              </li>
+            <ul className="list-none space-y-1 pl-0">
+              <FooterLink to="/contact">Contact Us</FooterLink>
+              <FooterLink to="/learn">Learn How to Code</FooterLink>
+              <FooterLink to="/puzzles">Coding Puzzles</FooterLink>
             </ul>
           </div>
           <div>
-            <ul className="space-y-1">
-              <li>
-                <Link to="/jobs">Jobs</Link>
-              </li>
-              <li>
-                <Link to="/about">About</Link>
-              </li>
-              <li>
-                <Link to="/events">Events</Link>
-              </li>
+            <ul className="list-none space-y-1 pl-0">
+              <FooterLink to="/jobs">Jobs</FooterLink>
+              <FooterLink to="/about">About</FooterLink>
+              <FooterLink to="/events">Events</FooterLink>
             </ul>
           </div>
           <div>

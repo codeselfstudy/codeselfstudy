@@ -23,7 +23,7 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 z-10 w-full border-b border-gray-100 bg-white shadow-sm">
-      <div className="mx-auto max-w-[1344px] px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-[58px] items-center justify-between">
           <div className="flex shrink-0 items-center">
             <Link

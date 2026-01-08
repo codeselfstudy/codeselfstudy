@@ -5,11 +5,13 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  redirect,
   useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
+import { findRedirect } from "@/lib/redirects";
 import WorkOSProvider from "@/integrations/workos/provider";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
@@ -21,6 +23,16 @@ interface MyRouterContext {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  // Redirect system
+  beforeLoad: ({ location }) => {
+    const redir = findRedirect(location.pathname);
+    if (redir) {
+      throw redirect({
+        to: redir.to,
+        statusCode: redir.status,
+      });
+    }
+  },
   head: () => ({
     meta: [
       {

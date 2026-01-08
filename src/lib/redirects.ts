@@ -1,0 +1,119 @@
+/**
+ * Central configuration for URL redirects, mapping legacy paths to their new
+ * destinations and associated HTTP redirect status codes.
+ */
+type RedirectConfig = { to: string; status: 308 | 307 };
+type Redirect = Record<string, RedirectConfig>;
+
+const redirects: Redirect = {
+  "/book": { to: "/learn", status: 308 },
+  "/book/": { to: "/learn", status: 308 },
+  "/apps": { to: "/learn", status: 308 },
+  "/apps/": { to: "/learn", status: 308 },
+  "/autism": { to: "/learn", status: 308 },
+  "/autism/": { to: "/learn", status: 308 },
+  "/contribute": { to: "/learn", status: 308 },
+  "/contribute/": { to: "/learn", status: 308 },
+  "/sponsors": { to: "/credits", status: 308 },
+  "/sponsors/": { to: "/credits", status: 308 },
+  "/parking": { to: "/events", status: 308 },
+  "/parking/": { to: "/events", status: 308 },
+  "/school": { to: "/learn", status: 308 },
+  "/school/": { to: "/learn", status: 308 },
+  "/support-free-software": { to: "/learn", status: 308 },
+  "/support-free-software/": { to: "/learn", status: 308 },
+  "/tutorials": { to: "/learn", status: 308 },
+  "/tutorials/": { to: "/learn", status: 308 },
+  "/featured": { to: "/learn", status: 308 },
+  "/featured/": { to: "/learn", status: 308 },
+  "/hire-programmers": { to: "/jobs", status: 308 },
+  "/hire-programmers/": { to: "/jobs", status: 308 },
+  "/wiki": { to: "/learn", status: 308 },
+  "/wiki/": { to: "/learn", status: 308 },
+  "/discounts/algoexpert": { to: "/learn", status: 308 },
+  "/discounts/algoexpert/": { to: "/learn", status: 308 },
+  "/discounts/digitalocean": { to: "/discounts", status: 308 },
+  "/discounts/digitalocean/": { to: "/discounts", status: 308 },
+  "/sponsors/digitalocean": { to: "/discounts", status: 308 },
+  "/sponsors/digitalocean/": { to: "/discounts", status: 308 },
+  "/sponsors/thplibrary": { to: "/discounts", status: 308 },
+  "/sponsors/thplibrary/": { to: "/discounts", status: 308 },
+  "/home": { to: "/", status: 308 },
+  "/home/": { to: "/", status: 308 },
+  "/index.html": { to: "/", status: 308 },
+  "/support-us/": { to: "/", status: 308 },
+  "/support/": { to: "/", status: 308 },
+  "/support": { to: "/", status: 308 },
+  "/presentations": { to: "/events", status: 308 },
+  "/presentations/": { to: "/events", status: 308 },
+  "/presentations-schedule": { to: "/events", status: 308 },
+  "/blog/*": { to: "/learn", status: 308 },
+  "/c": { to: "/forum", status: 308 },
+  "/c/": { to: "/forum", status: 308 },
+  "/bbs": { to: "/forum", status: 308 },
+  "/join": { to: "/forum", status: 308 },
+  "/welcome": { to: "/events", status: 308 },
+  "/checkin": { to: "/forum", status: 308 },
+  "/edu": { to: "/learn", status: 308 },
+  "/edu/": { to: "/learn", status: 308 },
+  "/comment/63": { to: "/", status: 308 },
+  "/forms/feedback": { to: "/contact", status: 308 },
+  "/wiki/Main_Page": { to: "/learn", status: 308 },
+  "/w": { to: "/learn", status: 308 },
+  "/w/": { to: "/learn", status: 308 },
+  "/wiki/*": { to: "/learn", status: 308 },
+  "/programming-notes-wiki/": { to: "/learn", status: 308 },
+  "/python-web-scraping-selenium.html": { to: "/learn", status: 308 },
+  "/Array": { to: "/learn", status: 308 },
+  "/wiki/C%2B%2B": { to: "/learn", status: 308 },
+  "/b/*": { to: "/learn", status: 308 },
+  "/b/page/6/": { to: "/learn", status: 308 },
+  "/b": { to: "/learn", status: 308 },
+  "/b/": { to: "/learn", status: 308 },
+  "/tools/unicode": { to: "/tools", status: 308 },
+  "/tools/unicode/": { to: "/tools", status: 308 },
+};
+
+// Pre-compute redirects for optimal performance
+const exactRedirects: Redirect = {};
+const wildcardRedirects: Array<{ prefix: string; config: RedirectConfig }> = [];
+
+for (const [pattern, config] of Object.entries(redirects)) {
+  if (pattern.endsWith("/*")) {
+    wildcardRedirects.push({
+      prefix: pattern.slice(0, -2),
+      config,
+    });
+  } else {
+    exactRedirects[pattern] = config;
+  }
+}
+
+/**
+ * Find a redirect for the given pathname.
+ * Supports both exact matches and wildcard patterns (e.g., "/blog/*").
+ * Optimized with pre-computed exact and wildcard lookups.
+ *
+ * @param pathname - The pathname to match
+ * @returns The redirect configuration if found, null otherwise
+ */
+export function findRedirect(pathname: string): RedirectConfig | null {
+  // O(1) exact match first for performance
+  if (exactRedirects[pathname]) {
+    return exactRedirects[pathname];
+  }
+
+  // Only check wildcards if exact match fails
+  for (const { prefix, config } of wildcardRedirects) {
+    if (
+      pathname.startsWith(prefix + "/") &&
+      pathname.length > prefix.length + 1
+    ) {
+      return config;
+    }
+  }
+
+  return null;
+}
+
+export default redirects;
