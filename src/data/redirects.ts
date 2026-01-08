@@ -92,7 +92,10 @@ export function findRedirect(pathname: string): RedirectConfig | null {
     if (pattern.endsWith("/*")) {
       const prefix = pattern.slice(0, -2); // Remove "/*"
       // Match paths that start with prefix/ and have content after the slash
-      if (pathname.startsWith(prefix + "/") && pathname.length > prefix.length + 1) {
+      if (
+        pathname.startsWith(prefix + "/") &&
+        pathname.length > prefix.length + 1
+      ) {
         return config;
       }
     }
