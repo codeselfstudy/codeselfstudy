@@ -1,7 +1,6 @@
 /**
  * Tests for the redirect system.
  */
-import { describe, expect, test } from "vitest";
 import { findRedirect } from "./redirects";
 
 describe("findRedirect", () => {

@@ -4,6 +4,9 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
+  test: {
+    globals: true,
+  },
   plugins: [
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
