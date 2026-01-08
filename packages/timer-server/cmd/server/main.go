@@ -17,6 +17,7 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 
 	"github.com/codeselfstudy/timer-server/internal/protocol"
 	"github.com/codeselfstudy/timer-server/internal/room"
@@ -30,6 +31,11 @@ var (
 )
 
 func main() {
+	// Load .env.local for development (silently ignore if not found)
+	// Try project root first (when run from monorepo root), then parent paths
+	_ = godotenv.Load(".env.local")
+	_ = godotenv.Load("../../.env.local") // When run from packages/timer-server
+
 	// Load JWT secret from environment
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {

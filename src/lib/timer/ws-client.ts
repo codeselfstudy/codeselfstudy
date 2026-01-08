@@ -117,9 +117,14 @@ export function useTimerWS(options: UseTimerWSOptions): UseTimerWSReturn {
   );
 
   const connect = useCallback(() => {
-    // Determine WebSocket URL based on current location
+    // Determine WebSocket URL
+    // In development, connect directly to Go server on port 8081
+    // In production, use the same host (proxied via nginx/caddy)
+    const isDev = import.meta.env.DEV;
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws/${roomId}`;
+    const wsUrl = isDev
+      ? `ws://localhost:8081/ws/${roomId}`
+      : `${protocol}//${window.location.host}/ws/${roomId}`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
