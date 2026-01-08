@@ -10,6 +10,7 @@ import { PresenceList } from "@/components/timer/presence-list";
 import { Button } from "@/components/ui/button";
 import { createMetadata } from "@/lib/metadata";
 import { SignInButton } from "@/components/workos-user";
+import { PageWrapper } from "@/components/page-wrapper";
 
 export const Route = createFileRoute("/timer/$roomId")({
   component: TimerRoom,
@@ -150,91 +151,97 @@ function TimerRoom() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-muted-foreground">Loading room...</div>
-      </div>
+      <PageWrapper>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-muted-foreground">Loading room...</div>
+        </div>
+      </PageWrapper>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-        <AlertCircle className="text-destructive h-12 w-12" />
-        <h2 className="text-xl font-semibold">{error}</h2>
-        <Button onClick={() => navigate({ to: "/timer" })}>
-          Back to Timer Home
-        </Button>
-      </div>
+      <PageWrapper>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+          <AlertCircle className="text-destructive h-12 w-12" />
+          <h2 className="text-xl font-semibold">{error}</h2>
+          <Button onClick={() => navigate({ to: "/timer" })}>
+            Back to Timer Home
+          </Button>
+        </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Room: {roomId}</h1>
-          <div className="text-muted-foreground text-sm">
-            {ws.status === "connected"
-              ? "Connected"
-              : ws.status === "connecting"
-                ? "Connecting..."
-                : "Disconnected"}
+    <PageWrapper>
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold">Room: {roomId}</h1>
+            <div className="text-muted-foreground text-sm">
+              {ws.status === "connected"
+                ? "Connected"
+                : ws.status === "connecting"
+                  ? "Connecting..."
+                  : "Disconnected"}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={toggleMute}>
+              {isMuted ? (
+                <VolumeX className="h-5 w-5" />
+              ) : (
+                <Volume2 className="h-5 w-5" />
+              )}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={shareRoom}>
+              <Share2 className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleMute}>
-            {isMuted ? (
-              <VolumeX className="h-5 w-5" />
-            ) : (
-              <Volume2 className="h-5 w-5" />
+        {/* Main content */}
+        <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+          {/* Timer area */}
+          <div className="space-y-6">
+            {ws.timerState && (
+              <TimerDisplay state={ws.timerState} className="min-h-[300px]" />
             )}
-          </Button>
-          <Button variant="ghost" size="icon" onClick={shareRoom}>
-            <Share2 className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
 
-      {/* Main content */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-        {/* Timer area */}
-        <div className="space-y-6">
-          {ws.timerState && (
-            <TimerDisplay state={ws.timerState} className="min-h-[300px]" />
-          )}
+            {ws.timerState && (
+              <TimerControls
+                state={ws.timerState}
+                isAdmin={ws.isAdmin}
+                onStart={ws.start}
+                onPause={ws.pause}
+                onReset={ws.reset}
+                onSkip={ws.skip}
+                onEndSession={ws.endSession}
+              />
+            )}
+          </div>
 
-          {ws.timerState && (
-            <TimerControls
-              state={ws.timerState}
-              isAdmin={ws.isAdmin}
-              onStart={ws.start}
-              onPause={ws.pause}
-              onReset={ws.reset}
-              onSkip={ws.skip}
-              onEndSession={ws.endSession}
+          {/* Sidebar */}
+          <div className="space-y-4">
+            <PresenceList
+              presence={ws.presence}
+              currentUserId={user?.id || sessionId || undefined}
             />
-          )}
-        </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          <PresenceList
-            presence={ws.presence}
-            currentUserId={user?.id || sessionId || undefined}
-          />
-
-          {!user && (
-            <div className="bg-muted rounded-lg p-4 text-center text-sm">
-              <p className="mb-2">
-                You're viewing as <strong>{guestName}</strong>
-              </p>
-              <SignInButton />
-            </div>
-          )}
+            {!user && (
+              <div className="bg-muted rounded-lg p-4 text-center text-sm">
+                <p className="mb-2">
+                  You're viewing as <strong>{guestName}</strong>
+                </p>
+                <SignInButton />
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

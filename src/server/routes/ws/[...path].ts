@@ -1,7 +1,7 @@
 import {
   defineEventHandler,
+  getRequestHeader,
   getRequestHeaders,
-  isWebSocketUpgradeRequest,
   proxyRequest,
 } from "h3";
 
@@ -12,14 +12,19 @@ export default defineEventHandler(async (event) => {
   const path = event.context.params?.path || "";
   const target = `${GO_TIMER_SERVER}/ws/${path}`;
 
+  console.log(
+    `[WS Proxy] Request received for: ${event.path} -> Target: ${target}`
+  );
+
   // Check if this is a WebSocket upgrade request
-  if (isWebSocketUpgradeRequest(event)) {
+  const isWebSocket =
+    getRequestHeader(event, "upgrade")?.toLowerCase() === "websocket";
+
+  if (isWebSocket) {
+    console.log(`[WS Proxy] Upgrading connection to: ${target}`);
     // For WebSocket upgrades, we need to proxy using fetch with upgrade
     const headers = getRequestHeaders(event);
 
-    // Note: In production with Bun runtime, WebSocket proxying is handled
-    // automatically by proxyRequest when the proper headers are present.
-    // For development, we pass through the upgrade headers.
     return proxyRequest(event, target, {
       headers: {
         ...headers,

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { createMetadata } from "@/lib/metadata";
 import { SignInButton } from "@/components/workos-user";
+import { PageWrapper } from "@/components/page-wrapper";
 
 export const Route = createFileRoute("/timer/")({
   component: TimerLanding,
@@ -85,171 +86,177 @@ function TimerLanding() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold">Group Pomodoro Timer</h1>
-        <p className="text-muted-foreground mt-2">
-          Stay focused together with synchronized timers
-        </p>
-      </div>
+    <PageWrapper>
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold">Group Pomodoro Timer</h1>
+          <p className="text-muted-foreground mt-2">
+            Stay focused together with synchronized timers
+          </p>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Create Room */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Create a Room
-            </CardTitle>
-            <CardDescription>
-              {isAuthenticated
-                ? "Start a new timer session and invite others"
-                : "Sign in to create a timer room"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {isAuthLoading ? (
-              <div className="text-muted-foreground py-4 text-center">
-                Loading...
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Create Room */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Create a Room
+              </CardTitle>
+              <CardDescription>
+                {isAuthenticated
+                  ? "Start a new timer session and invite others"
+                  : "Sign in to create a timer room"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isAuthLoading ? (
+                <div className="text-muted-foreground py-4 text-center">
+                  Loading...
+                </div>
+              ) : isAuthenticated ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">Custom URL (optional)</Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground text-sm">
+                        /timer/
+                      </span>
+                      <Input
+                        id="slug"
+                        placeholder="team-standup"
+                        value={slug}
+                        onChange={(e) => setSlug(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="focus">Focus (min)</Label>
+                      <Input
+                        id="focus"
+                        type="number"
+                        min={1}
+                        max={120}
+                        value={focusMinutes}
+                        onChange={(e) =>
+                          setFocusMinutes(Number(e.target.value))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="break">Break (min)</Label>
+                      <Input
+                        id="break"
+                        type="number"
+                        min={1}
+                        max={60}
+                        value={breakMinutes}
+                        onChange={(e) =>
+                          setBreakMinutes(Number(e.target.value))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="longBreak">Long (min)</Label>
+                      <Input
+                        id="longBreak"
+                        type="number"
+                        min={1}
+                        max={60}
+                        value={longBreakMinutes}
+                        onChange={(e) =>
+                          setLongBreakMinutes(Number(e.target.value))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {error && <p className="text-destructive text-sm">{error}</p>}
+
+                  <Button
+                    onClick={handleCreateRoom}
+                    disabled={isCreating}
+                    className="w-full"
+                  >
+                    {isCreating ? "Creating..." : "Create Room"}
+                  </Button>
+                </>
+              ) : (
+                <SignInButton />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Join Room */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Join a Room
+              </CardTitle>
+              <CardDescription>
+                Enter a room code or custom URL to join an existing session
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="joinRoomId">Room Code or URL</Label>
+                <Input
+                  id="joinRoomId"
+                  placeholder="abc123 or team-standup"
+                  value={joinRoomId}
+                  onChange={(e) => setJoinRoomId(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleJoinRoom();
+                  }}
+                />
               </div>
-            ) : isAuthenticated ? (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Custom URL (optional)</Label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
-                      /timer/
-                    </span>
-                    <Input
-                      id="slug"
-                      placeholder="team-standup"
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="focus">Focus (min)</Label>
-                    <Input
-                      id="focus"
-                      type="number"
-                      min={1}
-                      max={120}
-                      value={focusMinutes}
-                      onChange={(e) => setFocusMinutes(Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="break">Break (min)</Label>
-                    <Input
-                      id="break"
-                      type="number"
-                      min={1}
-                      max={60}
-                      value={breakMinutes}
-                      onChange={(e) => setBreakMinutes(Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="longBreak">Long (min)</Label>
-                    <Input
-                      id="longBreak"
-                      type="number"
-                      min={1}
-                      max={60}
-                      value={longBreakMinutes}
-                      onChange={(e) =>
-                        setLongBreakMinutes(Number(e.target.value))
-                      }
-                    />
-                  </div>
-                </div>
+              <Button
+                onClick={handleJoinRoom}
+                disabled={!joinRoomId.trim()}
+                variant="secondary"
+                className="w-full"
+              >
+                Join Room
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
-                {error && <p className="text-destructive text-sm">{error}</p>}
-
-                <Button
-                  onClick={handleCreateRoom}
-                  disabled={isCreating}
-                  className="w-full"
-                >
-                  {isCreating ? "Creating..." : "Create Room"}
-                </Button>
-              </>
-            ) : (
-              <SignInButton />
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Join Room */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Join a Room
-            </CardTitle>
-            <CardDescription>
-              Enter a room code or custom URL to join an existing session
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="joinRoomId">Room Code or URL</Label>
-              <Input
-                id="joinRoomId"
-                placeholder="abc123 or team-standup"
-                value={joinRoomId}
-                onChange={(e) => setJoinRoomId(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleJoinRoom();
-                }}
-              />
+        {/* Feature highlights */}
+        <div className="mt-12 grid gap-4 text-center md:grid-cols-3">
+          <div>
+            <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+              <Clock className="text-primary h-6 w-6" />
             </div>
-
-            <Button
-              onClick={handleJoinRoom}
-              disabled={!joinRoomId.trim()}
-              variant="secondary"
-              className="w-full"
-            >
-              Join Room
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Feature highlights */}
-      <div className="mt-12 grid gap-4 text-center md:grid-cols-3">
-        <div>
-          <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <Clock className="text-primary h-6 w-6" />
+            <h3 className="font-semibold">Pomodoro Technique</h3>
+            <p className="text-muted-foreground text-sm">
+              25 min focus, 5 min break, 15 min long break
+            </p>
           </div>
-          <h3 className="font-semibold">Pomodoro Technique</h3>
-          <p className="text-muted-foreground text-sm">
-            25 min focus, 5 min break, 15 min long break
-          </p>
-        </div>
-        <div>
-          <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <Users className="text-primary h-6 w-6" />
+          <div>
+            <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+              <Users className="text-primary h-6 w-6" />
+            </div>
+            <h3 className="font-semibold">Real-time Sync</h3>
+            <p className="text-muted-foreground text-sm">
+              Everyone sees the same timer, synced in real-time
+            </p>
           </div>
-          <h3 className="font-semibold">Real-time Sync</h3>
-          <p className="text-muted-foreground text-sm">
-            Everyone sees the same timer, synced in real-time
-          </p>
-        </div>
-        <div>
-          <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <Clock className="text-primary h-6 w-6" />
+          <div>
+            <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+              <Clock className="text-primary h-6 w-6" />
+            </div>
+            <h3 className="font-semibold">Custom Durations</h3>
+            <p className="text-muted-foreground text-sm">
+              Customize focus and break durations to fit your workflow
+            </p>
           </div>
-          <h3 className="font-semibold">Custom Durations</h3>
-          <p className="text-muted-foreground text-sm">
-            Customize focus and break durations to fit your workflow
-          </p>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

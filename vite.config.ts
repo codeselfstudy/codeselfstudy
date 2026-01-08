@@ -7,6 +7,16 @@ import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
 const config = defineConfig({
+  server: {
+    proxy: {
+      "/ws": {
+        target: "ws://localhost:8081",
+        ws: true,
+        changeOrigin: true,
+      },
+    },
+  },
+
   plugins: [
     devtools(),
     nitro({

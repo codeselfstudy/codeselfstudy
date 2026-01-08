@@ -136,16 +136,14 @@ src/
 
 - **Format**: `MM:SS` (under 1 hour) or `HH:MM:SS`
 - **Phases**:
-  - Focus: Neutral/green theme
-  - Break: Blue/calm theme
-  - Overtime: Red/alert theme (after 00:00)
+  - Focus: Neutral/green theme (subtle)
+  - Break: Blue/calm theme (subtle)
 - **Cycle indicator**: "Focus 2/4" showing progress toward long break
 
 ### 4.3 Audio
 
 - Focus start: Energetic chime
 - Break start: Relaxing tone
-- Overtime: Urgent alert
 - Mute toggle per user (persisted in localStorage)
 
 ### 4.4 Presence

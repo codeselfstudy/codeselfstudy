@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TimerPhase, TimerState } from "@/lib/timer/ws-client";
 import { cn } from "@/lib/utils";
+import { AudioController } from "@/lib/timer/audio";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface TimerDisplayProps {
   state: TimerState;
@@ -35,17 +37,39 @@ function getPhaseLabel(phase: TimerPhase, cycleNumber: number): string {
 function getPhaseStyles(phase: TimerPhase): string {
   switch (phase) {
     case "focus":
-      return "bg-background text-foreground";
+      // Subtle green for focus
+      return "bg-green-50 text-green-900 border-green-100 dark:bg-green-950/30 dark:text-green-100 dark:border-green-900";
     case "break":
-      return "bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-100";
+      // Subtle blue for break
+      return "bg-blue-50 text-blue-900 border-blue-100 dark:bg-blue-950/30 dark:text-blue-100 dark:border-blue-900";
     case "longBreak":
-      return "bg-indigo-50 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-100";
+      // Subtle purple for long break
+      return "bg-indigo-50 text-indigo-900 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-100 dark:border-indigo-900";
     case "overtime":
-      return "bg-red-600 text-white dark:bg-red-700";
+      // Red for overtime/alert
+      return "bg-red-50 text-red-900 border-red-100 dark:bg-red-950/30 dark:text-red-100 dark:border-red-900";
   }
 }
 
 export function TimerDisplay({ state, className }: TimerDisplayProps) {
+  const [isMuted, setIsMuted] = useState(
+    AudioController.getInstance().getMuted()
+  );
+
+  // Handle audio playback on phase changes
+  useEffect(() => {
+    // Only play if the timer is running or just finished
+    if (state.isRunning || state.remainingMs === 0) {
+      AudioController.getInstance().play(state.phase);
+    }
+  }, [state.phase]);
+
+  const toggleMute = () => {
+    const newState = !isMuted;
+    setIsMuted(newState);
+    AudioController.getInstance().setMuted(newState);
+  };
+
   const timeDisplay = useMemo(() => {
     if (state.phase === "overtime") {
       // For overtime, remaining is negative (counting up)
@@ -64,11 +88,23 @@ export function TimerDisplay({ state, className }: TimerDisplayProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-lg p-8 transition-colors duration-500",
+        "relative flex flex-col items-center justify-center rounded-xl border p-8 transition-colors duration-500",
         phaseStyles,
         className
       )}
     >
+      <button
+        onClick={toggleMute}
+        className="absolute top-4 right-4 rounded-full p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+        aria-label={isMuted ? "Unmute" : "Mute"}
+      >
+        {isMuted ? (
+          <VolumeX className="h-5 w-5 opacity-50" />
+        ) : (
+          <Volume2 className="h-5 w-5 opacity-50" />
+        )}
+      </button>
+
       <div
         className="font-mono text-[15vw] leading-none font-bold tracking-tight tabular-nums md:text-[12vw] lg:text-[10vw]"
         role="timer"
