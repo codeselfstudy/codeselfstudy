@@ -11,7 +11,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import redirects, { findRedirect } from "@/data/redirects";
+import { findRedirect } from "@/lib/redirects";
 import WorkOSProvider from "@/integrations/workos/provider";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
