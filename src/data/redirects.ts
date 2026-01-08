@@ -1,5 +1,6 @@
 /**
- * This site contains redirects.
+ * Central configuration for URL redirects, mapping legacy paths to their new
+ * destinations and associated HTTP redirect status codes.
  */
 type Redirect = Record<string, { to: string; status: 308 | 307 }>;
 
