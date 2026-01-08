@@ -27,17 +27,6 @@ See the documentation in [manual](./manual/src/SUMMARY.md).
 
 Contributions are welcome! This project is developed openly on GitHub, and we are happy to accept help in many forms — including frontend changes, bug fixes, new ideas, or improving documentation.
 
-### How to contribute
-
-1. Fork the repository
-2. Clone your fork locally
-3. Create a new branch for your change
-4. Make your changes
-5. Commit and push your branch
-6. Open a Pull Request to the main repository
-
-Start by looking at open issues, or open a new issue to suggest improvements if you notice something unclear in the documentation or code.
-
 For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licenses

@@ -10,6 +10,8 @@ Please attend a meetup to learn more about the project and group.
 
 ## Getting started
 
+Start by looking at open issues, or open a new issue to suggest improvements if you notice something unclear in the documentation or code.
+
 1. Fork the repository to your own GitHub account using GitHub’s Fork button.
 2. Clone your fork to your local machine:
 
