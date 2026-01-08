@@ -36,7 +36,7 @@ Contributions are welcome! This project is developed openly on GitHub, and we ar
 5. Commit and push your branch
 6. Open a Pull Request to the main repository
 
-Start by looking at open issues, or open a new issue to suggest improvements if you notice something unclear in the documentation or code.  
+Start by looking at open issues, or open a new issue to suggest improvements if you notice something unclear in the documentation or code.
 
 For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 

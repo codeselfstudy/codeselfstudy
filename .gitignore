@@ -1,3 +1,4 @@
+.claude/
 *.db
 TANK/
 src/routeTree.gen.ts

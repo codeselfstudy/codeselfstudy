@@ -19,7 +19,7 @@ export default function AppWorkOSProvider({
       apiHostname={VITE_WORKOS_API_HOSTNAME}
       onRedirectCallback={({ state }) => {
         if (state?.returnTo) {
-          navigate(state.returnTo);
+          navigate({ to: state.returnTo });
         }
       }}
     >

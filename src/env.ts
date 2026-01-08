@@ -7,6 +7,7 @@ export const env = createEnv({
     WORKOS_API_KEY: z.string(),
     DATABASE_URL: z.string(),
     TURSO_AUTH_TOKEN: z.string().optional(),
+    JWT_SECRET: z.string().min(32), // Shared secret for timer JWT tokens
   },
 
   /**

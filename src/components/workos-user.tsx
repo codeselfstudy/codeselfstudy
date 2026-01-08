@@ -30,7 +30,11 @@ export function SignInButton({ large }: { large?: boolean }) {
   return (
     <button
       onClick={() => {
-        signIn();
+        signIn({
+          state: {
+            returnTo: window.location.pathname + window.location.search,
+          },
+        });
       }}
       className={buttonClasses}
       disabled={isLoading}
