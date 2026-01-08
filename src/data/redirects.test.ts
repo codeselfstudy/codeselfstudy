@@ -65,4 +65,16 @@ describe("findRedirect", () => {
     const result = findRedirect("/blogpost");
     expect(result).toBeNull();
   });
+
+  test("should handle trailing slash in wildcard patterns", () => {
+    // /wiki/ is an exact match, not a wildcard match
+    const result = findRedirect("/wiki/");
+    expect(result).toEqual({ to: "/learn", status: 308 });
+  });
+
+  test("should not match path with only trailing slash for wildcards", () => {
+    // /blog/ should not match /blog/* (no content after slash)
+    const result = findRedirect("/blog/");
+    expect(result).toBeNull();
+  });
 });
