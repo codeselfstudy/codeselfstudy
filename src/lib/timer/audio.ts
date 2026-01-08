@@ -1,4 +1,4 @@
-import { TimerPhase } from "@/lib/timer/ws-client";
+import type { TimerPhase } from "@/lib/timer/ws-client";
 
 const SOUND_PATHS = {
   focus: "/sounds/timer/focus.mp3",
@@ -9,7 +9,7 @@ const SOUND_PATHS = {
 
 export class AudioController {
   private static instance: AudioController;
-  private isMuted: boolean = false;
+  private isMuted = false;
   private audioElements: Record<string, HTMLAudioElement> = {};
 
   private constructor() {

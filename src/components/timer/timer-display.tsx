@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import type { TimerPhase, TimerState } from "@/lib/timer/ws-client";
 import { cn } from "@/lib/utils";
 import { AudioController } from "@/lib/timer/audio";
-import { Volume2, VolumeX } from "lucide-react";
 
 interface TimerDisplayProps {
   state: TimerState;
