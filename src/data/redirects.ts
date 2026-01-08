@@ -1,5 +1,6 @@
 /**
- * This site contains redirects.
+ * Central configuration for URL redirects, mapping legacy paths to their new
+ * destinations and associated HTTP redirect status codes.
  */
 type RedirectConfig = { to: string; status: 308 | 307 };
 type Redirect = Record<string, RedirectConfig>;
@@ -43,21 +44,21 @@ const redirects: Redirect = {
   "/support-us/": { to: "/", status: 308 },
   "/support/": { to: "/", status: 308 },
   "/support": { to: "/", status: 308 },
-  "/presentations": { to: "/learn", status: 308 },
-  "/presentations/": { to: "/learn", status: 308 },
-  "/presentations-schedule": { to: "/learn", status: 308 },
+  "/presentations": { to: "/events", status: 308 },
+  "/presentations/": { to: "/events", status: 308 },
+  "/presentations-schedule": { to: "/events", status: 308 },
   "/blog/*": { to: "/learn", status: 308 },
   "/c": { to: "/forum", status: 308 },
   "/c/": { to: "/forum", status: 308 },
   "/bbs": { to: "/forum", status: 308 },
-  "/join": { to: "/events", status: 308 },
+  "/join": { to: "/forum", status: 308 },
   "/welcome": { to: "/events", status: 308 },
   "/checkin": { to: "/forum", status: 308 },
   "/edu": { to: "/learn", status: 308 },
   "/edu/": { to: "/learn", status: 308 },
   "/comment/63": { to: "/", status: 308 },
   "/forms/feedback": { to: "/contact", status: 308 },
-  "/wiki/Main_Page": { to: "/contact", status: 308 },
+  "/wiki/Main_Page": { to: "/learn", status: 308 },
   "/w": { to: "/learn", status: 308 },
   "/w/": { to: "/learn", status: 308 },
   "/wiki/*": { to: "/learn", status: 308 },
