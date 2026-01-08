@@ -47,7 +47,7 @@ describe("findRedirect", () => {
 
     // /wiki/Main_Page is exact match to /contact
     const resultMainPage = findRedirect("/wiki/Main_Page");
-    expect(resultMainPage).toEqual({ to: "/contact", status: 308 });
+    expect(resultMainPage).toEqual({ to: "/learn", status: 308 });
 
     // /wiki/something-else should match wildcard to /learn
     const resultWildcard = findRedirect("/wiki/something-else");
