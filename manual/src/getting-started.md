@@ -36,6 +36,7 @@ VITE_WORKOS_API_HOSTNAME="your_workos_api_hostname"
 SERVER_URL="http://localhost:7001"
 WORKOS_API_KEY="your_workos_api_key"
 DATABASE_URL="dev.db"
+TURSO_AUTH_TOKEN="your_turso_auth_token"
 ```
 
 `DATABASE_URL` is used by Drizzle with SQLite.

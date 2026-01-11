@@ -10,6 +10,7 @@ Key directories and files:
 - `src/integrations/`: external services (WorkOS, etc.).
 - `public/`: static assets.
 - `manual/`: this mdBook documentation.
+- `.gemini/`: Gemini extension configuration.
 
 Generated files:
 
