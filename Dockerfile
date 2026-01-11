@@ -14,22 +14,32 @@ WORKDIR /app
 ENV NODE_ENV="production"
 ENV PORT="8080"
 
-FROM base AS build
-RUN apk update && \
-  apk add build-base pkgconfig python3
+# Stage 1: Install production dependencies
+FROM base AS prod-deps
 COPY bun.lock package.json ./
-RUN bun install
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --ci --production
+
+# Stage 2: Build the application
+FROM base AS build
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk update && apk add build-base pkgconfig python3
+COPY bun.lock package.json ./
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --ci
 COPY . .
 RUN bun --bun run build
 
-# Remove development dependencies
-RUN rm -rf node_modules && \
-  bun install --ci
-
+# Stage 3: Final image
 FROM base
+# Copy production dependencies
+COPY --from=prod-deps /app/node_modules /app/node_modules
 # Copy built application
-COPY --from=build /app /app
+COPY --from=build /app/.output /app/.output
+COPY --from=build /app/public /app/public
+COPY --from=build /app/package.json /app/package.json
 COPY dotfiles/* /root/
+
 EXPOSE 8080
 
 CMD [ "bun", "run", "start" ]
