@@ -68,6 +68,8 @@ export default [
   },
   {
     ignores: [
+      ".output/**",
+      "dist/**",
       "TANK/**",
       "**/*.bak/**",
       "**/*.min.js",
