@@ -77,3 +77,4 @@ priv/static
 **/todos.json
 
 manual/
+.git

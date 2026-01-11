@@ -15,6 +15,7 @@ import { findRedirect } from "@/lib/redirects";
 import WorkOSProvider from "@/integrations/workos/provider";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
+import { Analytics } from "@/components/analytics";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 
@@ -64,6 +65,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        {import.meta.env.PROD && <Analytics />}
         <link
           rel="canonical"
           href={`https://codeselfstudy.com${location.pathname}`}
