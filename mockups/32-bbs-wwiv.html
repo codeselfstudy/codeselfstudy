@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — WWIV BBS</title>
+    <style>
+      :root {
+        --bg: #0000a8;
+        --white: #ffffff;
+        --cyan: #54fefe;
+        --yellow: #fefe54;
+        --green: #54fe54;
+        --gray: #c0c0c0;
+        --dim: #5454fe;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #000;
+        color: var(--white);
+        font-family:
+          "Px437 IBM VGA8", "Perfect DOS VGA 437", "VT323", "Cascadia Mono",
+          "Courier New", ui-monospace, Menlo, monospace;
+        font-size: 17px;
+        line-height: 1.18;
+        font-weight: 700;
+        min-height: 100vh;
+      }
+      .crt {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 18px;
+        background: var(--bg);
+        border-radius: 14px / 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+          inset 0 0 60px rgba(0, 0, 0, 0.7),
+          0 0 0 8px #1a1a1a,
+          0 0 0 14px #050505;
+      }
+      .crt::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0) 0 1px,
+          rgba(0, 0, 0, 0.18) 1px 3px
+        );
+        pointer-events: none;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--yellow);
+        color: var(--bg);
+      }
+      pre.page {
+        white-space: pre;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        color: inherit;
+      }
+      .c {
+        color: var(--cyan);
+      }
+      .y {
+        color: var(--yellow);
+      }
+      .g {
+        color: var(--green);
+      }
+      .gr {
+        color: var(--gray);
+      }
+      .d {
+        color: var(--dim);
+      }
+      .blink {
+        animation: blink 0.9s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .cursor {
+        display: inline-block;
+        width: 0.6em;
+        height: 1em;
+        background: var(--white);
+        vertical-align: text-bottom;
+        animation: blink 0.9s steps(1) infinite;
+      }
+      h1.sr {
+        position: absolute;
+        left: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="crt">
+      <h1 class="sr">Code Self Study WWIV BBS</h1>
+      <!-- prettier-ignore -->
+      <pre class="page"><span class="y">┌──────────────────────────────────────────────────────────────────────────────┐</span>
+<span class="y">│</span>  <span class="c">WWIV v4.30</span>     <span class="y">CODE-SELF-STUDY @1</span>     <span class="g">Berkeley · est. 2014</span>           <span class="y">│</span>
+<span class="y">└──────────────────────────────────────────────────────────────────────────────┘</span>
+
+   <span class="c">▒▒▒▒▒▒</span>  <span class="y">CODE</span>  <span class="c">▒▒▒▒▒▒</span>  <span class="y">SELF</span>  <span class="c">▒▒▒▒▒▒</span>  <span class="y">STUDY</span>  <span class="c">▒▒▒▒▒▒</span>
+
+  <span class="gr">Welcome to the WWIV node for </span><span class="y">Code Self Study</span><span class="gr">, a friendly</span>
+  <span class="gr">programming community of </span><span class="g">5,247</span><span class="gr"> members in Berkeley and the</span>
+  <span class="gr">San Francisco Bay Area.  All languages, all levels welcome.</span>
+
+  <span class="gr">Format: </span><span class="c">self-study with mentorship</span><span class="gr">.  Show up, bring a question</span>
+  <span class="gr">or a project, get help from the regulars.</span>
+
+<span class="d">──────────────────────────────────────────────────────────────────────────────</span>
+<span class="y">                              M A I N   M E N U</span>
+<span class="d">──────────────────────────────────────────────────────────────────────────────</span>
+
+  <span class="c">[A]</span><span class="gr">.</span> <span class="y">News &amp; bulletins  </span>      <span class="c">[F]</span><span class="gr">.</span> <span class="y">File transfers</span>
+  <span class="c">[B]</span><span class="gr">.</span> <span class="y">Sub-boards (forum)</span>      <span class="c">[D]</span><span class="gr">.</span> <span class="y">Doors (puzzles)</span>
+  <span class="c">[C]</span><span class="gr">.</span> <span class="y">Chat with users   </span>      <span class="c">[V]</span><span class="gr">.</span> <span class="y">Voting booths</span>
+  <span class="c">[E]</span><span class="gr">.</span> <span class="y">Email regulars    </span>      <span class="c">[U]</span><span class="gr">.</span> <span class="y">User listing</span>
+  <span class="c">[N]</span><span class="gr">.</span> <span class="y">Net status (FidoNet)</span>    <span class="c">[K]</span><span class="gr">.</span> <span class="y">Kalendar of events</span>
+  <span class="c">[J]</span><span class="gr">.</span> <a href="https://www.meetup.com/codeselfstudy/"><span class="g">JOIN COMMUNITY → meetup.com/codeselfstudy</span></a>
+  <span class="c">[G]</span><span class="gr">.</span> <span class="y">Goodbye / log off</span>
+
+<span class="d">──────────────────────────────────────────────────────────────────────────────</span>
+<span class="y">                            S U B - B O A R D S</span>
+<span class="d">──────────────────────────────────────────────────────────────────────────────</span>
+
+  <span class="gr"> # </span> <span class="c">name                                     </span>   <span class="gr">posts</span>   <span class="gr">last</span>
+  <span class="gr">────────────────────────────────────────────────────────────────────────────</span>
+  <span class="y"> 01</span>  <a href="#">general . . . . . . . . . . . . . . . . </a>   <span class="g">3214</span>   2h
+  <span class="y"> 02</span>  <a href="#">study plans &amp; mentorship . . . . . . . </a>    <span class="g">847</span>  12m
+  <span class="y"> 03</span>  <a href="#">code review queue . . . . . . . . . . . </a>    <span class="g">512</span>   1h
+  <span class="y"> 04</span>  <a href="#">jobs &amp; intros (members only) . . . . . </a>    <span class="g">218</span>   3h
+  <span class="y"> 05</span>  <a href="#">puzzle of the week . . . . . . . . . . .</a>    <span class="g">404</span>  30m
+  <span class="y"> 06</span>  <a href="#">reading group: Crafting Interpreters . .</a>     <span class="g">93</span>   1d
+  <span class="y"> 07</span>  <a href="#">show-and-tell . . . . . . . . . . . . . </a>    <span class="g">621</span>  45m
+
+<span class="d">──────────────────────────────────────────────────────────────────────────────</span>
+<span class="y">                  L A N G U A G E S   I N   R O T A T I O N</span>
+<span class="d">──────────────────────────────────────────────────────────────────────────────</span>
+
+  <a href="#"><span class="c">python    </span></a>  <a href="#"><span class="c">javascript</span></a>  <a href="#"><span class="c">typescript</span></a>  <a href="#"><span class="c">go        </span></a>
+  <a href="#"><span class="c">rust      </span></a>  <a href="#"><span class="c">haskell   </span></a>  <a href="#"><span class="c">clojure   </span></a>  <a href="#"><span class="c">elixir    </span></a>
+  <a href="#"><span class="c">racket    </span></a>  <a href="#"><span class="c">scheme    </span></a>  <a href="#"><span class="c">c         </span></a>  <a href="#"><span class="c">c++       </span></a>
+  <a href="#"><span class="c">ruby      </span></a>  <a href="#"><span class="c">scala     </span></a>  <a href="#"><span class="c">erlang    </span></a>  <a href="#"><span class="c">elm       </span></a>
+  <a href="#"><span class="c">lua       </span></a>  <a href="#"><span class="c">sql       </span></a>  <a href="#"><span class="c">julia     </span></a>  <a href="#"><span class="c">r         </span></a>
+
+<span class="d">──────────────────────────────────────────────────────────────────────────────</span>
+
+  <span class="y">[Time left: 60m]   [Mins online: 11]   [Speed: 9600]   [Node: 01]</span>
+
+  <span class="c">Your choice?</span> <span class="cursor"> </span></pre>
+    </div>
+  </body>
+</html>

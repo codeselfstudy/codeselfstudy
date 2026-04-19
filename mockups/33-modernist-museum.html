@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Modernist museum</title>
+    <style>
+      :root {
+        --paper: #fafaf7;
+        --ink: #111111;
+        --rule: #c8c6bf;
+        --muted: #6b6a64;
+        --accent: #c4452b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 400;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+      }
+      header {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 28px 40px 0;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 24px;
+        border-bottom: 1px solid var(--ink);
+        padding-bottom: 14px;
+      }
+      .mark {
+        font-weight: 300;
+        font-size: 13px;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+      }
+      .mark b {
+        font-weight: 700;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 28px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      nav a {
+        text-decoration: none;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      nav a:hover {
+        color: var(--accent);
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 56px 40px 80px;
+      }
+      .meta-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 64px;
+      }
+      .meta-row b {
+        display: block;
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 13px;
+        margin-top: 4px;
+        letter-spacing: 0.06em;
+        text-transform: none;
+      }
+      .lede {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 48px;
+        align-items: end;
+        padding-bottom: 72px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .lede .num {
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .lede h1 {
+        font-size: clamp(40px, 6vw, 92px);
+        line-height: 1;
+        margin: 0;
+        font-weight: 300;
+        letter-spacing: -0.02em;
+      }
+      .lede h1 em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .lede aside {
+        font-size: 13px;
+        color: var(--muted);
+        max-width: 22ch;
+      }
+      .grid {
+        margin-top: 72px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        column-gap: 32px;
+        row-gap: 64px;
+      }
+      .work {
+        grid-column: span 4;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .plate {
+        aspect-ratio: 4 / 5;
+        position: relative;
+        border: 1px solid var(--rule);
+        background: #f0eee7;
+        overflow: hidden;
+      }
+      .plate::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+      }
+      .plate.a::before {
+        background:
+          radial-gradient(
+            circle at 30% 40%,
+            #ddd9cd 0,
+            #ddd9cd 32%,
+            transparent 33%
+          ),
+          linear-gradient(135deg, #f0eee7 60%, #e1ddd0 100%);
+      }
+      .plate.b::before {
+        background:
+          linear-gradient(180deg, #cfd6cd 0 38%, transparent 38%),
+          linear-gradient(180deg, #f0eee7 0%, #f0eee7 100%);
+      }
+      .plate.c::before {
+        background:
+          radial-gradient(ellipse at 50% 80%, #c4452b22 0%, transparent 60%),
+          linear-gradient(0deg, #ebe7da 0 60%, transparent 60%);
+      }
+      .plate.d::before {
+        background: repeating-linear-gradient(
+          90deg,
+          #f0eee7 0 24px,
+          #e1ddd0 24px 26px
+        );
+      }
+      .plate.e::before {
+        background: linear-gradient(135deg, #2c3147 0%, #4a5275 100%);
+        opacity: 0.85;
+      }
+      .plate.f::before {
+        background:
+          radial-gradient(circle at 65% 35%, #ffffff 0 8%, transparent 9%),
+          radial-gradient(circle at 35% 70%, #c4452b 0 6%, transparent 7%),
+          linear-gradient(180deg, #f0eee7, #ddd9cd);
+      }
+      .plate .id {
+        position: absolute;
+        bottom: 10px;
+        left: 12px;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+      }
+      .work h3 {
+        font-size: 17px;
+        font-weight: 500;
+        margin: 4px 0 0;
+        letter-spacing: -0.005em;
+      }
+      .work p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .work .tag {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .statement {
+        margin-top: 96px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        column-gap: 32px;
+        padding-top: 32px;
+        border-top: 1px solid var(--ink);
+      }
+      .statement h2 {
+        grid-column: 1 / span 4;
+        font-size: 13px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        font-weight: 500;
+        margin: 0;
+      }
+      .statement .body {
+        grid-column: 5 / span 7;
+        font-size: clamp(18px, 1.4vw, 22px);
+        font-weight: 300;
+        line-height: 1.5;
+        max-width: 60ch;
+      }
+      .statement .body em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .visit {
+        margin-top: 96px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 32px;
+        align-items: end;
+        padding-top: 32px;
+        border-top: 1px solid var(--rule);
+      }
+      .visit dl {
+        grid-column: span 3;
+        margin: 0;
+        font-size: 13px;
+      }
+      .visit dt {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .visit dd {
+        margin: 4px 0 0;
+        font-weight: 500;
+      }
+      .visit .cta {
+        grid-column: 10 / span 3;
+        text-align: right;
+      }
+      .visit .cta a {
+        text-decoration: none;
+        font-size: 12px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        font-weight: 500;
+        color: var(--accent);
+        border-bottom: 1px solid var(--accent);
+        padding-bottom: 2px;
+      }
+      .visit .cta a:hover {
+        color: var(--ink);
+        border-color: var(--ink);
+      }
+      footer {
+        max-width: 1280px;
+        margin: 80px auto 0;
+        padding: 20px 40px 40px;
+        border-top: 1px solid var(--ink);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 980px) {
+        .work {
+          grid-column: span 6;
+        }
+        .meta-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .statement h2,
+        .statement .body {
+          grid-column: span 12;
+        }
+        .visit dl,
+        .visit .cta {
+          grid-column: span 6;
+        }
+        .visit .cta {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="mark"><b>Code Self Study</b> — Berkeley, CA</div>
+      <nav>
+        <ul>
+          <li><a href="#">Events</a></li>
+          <li><a href="#">Learn</a></li>
+          <li><a href="#">Forum</a></li>
+          <li><a href="#">Jobs</a></li>
+          <li><a href="#">Puzzles</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <div class="meta-row">
+        <div>On view <b>Saturdays, 9 am</b></div>
+        <div>Members <b>5,247</b></div>
+        <div>Languages <b>All of them</b></div>
+        <div>Admission <b>Free</b></div>
+      </div>
+
+      <section class="lede">
+        <div>
+          <div class="num">№ 01 — current exhibition</div>
+        </div>
+        <h1>
+          Study code. <em>Together.</em><br />
+          In person.
+        </h1>
+        <aside>
+          A friendly programming community of 5,000+ people in Berkeley and the
+          San Francisco Bay Area. All languages, all levels welcome.
+        </aside>
+      </section>
+
+      <section class="grid">
+        <article class="work">
+          <div class="plate a"><span class="id">PL-001 · 2014–</span></div>
+          <span class="tag">Community</span>
+          <h3>The room exists.</h3>
+          <p>
+            Programmers who keep showing up week after week. The hard part is
+            done.
+          </p>
+        </article>
+
+        <article class="work">
+          <div class="plate b"><span class="id">PL-002 · ongoing</span></div>
+          <span class="tag">Mentorship</span>
+          <h3>Ask for a plan.</h3>
+          <p>
+            Experienced members help beginners with study plans, code reviews,
+            stuck commits.
+          </p>
+        </article>
+
+        <article class="work">
+          <div class="plate c"><span class="id">PL-003 · ongoing</span></div>
+          <span class="tag">Networking</span>
+          <h3>Doors open quietly.</h3>
+          <p>
+            Members have landed jobs through introductions made inside the
+            group.
+          </p>
+        </article>
+
+        <article class="work">
+          <div class="plate d"><span class="id">PL-004 · weekly</span></div>
+          <span class="tag">Programme</span>
+          <h3>Saturday meetup.</h3>
+          <p>
+            9 am, Berkeley. Bring a project, a question, or just a notebook and
+            a coffee.
+          </p>
+        </article>
+
+        <article class="work">
+          <div class="plate e"><span class="id">PL-005 · series</span></div>
+          <span class="tag">Reading group</span>
+          <h3>Crafting Interpreters.</h3>
+          <p>
+            One chapter a week. Implement in any language you like — there is
+            usually company.
+          </p>
+        </article>
+
+        <article class="work">
+          <div class="plate f"><span class="id">PL-006 · weekly</span></div>
+          <span class="tag">Puzzles</span>
+          <h3>Puzzle of the week.</h3>
+          <p>
+            Short problems chosen by members. Solutions discussed at the next
+            meetup.
+          </p>
+        </article>
+      </section>
+
+      <section class="statement">
+        <h2>Statement</h2>
+        <div class="body">
+          Dozens of groups will teach you to code. We build a local community of
+          friendly, highly-motivated programmers instead —
+          <em>self-study with mentorship</em>, in a real room, in person. All
+          languages. All levels.
+        </div>
+      </section>
+
+      <section class="visit">
+        <dl>
+          <dt>Visit</dt>
+          <dd>Saturdays, 9 am</dd>
+        </dl>
+        <dl>
+          <dt>Where</dt>
+          <dd>Berkeley, CA</dd>
+        </dl>
+        <dl>
+          <dt>Admission</dt>
+          <dd>Free for all members</dd>
+        </dl>
+        <div class="cta">
+          <a href="https://www.meetup.com/codeselfstudy/"
+            >Join the community →</a
+          >
+        </div>
+      </section>
+    </main>
+    <footer>
+      <span>Code Self Study — Berkeley · Bay Area</span>
+      <span>№ exhibition 01 / 2026</span>
+    </footer>
+  </body>
+</html>

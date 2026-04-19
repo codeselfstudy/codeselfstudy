@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Forest brutalist</title>
+    <style>
+      :root {
+        --cream: #f0ead6;
+        --bark: #2c2a22;
+        --moss: #2f4a30;
+        --moss-deep: #1f3320;
+        --tan: #b88e54;
+        --rust: #8e3b1f;
+        --slate: #5a6a55;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--cream);
+        color: var(--bark);
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+      a {
+        color: inherit;
+      }
+      nav {
+        background: var(--moss-deep);
+        color: var(--cream);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 28px;
+        flex-wrap: wrap;
+        gap: 12px;
+        border-bottom: 6px solid var(--bark);
+      }
+      .logo {
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        font-size: 14px;
+        text-transform: uppercase;
+        background: var(--cream);
+        color: var(--bark);
+        padding: 6px 12px;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      nav a {
+        text-decoration: none;
+        padding: 6px 12px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        color: var(--cream);
+      }
+      nav a:hover {
+        background: var(--tan);
+        color: var(--moss-deep);
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 32px 28px 80px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 0;
+        border: 5px solid var(--bark);
+        background: var(--bark);
+      }
+      .hero > div {
+        padding: 32px 30px;
+      }
+      .hero .lede {
+        background: var(--moss);
+        color: var(--cream);
+      }
+      .hero .lede .badge {
+        display: inline-block;
+        border: 2px solid var(--cream);
+        padding: 4px 10px;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+      }
+      .hero .lede h1 {
+        font-size: clamp(40px, 5.6vw, 78px);
+        line-height: 0.96;
+        margin: 0 0 16px;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+      }
+      .hero .lede p {
+        margin: 0 0 22px;
+        max-width: 36ch;
+        font-size: 17px;
+      }
+      .btn {
+        display: inline-block;
+        text-decoration: none;
+        background: var(--tan);
+        color: var(--moss-deep);
+        padding: 12px 18px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 14px;
+        border: 3px solid var(--cream);
+      }
+      .btn:hover {
+        background: var(--cream);
+      }
+      .hero .panel {
+        background: var(--cream);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .hero .panel h2 {
+        margin: 0;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--slate);
+      }
+      .hero .panel .stat {
+        font-size: 90px;
+        line-height: 0.95;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 6px 0 4px;
+      }
+      .hero .panel .sub {
+        font-size: 14px;
+        color: var(--slate);
+        margin-bottom: 18px;
+      }
+      .hero .panel ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-top: 1.5px solid var(--bark);
+      }
+      .hero .panel li {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1.5px solid var(--bark);
+        font-size: 14px;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin-top: 24px;
+        border: 5px solid var(--bark);
+      }
+      .features > div {
+        padding: 24px;
+        border-right: 5px solid var(--bark);
+        background: var(--cream);
+      }
+      .features > div:last-child {
+        border-right: 0;
+      }
+      .features .marker {
+        width: 28px;
+        height: 28px;
+        background: var(--moss);
+        margin-bottom: 12px;
+      }
+      .features > div:nth-child(2) .marker {
+        background: var(--tan);
+      }
+      .features > div:nth-child(3) .marker {
+        background: var(--rust);
+      }
+      .features h3 {
+        margin: 0 0 6px;
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .features p {
+        margin: 0;
+        font-size: 15px;
+      }
+      .trail {
+        margin-top: 24px;
+        border: 5px solid var(--bark);
+        background: var(--cream);
+        padding: 28px;
+      }
+      .trail h2 {
+        font-size: clamp(28px, 4vw, 48px);
+        margin: 0 0 12px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .trail p {
+        max-width: 60ch;
+      }
+      .langs {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0;
+        border-top: 2px solid var(--bark);
+        border-left: 2px solid var(--bark);
+      }
+      .langs span {
+        padding: 8px 14px;
+        border-right: 2px solid var(--bark);
+        border-bottom: 2px solid var(--bark);
+        font-size: 14px;
+        background: var(--cream);
+      }
+      .langs span:nth-child(7n) {
+        background: var(--moss);
+        color: var(--cream);
+      }
+      .langs span:nth-child(11n) {
+        background: var(--tan);
+      }
+      footer {
+        background: var(--moss-deep);
+        color: var(--cream);
+        padding: 18px 28px;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-align: center;
+      }
+      @media (max-width: 820px) {
+        .hero,
+        .features {
+          grid-template-columns: 1fr;
+        }
+        .features > div {
+          border-right: 0;
+          border-bottom: 5px solid var(--bark);
+        }
+        .features > div:last-child {
+          border-bottom: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">Code · Self · Study</div>
+      <ul>
+        <li><a href="#">Events</a></li>
+        <li><a href="#">Learn</a></li>
+        <li><a href="#">Forum</a></li>
+        <li><a href="#">Jobs</a></li>
+        <li><a href="#">Puzzles</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+    <div class="wrap">
+      <section class="hero">
+        <div class="lede">
+          <div class="badge">Trailhead · est. 2014</div>
+          <h1>Study code. Together. In person.</h1>
+          <p>
+            A friendly programming community of 5,000+ people in Berkeley and
+            the San Francisco Bay Area. All languages, all levels welcome.
+          </p>
+          <a class="btn" href="https://www.meetup.com/codeselfstudy/"
+            >Join the community →</a
+          >
+        </div>
+        <div class="panel">
+          <h2>Members</h2>
+          <div class="stat">5,247</div>
+          <div class="sub">Bay Area programmers</div>
+          <ul>
+            <li><span>Weekly meetup</span><b>Sat 9 am</b></li>
+            <li><span>Trailhead</span><b>Berkeley</b></li>
+            <li><span>Format</span><b>Self-study + mentorship</b></li>
+            <li><span>Cover</span><b>Free</b></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="features">
+        <div>
+          <div class="marker"></div>
+          <h3>Community</h3>
+          <p>
+            Show up. Meet programmers who keep showing up week after week. The
+            hard part is done: the room exists.
+          </p>
+        </div>
+        <div>
+          <div class="marker"></div>
+          <h3>Mentorship</h3>
+          <p>
+            Experienced members help beginners. Bring a question, a project, or
+            a stuck commit. Ask for a study plan.
+          </p>
+        </div>
+        <div>
+          <div class="marker"></div>
+          <h3>Networking</h3>
+          <p>
+            Members have landed jobs through introductions made inside the
+            group. Quietly, no pitch.
+          </p>
+        </div>
+      </section>
+
+      <section class="trail">
+        <h2>All languages. All levels.</h2>
+        <p>
+          Dozens of groups teach you to code. We build a local community of
+          highly-motivated programmers instead. The format is self-study with
+          mentorship.
+        </p>
+        <div class="langs">
+          <span>Python</span><span>JavaScript</span><span>TypeScript</span
+          ><span>Go</span><span>Rust</span><span>Haskell</span
+          ><span>Clojure</span><span>Elixir</span><span>Racket</span
+          ><span>Scheme</span><span>C</span><span>C++</span><span>Ruby</span
+          ><span>Scala</span><span>Erlang</span><span>Elm</span><span>Lua</span
+          ><span>SQL</span><span>Julia</span><span>R</span>
+        </div>
+      </section>
+    </div>
+    <footer>Code Self Study — Berkeley, CA — Est. 2014</footer>
+  </body>
+</html>

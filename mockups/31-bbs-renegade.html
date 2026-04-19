@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Renegade BBS</title>
+    <style>
+      :root {
+        --bg: #100000;
+        --fg: #ff7b00;
+        --bright: #ffd27a;
+        --dim: #8a3a00;
+        --red: #ff3333;
+        --green: #66ff66;
+        --cyan: #5dd9ff;
+        --bar: #b03000;
+        --bar-fg: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #000;
+        color: var(--fg);
+        font-family:
+          "Px437 IBM VGA8", "Perfect DOS VGA 437", "VT323", "Cascadia Mono",
+          "Courier New", ui-monospace, Menlo, monospace;
+        font-size: 17px;
+        line-height: 1.2;
+        font-weight: 700;
+        min-height: 100vh;
+      }
+      .crt {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 18px;
+        background: var(--bg);
+        border-radius: 14px / 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+          inset 0 0 60px rgba(0, 0, 0, 0.85),
+          0 0 0 8px #1a1a1a,
+          0 0 0 14px #050505;
+        text-shadow: 0 0 4px rgba(255, 123, 0, 0.4);
+      }
+      .crt::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0) 0 1px,
+          rgba(0, 0, 0, 0.25) 1px 3px
+        );
+        pointer-events: none;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--bright);
+        color: var(--bg);
+        text-shadow: none;
+      }
+      pre.page {
+        white-space: pre;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        color: inherit;
+      }
+      .b {
+        color: var(--bright);
+      }
+      .d {
+        color: var(--dim);
+      }
+      .r {
+        color: var(--red);
+      }
+      .g {
+        color: var(--green);
+      }
+      .c {
+        color: var(--cyan);
+      }
+      .lightbar {
+        background: var(--bar);
+        color: var(--bar-fg);
+        text-shadow: none;
+        padding: 0 4px;
+      }
+      .lb-key {
+        color: var(--bright);
+      }
+      .blink {
+        animation: blink 0.9s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .cursor {
+        display: inline-block;
+        width: 0.6em;
+        height: 1em;
+        background: var(--bright);
+        vertical-align: text-bottom;
+        animation: blink 0.9s steps(1) infinite;
+      }
+      h1.sr {
+        position: absolute;
+        left: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="crt">
+      <h1 class="sr">Code Self Study Renegade BBS</h1>
+      <!-- prettier-ignore -->
+      <pre class="page"><span class="r">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</span>
+<span class="r">█</span>  <span class="b">Renegade v1.21 · Node 01</span>     <span class="r">[</span><span class="b">CODE-SELF-STUDY</span><span class="r">]</span>      <span class="d">SysOp: regulars</span>      <span class="r">█</span>
+<span class="r">▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
+
+  <span class="d">┌─</span> <span class="b">login banner</span> <span class="d">──────────────────────────────────────────────────────┐</span>
+  <span class="d">│</span>  <span class="b">user .... </span> guest             <span class="d">│</span>  <span class="b">level ... </span> 30 (visitor)        <span class="d">│</span>
+  <span class="d">│</span>  <span class="b">last on . </span> 2026-04-17 21:14   <span class="d">│</span>  <span class="b">mail .... </span> <span class="g">3 new bulletins</span>     <span class="d">│</span>
+  <span class="d">└──────────────────────────────────────────────────────────────────────────┘</span>
+
+  <span class="b">A friendly programming community of </span><span class="g">5,000+</span><span class="b"> members in Berkeley and</span>
+  <span class="b">the San Francisco Bay Area.</span>  All languages, all levels welcome.  Format:
+  <span class="c">self-study with mentorship</span>.  Show up at a meetup, bring a question or a
+  project, get help from the regulars.  No curriculum, no gatekeeping, no pitch.
+
+<span class="r">══════════════════════════════════ MAIN MENU ════════════════════════════════</span>
+
+  <span class="lightbar"> <span class="lb-key">M</span>essages    </span>  forum threads, ongoing discussions
+  <span class="lightbar"> <span class="lb-key">F</span>iles       </span>  study plans, references, reading lists
+  <span class="lightbar"> <span class="lb-key">B</span>ulletins   </span>  meetups, puzzle of the week, jobs
+  <span class="lightbar"> <span class="lb-key">D</span>oors       </span>  pair-up board, code-review queue
+  <span class="lightbar"> <span class="lb-key">U</span>sers online</span>  <span class="g">37</span> connected · <span class="g">5,247</span> registered
+  <span class="lightbar"> <span class="lb-key">C</span>hat room   </span>  live chat with sysop and regulars
+  <span class="lightbar"> <span class="lb-key">J</span>oin comm.  </span>  <a href="https://www.meetup.com/codeselfstudy/"><span class="b">→ meetup.com/codeselfstudy ←</span></a>
+  <span class="lightbar"> <span class="lb-key">G</span>oodbye     </span>  log off
+
+<span class="r">══════════════════════════════════ BULLETINS ════════════════════════════════</span>
+
+  <span class="b">[01]</span> <span class="g">why people show up</span> <span class="d">────────────────────────────────────────────</span>
+       <span class="b">community  </span>  real chairs, real people, week after week
+       <span class="b">mentorship </span>  experienced members help beginners
+       <span class="b">networking </span>  introductions inside the group, no pitch
+
+  <span class="b">[02]</span> <span class="g">languages in active rotation</span> <span class="d">──────────────────────────────────</span>
+       <a href="#">python</a>  <a href="#">js</a>  <a href="#">typescript</a>  <a href="#">go</a>  <a href="#">rust</a>  <a href="#">haskell</a>  <a href="#">clojure</a>
+       <a href="#">elixir</a>  <a href="#">racket</a>  <a href="#">scheme</a>  <a href="#">c</a>  <a href="#">c++</a>  <a href="#">ruby</a>  <a href="#">scala</a>
+       <a href="#">erlang</a>  <a href="#">elm</a>  <a href="#">lua</a>  <a href="#">sql</a>  <a href="#">julia</a>  <a href="#">r</a>  <a href="#">+more</a>
+
+  <span class="b">[03]</span> <span class="g">this week</span> <span class="d">─────────────────────────────────────────────────────</span>
+       <span class="b">Sat 09:00 </span>  weekly meetup, Berkeley
+       <span class="b">Sun 17:00 </span>  reading group · Crafting Interpreters
+       <span class="b">All week  </span>  forum + puzzle + jobs
+
+<span class="r">═════════════════════════════════════════════════════════════════════════════</span>
+
+  <span class="d">Time left:</span> <span class="b">59:00</span>   <span class="d">· Speed:</span> <span class="b">9600</span>   <span class="d">· Carrier:</span> <span class="g">DETECTED</span>
+
+  <span class="b">Main Menu Command?</span> <span class="cursor"> </span></pre>
+    </div>
+  </body>
+</html>
