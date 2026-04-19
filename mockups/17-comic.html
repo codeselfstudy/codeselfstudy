@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Comic Book</title>
+    <style>
+      :root {
+        --bg: #fcf4d9;
+        --ink: #0e0e0e;
+        --red: #e8342f;
+        --yellow: #ffcd1b;
+        --blue: #1d4ed8;
+        --cyan: #06b6d4;
+        --pink: #ff6b9d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Bangers", "Anton", "Impact", "Arial Black", sans-serif;
+        letter-spacing: 0.03em;
+        min-height: 100vh;
+        background-image: radial-gradient(
+          circle,
+          rgba(0, 0, 0, 0.12) 1.2px,
+          transparent 1.4px
+        );
+        background-size: 6px 6px;
+      }
+      .book {
+        max-width: 1100px;
+        margin: 20px auto;
+        padding: 20px;
+        background: var(--bg);
+        border: 5px solid var(--ink);
+        box-shadow: 10px 10px 0 var(--ink);
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 4px solid var(--ink);
+        padding-bottom: 10px;
+        margin-bottom: 16px;
+      }
+      .logo {
+        background: var(--red);
+        color: var(--bg);
+        padding: 8px 18px;
+        border: 4px solid var(--ink);
+        box-shadow: 4px 4px 0 var(--ink);
+        font-size: 28px;
+        letter-spacing: 0.05em;
+        transform: rotate(-2deg);
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 14px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      nav a {
+        background: var(--yellow);
+        color: var(--ink);
+        text-decoration: none;
+        padding: 4px 10px;
+        border: 3px solid var(--ink);
+        font-size: 18px;
+        letter-spacing: 0.1em;
+        transform: rotate(-1deg);
+      }
+      nav a:hover {
+        background: var(--red);
+        color: var(--bg);
+        transform: rotate(1deg);
+      }
+      .title-card {
+        text-align: center;
+        margin: 20px 0;
+      }
+      .issue-meta {
+        display: inline-block;
+        background: var(--blue);
+        color: var(--yellow);
+        padding: 4px 12px;
+        font-size: 16px;
+        border: 3px solid var(--ink);
+        letter-spacing: 0.2em;
+      }
+      h1 {
+        font-family: inherit;
+        font-size: clamp(60px, 10vw, 130px);
+        line-height: 0.9;
+        margin: 12px 0 0;
+        color: var(--yellow);
+        -webkit-text-stroke: 4px var(--ink);
+        text-shadow:
+          6px 6px 0 var(--red),
+          12px 12px 0 var(--ink);
+        letter-spacing: 0.04em;
+      }
+      .subtitle {
+        font-family: "Comic Neue", "Comic Sans MS", "Chalkboard SE", cursive;
+        letter-spacing: normal;
+        font-size: 20px;
+        font-weight: 700;
+        margin-top: 14px;
+      }
+      .panels {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr 1fr;
+        grid-template-rows: 200px 140px;
+        gap: 12px;
+        margin: 20px 0;
+      }
+      .panel {
+        border: 4px solid var(--ink);
+        position: relative;
+        overflow: hidden;
+        padding: 14px;
+        box-shadow: 4px 4px 0 var(--ink);
+        background: var(--bg);
+      }
+      .p1 {
+        grid-row: span 2;
+        background:
+          radial-gradient(
+            circle,
+            rgba(232, 52, 47, 0.9) 1.5px,
+            transparent 1.8px
+          ),
+          radial-gradient(
+            circle at 40% 60%,
+            var(--yellow) 0 30%,
+            transparent 30%
+          ),
+          var(--red);
+        background-size:
+          5px 5px,
+          100% 100%;
+        color: var(--bg);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .p1::before {
+        content: "KAPOW!";
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: clamp(36px, 5vw, 64px);
+        color: var(--yellow);
+        -webkit-text-stroke: 3px var(--ink);
+        transform: rotate(-8deg);
+        line-height: 1;
+        letter-spacing: 0.02em;
+      }
+      .bubble {
+        background: var(--bg);
+        color: var(--ink);
+        border: 3px solid var(--ink);
+        border-radius: 28px;
+        padding: 10px 14px;
+        font-family: "Comic Neue", "Comic Sans MS", cursive;
+        font-weight: 700;
+        letter-spacing: normal;
+        font-size: 16px;
+        position: relative;
+        max-width: 80%;
+        box-shadow: 3px 3px 0 var(--ink);
+      }
+      .bubble::after {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        background: var(--bg);
+        border-right: 3px solid var(--ink);
+        border-bottom: 3px solid var(--ink);
+        transform: rotate(45deg);
+        bottom: -11px;
+        left: 20px;
+      }
+      .p2 {
+        background: repeating-linear-gradient(
+          45deg,
+          var(--yellow) 0 14px,
+          #ffb800 14px 28px
+        );
+      }
+      .p2 h3 {
+        font-size: 30px;
+        margin: 0 0 4px;
+        letter-spacing: 0.05em;
+      }
+      .p2 .sub {
+        font-family: "Comic Neue", "Comic Sans MS", cursive;
+        font-size: 14px;
+        letter-spacing: normal;
+        font-weight: 700;
+      }
+      .p3 {
+        background: var(--cyan);
+      }
+      .p3 h3 {
+        font-size: 30px;
+        margin: 0 0 4px;
+        letter-spacing: 0.05em;
+      }
+      .p3 .sub {
+        font-family: "Comic Neue", cursive;
+        font-size: 14px;
+        letter-spacing: normal;
+        font-weight: 700;
+      }
+      .p4 {
+        background: var(--pink);
+        grid-column: 2;
+      }
+      .p4 h3 {
+        font-size: 30px;
+        margin: 0 0 4px;
+        letter-spacing: 0.05em;
+        color: var(--bg);
+      }
+      .p4 .sub {
+        font-family: "Comic Neue", cursive;
+        font-size: 14px;
+        letter-spacing: normal;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .p5 {
+        background: var(--blue);
+        color: var(--yellow);
+      }
+      .p5 h3 {
+        font-size: 30px;
+        margin: 0 0 4px;
+        letter-spacing: 0.05em;
+      }
+      .p5 .sub {
+        font-family: "Comic Neue", cursive;
+        font-size: 14px;
+        letter-spacing: normal;
+        font-weight: 700;
+        color: var(--bg);
+      }
+      .burst {
+        position: absolute;
+        width: 46px;
+        height: 46px;
+        top: -18px;
+        right: -14px;
+        background: var(--red);
+        color: var(--bg);
+        display: grid;
+        place-items: center;
+        font-size: 13px;
+        line-height: 1.1;
+        text-align: center;
+        clip-path: polygon(
+          50% 0%,
+          65% 20%,
+          85% 10%,
+          80% 30%,
+          100% 40%,
+          85% 55%,
+          95% 75%,
+          70% 75%,
+          70% 100%,
+          50% 85%,
+          30% 100%,
+          30% 75%,
+          5% 75%,
+          15% 55%,
+          0% 40%,
+          20% 30%,
+          15% 10%,
+          35% 20%
+        );
+        border: 0;
+        letter-spacing: 0.05em;
+      }
+      .big-panel {
+        border: 4px solid var(--ink);
+        padding: 26px;
+        background: var(--bg);
+        box-shadow: 6px 6px 0 var(--ink);
+        margin: 20px 0;
+        position: relative;
+      }
+      .big-panel h2 {
+        font-size: 52px;
+        margin: 0 0 10px;
+        letter-spacing: 0.04em;
+        color: var(--red);
+        -webkit-text-stroke: 2px var(--ink);
+      }
+      .big-panel p {
+        font-family: "Comic Neue", "Comic Sans MS", cursive;
+        letter-spacing: normal;
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0 0 10px;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .tag {
+        background: var(--yellow);
+        border: 3px solid var(--ink);
+        padding: 3px 10px;
+        font-size: 15px;
+        letter-spacing: 0.05em;
+      }
+      .tag:nth-child(3n) {
+        background: var(--cyan);
+      }
+      .tag:nth-child(4n) {
+        background: var(--pink);
+        color: var(--bg);
+      }
+      .tag:nth-child(5n) {
+        background: var(--red);
+        color: var(--bg);
+      }
+      .cta {
+        display: inline-block;
+        background: var(--red);
+        color: var(--yellow);
+        padding: 14px 24px;
+        text-decoration: none;
+        border: 4px solid var(--ink);
+        box-shadow: 6px 6px 0 var(--ink);
+        font-size: 28px;
+        letter-spacing: 0.06em;
+        transform: rotate(-2deg);
+        margin-top: 14px;
+      }
+      .cta:hover {
+        transform: rotate(2deg);
+      }
+      footer {
+        text-align: center;
+        padding: 10px 0;
+        border-top: 4px dashed var(--ink);
+        margin-top: 20px;
+        font-family: "Comic Neue", cursive;
+        letter-spacing: normal;
+        font-weight: 700;
+      }
+      @media (max-width: 820px) {
+        .panels {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto;
+        }
+        .p1 {
+          grid-row: auto;
+          min-height: 260px;
+        }
+        .p4 {
+          grid-column: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="book">
+      <nav>
+        <div class="logo">CSS #12</div>
+        <ul>
+          <li><a href="#">Events</a></li>
+          <li><a href="#">Learn</a></li>
+          <li><a href="#">Forum</a></li>
+          <li><a href="#">Jobs</a></li>
+          <li><a href="#">Puzzles</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+      </nav>
+
+      <div class="title-card">
+        <span class="issue-meta">ISSUE №12 &middot; APR · 25¢</span>
+        <h1>CODE<br />SELF STUDY</h1>
+        <div class="subtitle">
+          &mdash; the greatest programming team the Bay Area has ever assembled!
+          &mdash;
+        </div>
+      </div>
+
+      <section class="panels">
+        <div class="panel p1">
+          <div class="bubble">
+            &ldquo;Five thousand programmers... meeting every week... and ALL
+            are welcome?!&rdquo;
+          </div>
+        </div>
+        <div class="panel p2">
+          <span class="burst">★ 01</span>
+          <h3>COMMUNITY!</h3>
+          <div class="sub">
+            Meet programmers who keep showing up &mdash; week after week.
+          </div>
+        </div>
+        <div class="panel p3">
+          <span class="burst">★ 02</span>
+          <h3>MENTORSHIP!</h3>
+          <div class="sub">
+            Experienced members help beginners with questions and study plans.
+          </div>
+        </div>
+        <div class="panel p4">
+          <span class="burst">★ 03</span>
+          <h3>NETWORKING!</h3>
+          <div class="sub">
+            Members have landed jobs through introductions at meetups.
+          </div>
+        </div>
+        <div class="panel p5">
+          <span class="burst">★ 04</span>
+          <h3>ALL LANGUAGES!</h3>
+          <div class="sub">
+            Python, Rust, Haskell, Clojure, TypeScript &mdash; all welcome.
+          </div>
+        </div>
+      </section>
+
+      <section class="big-panel">
+        <h2>MEANWHILE, IN BERKELEY...</h2>
+        <p>
+          Dozens of meetups teach you to code. Code Self Study is doing
+          something different &mdash; building a local community of friendly,
+          motivated programmers. The format is self-study with mentorship: no
+          curriculum, no gatekeeping, no bootcamp pitch. Bring a question. Take
+          a seat. Leave with a friend.
+        </p>
+        <div class="tags">
+          <span class="tag">Python</span><span class="tag">JS</span
+          ><span class="tag">TypeScript</span><span class="tag">Go</span
+          ><span class="tag">Rust</span><span class="tag">Haskell</span
+          ><span class="tag">Clojure</span><span class="tag">Elixir</span
+          ><span class="tag">Racket</span><span class="tag">Scala</span
+          ><span class="tag">Ruby</span><span class="tag">C++</span
+          ><span class="tag">SQL</span>
+        </div>
+        <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+          >JOIN THE TEAM! →</a
+        >
+      </section>
+
+      <footer>
+        Continued next Saturday, 9 am, Berkeley! &mdash; same code time, same
+        code channel.
+      </footer>
+    </div>
+  </body>
+</html>

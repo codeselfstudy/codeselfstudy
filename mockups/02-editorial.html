@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Editorial</title>
+    <style>
+      :root {
+        --bg: #fbf8f1;
+        --ink: #1a1a1a;
+        --muted: #6b6358;
+        --rule: #d9d2c2;
+        --accent: #9a2a2a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+        line-height: 1.55;
+      }
+      .masthead {
+        border-top: 6px double var(--ink);
+        border-bottom: 1px solid var(--ink);
+        padding: 10px 0;
+        text-align: center;
+        font-variant: small-caps;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 32px;
+      }
+      .title {
+        text-align: center;
+        padding: 24px 0 16px;
+        border-bottom: 1px solid var(--ink);
+      }
+      .title .vol {
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      h1.paper {
+        font-family: "Didot", "Bodoni 72", "Playfair Display", Georgia, serif;
+        font-size: clamp(48px, 7vw, 88px);
+        letter-spacing: -0.02em;
+        margin: 4px 0 4px;
+        font-weight: 900;
+      }
+      .tagline {
+        font-style: italic;
+        color: var(--muted);
+      }
+      nav {
+        display: flex;
+        justify-content: center;
+        gap: 28px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--ink);
+        flex-wrap: wrap;
+        font-variant: small-caps;
+        letter-spacing: 0.06em;
+        font-size: 14px;
+      }
+      nav a {
+        color: var(--ink);
+        text-decoration: none;
+      }
+      nav a:hover {
+        color: var(--accent);
+      }
+      .lede {
+        padding: 40px 0 24px;
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 40px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .lede h2 {
+        font-family: "Didot", "Bodoni 72", "Playfair Display", Georgia, serif;
+        font-size: clamp(32px, 4vw, 52px);
+        line-height: 1.1;
+        margin: 0 0 12px;
+        letter-spacing: -0.01em;
+      }
+      .lede .kicker {
+        color: var(--accent);
+        font-variant: small-caps;
+        letter-spacing: 0.2em;
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .lede p {
+        font-size: 18px;
+      }
+      .lede p::first-letter {
+        font-family: "Didot", "Bodoni 72", Georgia, serif;
+        font-size: 62px;
+        float: left;
+        line-height: 0.9;
+        padding: 6px 8px 0 0;
+        color: var(--accent);
+      }
+      .aside {
+        border-left: 1px solid var(--rule);
+        padding-left: 24px;
+      }
+      .aside h3 {
+        margin: 0 0 6px;
+        font-variant: small-caps;
+        letter-spacing: 0.12em;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .aside p {
+        margin: 0 0 14px;
+      }
+      .cta {
+        display: inline-block;
+        margin-top: 8px;
+        border-bottom: 2px solid var(--accent);
+        color: var(--accent);
+        text-decoration: none;
+        padding: 2px 0;
+        font-variant: small-caps;
+        letter-spacing: 0.15em;
+      }
+      .cols {
+        padding: 40px 0;
+        column-count: 3;
+        column-gap: 32px;
+        column-rule: 1px solid var(--rule);
+      }
+      .cols h3 {
+        font-family: inherit;
+        margin: 0 0 8px;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+      .cols p {
+        margin: 0 0 12px;
+      }
+      section.deep {
+        border-top: 1px solid var(--ink);
+        padding: 32px 0 64px;
+      }
+      section.deep h2 {
+        font-family: "Didot", "Bodoni 72", Georgia, serif;
+        font-size: 36px;
+        margin: 0 0 12px;
+      }
+      @media (max-width: 760px) {
+        .lede {
+          grid-template-columns: 1fr;
+        }
+        .cols {
+          column-count: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="masthead">
+      Bay Area · Self-Directed Programmers · Since 2014
+    </div>
+    <div class="wrap">
+      <div class="title">
+        <div class="vol">
+          Vol. XII &middot; No. 7 &middot; Saturdays in Berkeley
+        </div>
+        <h1 class="paper">The Code Self Study</h1>
+        <div class="tagline">
+          &ldquo;Study together &mdash; build what you wish you knew.&rdquo;
+        </div>
+      </div>
+      <nav>
+        <a href="#">Home</a><a href="#">Events</a><a href="#">Learn</a
+        ><a href="#">Forum</a><a href="#">Jobs</a><a href="#">Puzzles</a
+        ><a href="#">Tools</a><a href="#">About</a>
+      </nav>
+
+      <article class="lede">
+        <div>
+          <div class="kicker">The Lead</div>
+          <h2>A friendly programming community, 5,000 strong.</h2>
+          <p>
+            We are a self-study computer-programming group based in Berkeley and
+            the San Francisco Bay Area. All languages and all levels of
+            experience are welcome. Bring a laptop, bring a question, and bring
+            yourself &mdash; the rest takes care of itself.
+          </p>
+          <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+            >Join the community &rarr;</a
+          >
+        </div>
+        <aside class="aside">
+          <h3>In This Issue</h3>
+          <p>
+            <strong>Events</strong> &mdash; upcoming meetups, both in-person and
+            online.
+          </p>
+          <p>
+            <strong>Puzzles</strong> &mdash; weekly programming challenges to
+            stretch your thinking.
+          </p>
+          <p>
+            <strong>Jobs</strong> &mdash; openings submitted by community
+            members.
+          </p>
+          <p>
+            <strong>Forum</strong> &mdash; ongoing study threads, reading
+            groups, projects.
+          </p>
+        </aside>
+      </article>
+
+      <div class="cols">
+        <div>
+          <h3>Community</h3>
+          <p>
+            Attend our meetups and get out of your room to meet like-minded
+            programmers. Conversations here outlast any single session.
+          </p>
+        </div>
+        <div>
+          <h3>Mentorship</h3>
+          <p>
+            Experienced members help beginners. Bring your programming
+            questions. Ask for help designing a study plan &mdash; the model is
+            self-study with guidance.
+          </p>
+        </div>
+        <div>
+          <h3>Networking</h3>
+          <p>
+            Knowing people in the industry makes finding work easier. Many
+            members have landed jobs through introductions made at the group.
+          </p>
+        </div>
+      </div>
+
+      <section class="deep">
+        <h2>What We Do</h2>
+        <p>
+          Dozens of meetups teach people to code. We approach it differently. We
+          are building a local community of friendly, creative, highly-motivated
+          programmers. We're open to every language, every level, and every
+          style of computer programming &mdash; from web work and systems to
+          languages people invent for fun.
+        </p>
+        <p>
+          Recent languages in the group include Python, JavaScript, TypeScript,
+          Go, Rust, WebAssembly, Java, Scheme, Racket, Haskell, Clojure, Common
+          Lisp, C, C++, C#, F#, Lua, Elixir, Erlang, Elm, PureScript, Ruby,
+          Scala, PHP, R, Julia, HTML/CSS, Octave, and SQL. If it's on a
+          computer, it's fair game.
+        </p>
+        <h2 style="margin-top: 28px">As a Bootcamp Supplement</h2>
+        <p>
+          Come as a self-directed bootcamp supplement or alternative.
+          Experienced programmers can offer mentorship on a project-based
+          approach. Ask in the forum, the chatroom, or at a meetup.
+        </p>
+      </section>
+    </div>
+  </body>
+</html>

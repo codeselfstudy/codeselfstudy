@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — ANSI Scene</title>
+    <style>
+      :root {
+        --bg: #000000;
+        --black: #000;
+        --blue: #0000aa;
+        --green: #00aa00;
+        --cyan: #00aaaa;
+        --red: #aa0000;
+        --magenta: #aa00aa;
+        --grey: #aaaaaa;
+        --dgrey: #6e6e6e;
+        --bblue: #5555ff;
+        --bgreen: #55ff55;
+        --bcyan: #55ffff;
+        --bred: #ff5555;
+        --bmag: #ff55ff;
+        --byel: #ffff55;
+        --bwht: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--grey);
+        font-family:
+          "Px437 IBM VGA8", "Perfect DOS VGA 437", "Cascadia Mono",
+          "JetBrains Mono", "Courier New", ui-monospace, Menlo, monospace;
+        font-size: 15px;
+        line-height: 1;
+        min-height: 100vh;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.04) 0 1px,
+          transparent 1px 3px
+        );
+        pointer-events: none;
+        z-index: 100;
+      }
+      .crt {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 18px;
+        white-space: pre;
+        line-height: 1.05;
+      }
+      a {
+        color: var(--byel);
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--byel);
+        color: var(--black);
+      }
+      .conn {
+        color: var(--green);
+      }
+      .ok {
+        color: var(--bgreen);
+      }
+      .y {
+        color: var(--byel);
+      }
+      .c {
+        color: var(--bcyan);
+      }
+      .m {
+        color: var(--bmag);
+      }
+      .r {
+        color: var(--bred);
+      }
+      .w {
+        color: var(--bwht);
+      }
+      .g {
+        color: var(--bgreen);
+      }
+      .dim {
+        color: var(--dgrey);
+      }
+      .b {
+        color: var(--bblue);
+      }
+      .fb {
+        color: var(--blue);
+      } /* dim blue frame */
+      .fc {
+        color: var(--cyan);
+      } /* dim cyan frame */
+      .fm {
+        color: var(--magenta);
+      } /* dim magenta frame */
+      .fr {
+        color: var(--red);
+      } /* dim red frame */
+      .blink {
+        animation: blink 0.8s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      h1.sr {
+        position: absolute;
+        left: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="crt">
+      <h1 class="sr">Code Self Study BBS</h1>
+      <span class="conn">CONNECT 2400/ARQ/V42BIS</span>
+      <span class="dim">Logging in as guest@codeselfstudy . . . </span
+      ><span class="ok">[OK]</span>
+
+      <span class="m"
+        >╔════════════════════════════════════════════════════════════════════════════╗</span
+      >
+      <span class="m">║</span
+      ><span class="fr"
+        >▓▒░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▓</span
+      ><span class="m">║</span> <span class="m">║</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="y"> ██████╗ ██████╗ ██████╗ ███████╗</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="y">██╔════╝██╔═══██╗██╔══██╗██╔════╝</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="y">██║ ██║ ██║██║ ██║█████╗ </span> <span class="m">║</span>
+      <span class="m">║</span> <span class="y">██║ ██║ ██║██║ ██║██╔══╝ </span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="y">╚██████╗╚██████╔╝██████╔╝███████╗</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="y"> ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="r">███████╗███████╗██╗ ███████╗</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="r">██╔════╝██╔════╝██║ ██╔════╝</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="r">███████╗█████╗ ██║ █████╗ </span> <span class="m">║</span>
+      <span class="m">║</span> <span class="r">╚════██║██╔══╝ ██║ ██╔══╝ </span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="r">███████║███████╗███████╗██║ </span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="r">╚══════╝╚══════╝╚══════╝╚═╝ </span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="c">███████╗████████╗██╗ ██╗██████╗ ██╗ ██╗</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="c">██╔════╝╚══██╔══╝██║ ██║██╔══██╗╚██╗ ██╔╝</span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="c">███████╗ ██║ ██║ ██║██║ ██║ ╚████╔╝ </span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="c">╚════██║ ██║ ██║ ██║██║ ██║ ╚██╔╝ </span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="c">███████║ ██║ ╚██████╔╝██████╔╝ ██║ </span>
+      <span class="m">║</span> <span class="m">║</span>
+      <span class="c">╚══════╝ ╚═╝ ╚═════╝ ╚═════╝ ╚═╝ </span>
+      <span class="m">║</span> <span class="m">║</span> <span class="m">║</span>
+      <span class="m">║</span><span class="fr">▓▒░</span>
+      <span class="w">Berkeley, CA</span> <span class="dim">·</span>
+      <span class="w">Bay Area</span> <span class="dim">·</span>
+      <span class="w">All Languages</span> <span class="dim">·</span>
+      <span class="w">All Levels</span> <span class="fr">░▒▓</span
+      ><span class="m">║</span> <span class="m">║</span
+      ><span class="fr"
+        >▓▒░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▓</span
+      ><span class="m">║</span>
+      <span class="m"
+        >╚════════════════════════════════════════════════════════════════════════════╝</span
+      >
+
+      <span class="fc">┌─[ </span><span class="y">main menu</span
+      ><span class="fc">
+        ]──────────────────────────────────────────────────────────────┐</span
+      >
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="r">[</span><span class="y">H</span
+      ><span class="r">]</span> <a href="#"><span class="w">home</span></a>
+      <span class="r">[</span><span class="y">F</span><span class="r">]</span>
+      <a href="#"><span class="w">forum &amp; chat</span></a>
+      <span class="r">[</span><span class="y">P</span><span class="r">]</span>
+      <a href="#"><span class="w">puzzles</span></a> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="r">[</span><span class="y">E</span
+      ><span class="r">]</span> <a href="#"><span class="w">events</span></a>
+      <span class="r">[</span><span class="y">J</span><span class="r">]</span>
+      <a href="#"><span class="w">jobs board</span></a> <span class="r">[</span
+      ><span class="y">T</span><span class="r">]</span>
+      <a href="#"><span class="w">tools</span></a> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="r">[</span><span class="y">L</span
+      ><span class="r">]</span> <a href="#"><span class="w">learn</span></a>
+      <span class="r">[</span><span class="y">A</span><span class="r">]</span>
+      <a href="#"><span class="w">about</span></a> <span class="r">[</span
+      ><span class="y">G</span><span class="r">]</span>
+      <a href="https://www.meetup.com/codeselfstudy/"
+        ><span class="g">go ─ join now</span></a
+      >
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="fc">│</span>
+      <span class="fc"
+        >└──────────────────────────────────────────────────────────────────────────────┘</span
+      >
+
+      <span class="fb"
+        >╒══════════════════════════════════════════════════════════════════════════════╕</span
+      >
+      <span class="fb">│</span> <span class="c">▓▒░ </span
+      ><span class="w">SYSTEM BULLETIN — APR ’26</span
+      ><span class="c"> ░▒▓</span> <span class="fb">│</span>
+      <span class="fb"
+        >╞══════════════════════════════════════════════════════════════════════════════╡</span
+      >
+      <span class="fb">│</span> <span class="fb">│</span>
+      <span class="fb">│</span> <span class="y">▶</span> a friendly programming
+      community of <span class="g">5,247</span> members in berkeley
+      <span class="fb">│</span> <span class="fb">│</span> and the san francisco
+      bay area. all languages, all levels, all <span class="fb">│</span>
+      <span class="fb">│</span> welcome. self-study with mentorship.
+      <span class="fb">│</span> <span class="fb">│</span>
+      <span class="fb">│</span> <span class="fb">│</span>
+      <span class="y">▶</span> the format is straightforward. show up at a
+      meetup, bring a project <span class="fb">│</span>
+      <span class="fb">│</span> or a question, get help from the regulars. the
+      experienced members <span class="fb">│</span>
+      <span class="fb">│</span> help the beginners. that is, in short, the whole
+      trick. <span class="fb">│</span> <span class="fb">│</span>
+      <span class="fb">│</span> <span class="fb">│</span>
+      <span class="y">▶</span> press <span class="r">[G]</span> below to
+      <a href="https://www.meetup.com/codeselfstudy/"
+        ><span class="g">join the community</span></a
+      >
+      on meetup.com <span class="fb">│</span> <span class="fb">│</span>
+      <span class="fb">│</span>
+      <span class="fb"
+        >╘══════════════════════════════════════════════════════════════════════════════╛</span
+      >
+
+      <span class="fc">┌─[ </span><span class="y">why people come</span
+      ><span class="fc"> ]───────────────┐</span> <span class="fc">┌─[ </span
+      ><span class="y">languages in rotation</span
+      ><span class="fc"> ]─────┐</span> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="m">►</span> <span class="w">community</span>
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> python <span class="g">▒</span> typescript
+      <span class="fc">│</span> <span class="fc">│</span> show up; meet people
+      who <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> rust <span class="g">▒</span> haskell
+      <span class="fc">│</span> <span class="fc">│</span> keep showing up.
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> go <span class="g">▒</span> clojure
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> elixir <span class="g">▒</span> racket
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="m">►</span> <span class="w">mentorship</span>
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> ruby <span class="g">▒</span> scala
+      <span class="fc">│</span> <span class="fc">│</span> experienced members
+      help <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> c++ <span class="g">▒</span> sql
+      <span class="fc">│</span> <span class="fc">│</span> beginners. ask for
+      plans. <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> elm <span class="g">▒</span> lua
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="g">▒</span> erlang <span class="g">▒</span> common lisp
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="m">►</span> <span class="w">networking</span>
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="fc">│</span> <span class="fc">│</span> members find work via
+      <span class="fc">│</span> <span class="fc">│</span>
+      <span class="dim">…+ many more, see /forum</span>
+      <span class="fc">│</span> <span class="fc">│</span> introductions in the
+      group. <span class="fc">│</span> <span class="fc">│</span>
+      <span class="fc">│</span>
+      <span class="fc">└──────────────────────────────────┘</span>
+      <span class="fc">└──────────────────────────────────┘</span>
+
+      <span class="dim">─[ </span><span class="c">scroller</span
+      ><span class="dim">
+        ]─────────────────────────────────────────────────────────────────</span
+      >
+      <span class="m">★ greetz to all the local sysops ★</span>
+      <span class="g">no curriculum · no gatekeeping ·</span>
+      <span class="g">no bootcamp pitch ·</span>
+      <span class="y">show up · bring a question · leave with friends ·</span>
+      <span class="c"
+        >all dialects loaded · since 2014 · still going · saturdays in berkeley
+        ·</span
+      >
+
+      <span class="dim"
+        >──────────────────────────────────────────────────────────────────────────────</span
+      >
+
+      guest@codeselfstudy:~$ <span class="g">join</span>
+      <span class="y">--community</span><span class="blink">█</span>
+    </div>
+  </body>
+</html>

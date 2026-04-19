@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Norton</title>
+    <style>
+      :root {
+        --blue: #0000aa;
+        --dk-blue: #00007f;
+        --cyan: #00aaaa;
+        --white: #ffffff;
+        --grey: #aaaaaa;
+        --yellow: #ffff55;
+        --black: #000000;
+        --green: #55ff55;
+        --red: #ff5555;
+        --magenta: #ff55ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--blue);
+        color: var(--white);
+        font-family:
+          "Px437 IBM VGA8", "Perfect DOS VGA 437", "VT323", "Courier New",
+          ui-monospace, Menlo, monospace;
+        font-size: 16px;
+        line-height: 1.25;
+        min-height: 100vh;
+        background-image: linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent 1px,
+          rgba(0, 0, 0, 0.18) 1px,
+          rgba(0, 0, 0, 0.18) 2px
+        );
+        background-size: 100% 2px;
+      }
+      .screen {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 12px;
+      }
+      a {
+        color: var(--yellow);
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--cyan);
+        color: var(--black);
+      }
+      .top-bar {
+        background: var(--cyan);
+        color: var(--black);
+        padding: 1px 10px;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+      }
+      .menu {
+        display: flex;
+        gap: 16px;
+      }
+      .menu .k {
+        color: var(--red);
+      }
+      .panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .panel {
+        border: 1px solid var(--cyan);
+        position: relative;
+        background: var(--blue);
+      }
+      .panel-title {
+        position: absolute;
+        top: -1px;
+        left: 12px;
+        background: var(--blue);
+        color: var(--yellow);
+        padding: 0 8px;
+        line-height: 1;
+        transform: translateY(-50%);
+        font-weight: 700;
+      }
+      .panel-body {
+        padding: 14px 16px;
+      }
+      .col-head {
+        display: grid;
+        grid-template-columns: 1fr 90px 90px;
+        gap: 8px;
+        color: var(--yellow);
+        border-bottom: 1px solid var(--cyan);
+        padding: 4px 16px;
+        font-weight: 700;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 90px 90px;
+        gap: 8px;
+        padding: 2px 16px;
+      }
+      .row:hover {
+        background: var(--cyan);
+        color: var(--black);
+      }
+      .row.sel {
+        background: var(--cyan);
+        color: var(--black);
+      }
+      .row .name::before {
+        content: "▒ ";
+        color: var(--yellow);
+      }
+      .row.sel .name::before {
+        color: var(--black);
+      }
+      .right .row .name::before {
+        content: "» ";
+      }
+      .status {
+        background: var(--cyan);
+        color: var(--black);
+        padding: 1px 10px;
+        text-align: center;
+      }
+      .hero {
+        margin: 12px 0;
+        border: 2px solid var(--white);
+        background: var(--dk-blue);
+        padding: 16px 22px;
+      }
+      .hero .ascii {
+        white-space: pre;
+        color: var(--cyan);
+        font-size: 12px;
+        line-height: 1.05;
+        margin: 0 0 10px;
+      }
+      .hero h1 {
+        margin: 6px 0 6px;
+        font-size: 28px;
+        color: var(--yellow);
+        text-shadow: 0 0 6px rgba(255, 255, 85, 0.5);
+        letter-spacing: 2px;
+      }
+      .hero p {
+        margin: 4px 0;
+      }
+      .hero .blink {
+        color: var(--green);
+        animation: blink 1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          visibility: hidden;
+        }
+      }
+      .cta {
+        display: inline-block;
+        background: var(--yellow);
+        color: var(--black);
+        padding: 4px 12px;
+        margin-top: 8px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .cta:hover {
+        background: var(--green);
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .stat {
+        border: 1px solid var(--cyan);
+        padding: 8px 12px;
+      }
+      .stat .lbl {
+        color: var(--cyan);
+        font-size: 13px;
+      }
+      .stat .val {
+        color: var(--yellow);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .fkey-bar {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 1px;
+        background: var(--blue);
+      }
+      .fkey {
+        background: var(--cyan);
+        color: var(--black);
+        padding: 2px 4px;
+        font-size: 13px;
+        text-align: left;
+        display: flex;
+        gap: 4px;
+        font-weight: 700;
+      }
+      .fkey .fn {
+        color: var(--white);
+        background: var(--black);
+        padding: 0 3px;
+      }
+      .dialog {
+        border: 2px solid var(--white);
+        background: var(--cyan);
+        color: var(--black);
+        padding: 8px 14px;
+        margin: 12px auto;
+        max-width: 540px;
+        font-weight: 700;
+        position: relative;
+      }
+      .dialog::before {
+        content: "";
+        position: absolute;
+        right: 4px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        background: var(--black);
+        color: var(--cyan);
+        font-size: 10px;
+        line-height: 12px;
+        text-align: center;
+      }
+      .dialog .ok {
+        display: inline-block;
+        background: var(--blue);
+        color: var(--yellow);
+        padding: 0 14px;
+        margin-top: 6px;
+        text-decoration: none;
+      }
+      @media (max-width: 820px) {
+        .panels,
+        .stats {
+          grid-template-columns: 1fr;
+        }
+        .fkey-bar {
+          grid-template-columns: repeat(5, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <div class="top-bar">
+        <div class="menu">
+          <span><span class="k">L</span>eft</span>
+          <span><span class="k">F</span>iles</span>
+          <span><span class="k">C</span>ommands</span>
+          <span><span class="k">O</span>ptions</span>
+          <span><span class="k">R</span>ight</span>
+        </div>
+        <div>CSS Commander &mdash; v12.0</div>
+      </div>
+
+      <section class="hero">
+        <pre class="ascii">
+╔═════════════════════════════════════════════════════════════════════╗
+║   ██████╗ ██████╗ ██████╗ ███████╗   ███████╗███████╗██╗     ███████╗
+║  ██╔════╝██╔═══██╗██╔══██╗██╔════╝   ██╔════╝██╔════╝██║     ██╔════╝
+║  ██║     ██║   ██║██║  ██║█████╗     ███████╗█████╗  ██║     █████╗
+║  ██║     ██║   ██║██║  ██║██╔══╝     ╚════██║██╔══╝  ██║     ██╔══╝
+║  ╚██████╗╚██████╔╝██████╔╝███████╗   ███████║███████╗███████╗██║
+║   ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝   ╚══════╝╚══════╝╚══════╝╚═╝
+╚═════════════════════════════════════════════════════════════════════╝</pre
+        >
+        <h1>S T U D Y . E X E</h1>
+        <p>
+          <span style="color: var(--cyan)">&gt;</span> A friendly Bay Area
+          programming community of
+          <span style="color: var(--yellow)">5,247</span>
+          members. Self-study with mentorship. All languages, all levels.
+        </p>
+        <p>
+          <span style="color: var(--cyan)">&gt;</span> Loaded successfully.
+          Press <span style="color: var(--yellow)">[F2]</span> to enlist.
+          <span class="blink">█</span>
+        </p>
+        <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+          >[ JOIN THE COMMUNITY ]</a
+        >
+      </section>
+
+      <section class="panels">
+        <div class="panel left">
+          <div class="panel-title">[ NAVIGATION ]</div>
+          <div class="col-head">
+            <span>Name</span><span>Size</span><span>Date</span>
+          </div>
+          <div class="panel-body" style="padding: 0">
+            <div class="row sel">
+              <span class="name">..</span><span>&lt;UP&gt;</span
+              ><span>04-18-26</span>
+            </div>
+            <div class="row">
+              <span class="name">events.bat</span><span>weekly</span
+              ><span>04-19-26</span>
+            </div>
+            <div class="row">
+              <span class="name">learn.dir</span><span>guides</span
+              ><span>04-15-26</span>
+            </div>
+            <div class="row">
+              <span class="name">forum.app</span><span>active</span
+              ><span>04-18-26</span>
+            </div>
+            <div class="row">
+              <span class="name">jobs.lst</span><span>6 open</span
+              ><span>04-17-26</span>
+            </div>
+            <div class="row">
+              <span class="name">puzzles.gam</span><span>fri</span
+              ><span>04-19-26</span>
+            </div>
+            <div class="row">
+              <span class="name">tools.cfg</span><span>refs</span
+              ><span>04-12-26</span>
+            </div>
+            <div class="row">
+              <span class="name">about.txt</span><span>2 kb</span
+              ><span>2014-08</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel right">
+          <div class="panel-title">[ FEATURES ]</div>
+          <div class="col-head">
+            <span>Module</span><span>Status</span><span>Users</span>
+          </div>
+          <div class="panel-body" style="padding: 0">
+            <div class="row">
+              <span class="name">community.exe</span
+              ><span style="color: var(--green)">RUNNING</span><span>5247</span>
+            </div>
+            <div class="row">
+              <span class="name">mentorship.dll</span
+              ><span style="color: var(--green)">LOADED</span><span>any</span>
+            </div>
+            <div class="row">
+              <span class="name">networking.com</span
+              ><span style="color: var(--green)">ACTIVE</span><span>jobs</span>
+            </div>
+            <div class="row">
+              <span class="name">studyplan.bat</span
+              ><span style="color: var(--yellow)">ON-DEMAND</span
+              ><span>ask</span>
+            </div>
+            <div class="row">
+              <span class="name">readinggrp.app</span
+              ><span style="color: var(--green)">ACTIVE</span><span>~30</span>
+            </div>
+            <div class="row">
+              <span class="name">bootcamp.sup</span
+              ><span style="color: var(--cyan)">OPTIONAL</span><span>self</span>
+            </div>
+            <div class="row">
+              <span class="name">cliquebehavior.exe</span
+              ><span style="color: var(--red)">NOT FOUND</span><span>good</span>
+            </div>
+            <div class="row">
+              <span class="name">curriculum.dat</span
+              ><span style="color: var(--red)">DISABLED</span><span>-</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat">
+          <div class="lbl">MEMBERS</div>
+          <div class="val">5247</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">LANGUAGES</div>
+          <div class="val">30+</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">YEARS UP</div>
+          <div class="val">11</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">DUES</div>
+          <div class="val">$0.00</div>
+        </div>
+      </section>
+
+      <div class="dialog">
+        ► A new study session has been scheduled. Click below to confirm.
+        <br />
+        <a class="ok" href="https://www.meetup.com/codeselfstudy/"
+          >&lt; OK &gt;</a
+        >
+        <a
+          class="ok"
+          href="#"
+          style="background: var(--blue); color: var(--white)"
+          >&lt; Cancel &gt;</a
+        >
+      </div>
+
+      <div class="status">
+        Path: C:\CSS\HOME\ &middot; 5247 members &middot; 30+ languages &middot;
+        idle
+      </div>
+
+      <nav class="fkey-bar">
+        <div class="fkey"><span class="fn">F1</span>Help</div>
+        <div class="fkey"><span class="fn">F2</span>Join</div>
+        <div class="fkey"><span class="fn">F3</span>View</div>
+        <div class="fkey"><span class="fn">F4</span>Forum</div>
+        <div class="fkey"><span class="fn">F5</span>Events</div>
+        <div class="fkey"><span class="fn">F6</span>Learn</div>
+        <div class="fkey"><span class="fn">F7</span>Jobs</div>
+        <div class="fkey"><span class="fn">F8</span>Puzzles</div>
+        <div class="fkey"><span class="fn">F9</span>Menu</div>
+        <div class="fkey"><span class="fn">F10</span>Quit</div>
+      </nav>
+    </div>
+  </body>
+</html>

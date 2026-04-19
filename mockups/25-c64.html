@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — C64</title>
+    <style>
+      :root {
+        --border: #7869c4;
+        --bg: #4843b6;
+        --fg: #b3a9ee;
+        --bright: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--border);
+        color: var(--fg);
+        font-family:
+          "C64 Pro Mono", "C64", "Px437 IBM VGA8", "VT323", "Courier New",
+          ui-monospace, Menlo, monospace;
+        font-size: 18px;
+        line-height: 1.1;
+        font-weight: 700;
+        min-height: 100vh;
+        padding: 28px 16px 60px;
+      }
+      a {
+        color: var(--bright);
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--bright);
+        color: var(--bg);
+      }
+      .case {
+        max-width: 880px;
+        margin: 0 auto;
+        background: var(--border);
+        padding: 26px;
+        position: relative;
+        box-shadow:
+          inset 0 0 0 6px var(--border),
+          0 0 0 8px #2c2486,
+          0 0 0 14px #1a1455;
+      }
+      .case::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0) 0 1px,
+          rgba(0, 0, 0, 0.18) 1px 3px
+        );
+        pointer-events: none;
+        z-index: 5;
+      }
+      .screen {
+        background: var(--bg);
+        padding: 22px;
+        white-space: pre-wrap;
+        position: relative;
+      }
+      .b {
+        color: var(--bright);
+      }
+      .d {
+        color: #8a82d8;
+      }
+      .blink {
+        animation: blink 0.9s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .cursor {
+        display: inline-block;
+        width: 0.6em;
+        height: 1.05em;
+        background: var(--bright);
+        vertical-align: text-bottom;
+        animation: blink 0.9s steps(1) infinite;
+      }
+      .pet {
+        white-space: pre;
+        line-height: 1;
+        font-size: 18px;
+      }
+      .row {
+        display: block;
+      }
+      h1.sr,
+      h2.sr {
+        position: absolute;
+        left: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="case">
+      <div class="screen">
+        <h1 class="sr">Code Self Study C64 boot</h1>
+        <span class="b"> **** CODE SELF STUDY BASIC V12 ****</span>
+
+        <span class="b"> 65536 BYTES OF FRIENDSHIP FREE</span>
+
+        <span class="d">READY.</span>
+        <span class="b">LOAD"$",8</span>
+
+        <span class="b">SEARCHING FOR $</span>
+        <span class="b">LOADING</span>
+        <span class="b">READY.</span>
+        <span class="b">LIST</span>
+
+        <span class="d">0 </span
+        ><span class="b">REM ─ CODE SELF STUDY ─ EST 2014 ─ BERKELEY CA</span>
+        <span class="d">10 </span
+        ><span class="b">PRINT "WELCOME TO CODE SELF STUDY"</span>
+        <span class="d">20 </span
+        ><span class="b">PRINT "A BAY AREA PROGRAMMING COMMUNITY."</span>
+        <span class="d">30 </span><span class="b">LET MEMBERS = 5247</span>
+        <span class="d">40 </span
+        ><span class="b">LET LANGUAGES = "ALL OF THEM"</span>
+        <span class="d">50 </span
+        ><span class="b">LET FORMAT = "SELF-STUDY + MENTORSHIP"</span>
+        <span class="d">60 </span><span class="b">LET COVER = 0</span>
+        <span class="d">70 </span
+        ><span class="b">PRINT "SHOW UP. ASK A QUESTION."</span>
+        <span class="d">80 </span
+        ><span class="b">PRINT "MEET PROGRAMMERS WHO KEEP SHOWING UP."</span>
+        <span class="d">90 </span><span class="b">GOSUB 200 :REM ─ JOIN ─</span>
+        <span class="d">100 </span><span class="b">GOTO 10</span>
+
+        <span class="d">READY.</span>
+        <span class="b">RUN</span>
+
+        <span class="b">─────────────────────────────────────────────────</span>
+        <span class="b"> WELCOME TO CODE SELF STUDY</span>
+        <span class="b"> A BAY AREA PROGRAMMING COMMUNITY.</span>
+        <span class="b"> SHOW UP. ASK A QUESTION.</span>
+        <span class="b"> MEET PROGRAMMERS WHO KEEP SHOWING UP.</span>
+        <span class="b">─────────────────────────────────────────────────</span>
+
+        <span class="d">▌</span><span class="b">DIRECTORY</span
+        ><span class="d"> ─ PRESS A KEY ─ </span
+        ><span class="b">SEE BELOW</span>
+
+        <span class="b">F1 </span>
+        <a href="#">EVENTS .... THIS SAT, 9 AM, BERKELEY</a>
+        <span class="b">F3 </span> <a href="#">FORUM ..... ONGOING THREADS</a>
+        <span class="b">F5 </span>
+        <a href="#">LEARN ..... STUDY GUIDES + GROUPS</a>
+        <span class="b">F7 </span> <a href="#">JOBS ...... POSTED BY MEMBERS</a>
+        <span class="b">F2 </span> <a href="#">PUZZLES ... WEEKLY CHALLENGE</a>
+        <span class="b">F4 </span>
+        <a href="#">TOOLS ..... CURATED REFERENCES</a>
+        <span class="b">F6 </span> <a href="#">ABOUT ..... A SHORT HISTORY</a>
+        <span class="b">F8 </span>
+        <a href="https://www.meetup.com/codeselfstudy/">JOIN ......</a>
+        <a href="https://www.meetup.com/codeselfstudy/"
+          ><span class="b">►► PRESS HERE ◄◄</span></a
+        >
+
+        <span class="b">─────────────────────────────────────────────────</span>
+        <span class="b">FEATURES</span>
+        <span class="b">─────────────────────────────────────────────────</span>
+        <span class="b">► COMMUNITY </span> SHOW UP. MEET PEOPLE WHO KEEP
+        SHOWING UP WEEK BY WEEK.
+
+        <span class="b">► MENTORSHIP </span> EXPERIENCED MEMBERS HELP BEGINNERS.
+        ASK FOR A PLAN.
+
+        <span class="b">► NETWORKING </span> MEMBERS HAVE LANDED JOBS THROUGH
+        INTROS AT MEETUPS.
+
+        <span class="b">─────────────────────────────────────────────────</span>
+        <span class="b">LANGUAGES IN ROTATION</span>
+        <span class="b">─────────────────────────────────────────────────</span>
+        PYTHON RUST HASKELL GO TYPESCRIPT CLOJURE ELIXIR RACKET RUBY SCALA C++
+        SQL ELM LUA JULIA ...
+
+        <span class="b">─────────────────────────────────────────────────</span>
+        <span class="b">200 ─ SUBROUTINE: JOIN</span>
+        <span class="b">─────────────────────────────────────────────────</span>
+        <a href="https://www.meetup.com/codeselfstudy/"
+          ><span class="b">►► JOIN THE COMMUNITY ON MEETUP.COM ◄◄</span></a
+        >
+        RETURN
+
+        <span class="d">READY.</span>
+        <span class="cursor"> </span>
+      </div>
+    </div>
+  </body>
+</html>

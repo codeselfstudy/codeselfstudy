@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Minimal</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --ink: #111111;
+        --muted: #6b6b6b;
+        --rule: #ececec;
+        --accent: #2b6cb0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          "Inter",
+          -apple-system,
+          ui-sans-serif,
+          system-ui,
+          Segoe UI,
+          sans-serif;
+        line-height: 1.6;
+        font-size: 17px;
+        -webkit-font-smoothing: antialiased;
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 28px 40px;
+        border-bottom: 1px solid var(--rule);
+      }
+      nav .brand {
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      nav ul {
+        display: flex;
+        gap: 28px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 15px;
+      }
+      nav a:hover {
+        color: var(--ink);
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 120px 32px 80px;
+      }
+      .eyebrow {
+        color: var(--accent);
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+      h1 {
+        font-size: clamp(40px, 6vw, 64px);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        margin: 0 0 24px;
+        font-weight: 600;
+      }
+      .lede {
+        color: var(--muted);
+        font-size: 20px;
+        max-width: 60ch;
+        margin: 0 0 40px;
+      }
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--ink);
+        color: #fff;
+        padding: 14px 22px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 15px;
+        transition: opacity 0.15s;
+      }
+      .cta:hover {
+        opacity: 0.85;
+      }
+      .cta .arrow {
+        transition: transform 0.2s;
+      }
+      .cta:hover .arrow {
+        transform: translateX(4px);
+      }
+      section {
+        padding: 72px 32px;
+        max-width: 960px;
+        margin: 0 auto;
+        border-top: 1px solid var(--rule);
+      }
+      section h2 {
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 500;
+        margin: 0 0 32px;
+      }
+      .three {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 48px;
+      }
+      .three h3 {
+        font-size: 20px;
+        letter-spacing: -0.01em;
+        margin: 0 0 8px;
+        font-weight: 600;
+      }
+      .three p {
+        color: var(--muted);
+        margin: 0;
+        font-size: 16px;
+      }
+      .prose {
+        max-width: 640px;
+      }
+      .prose h2 {
+        color: var(--ink);
+        text-transform: none;
+        letter-spacing: -0.02em;
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0 0 16px;
+      }
+      .prose p {
+        color: var(--muted);
+      }
+      .lang {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        font-size: 15px;
+        color: var(--muted);
+        margin-top: 16px;
+      }
+      .lang span {
+        position: relative;
+      }
+      .lang span + span::before {
+        content: "·";
+        margin-right: 14px;
+        color: var(--rule);
+      }
+      footer {
+        padding: 48px 40px;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      @media (max-width: 720px) {
+        .three {
+          grid-template-columns: 1fr;
+          gap: 32px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="brand">Code Self Study</div>
+      <ul>
+        <li><a href="#">Events</a></li>
+        <li><a href="#">Learn</a></li>
+        <li><a href="#">Forum</a></li>
+        <li><a href="#">Jobs</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+
+    <main class="wrap">
+      <div class="eyebrow">A Bay Area programming community</div>
+      <h1>Study programming, together.</h1>
+      <p class="lede">
+        We're 5,000 programmers in Berkeley and the San Francisco Bay Area
+        learning in public. All languages, all levels of experience, no
+        curriculum &mdash; just self-study with mentorship.
+      </p>
+      <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+        >Join the community <span class="arrow">→</span></a
+      >
+    </main>
+
+    <section>
+      <h2>Why people come</h2>
+      <div class="three">
+        <div>
+          <h3>Community</h3>
+          <p>
+            Show up, meet people who care about what you're working on, leave
+            less alone.
+          </p>
+        </div>
+        <div>
+          <h3>Mentorship</h3>
+          <p>
+            Experienced members help beginners. Bring a question, ask for a
+            study plan.
+          </p>
+        </div>
+        <div>
+          <h3>Networking</h3>
+          <p>
+            Many members have found jobs through introductions and tips from the
+            group.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="prose">
+      <h2>What we do</h2>
+      <p>
+        Dozens of groups teach people to code. We instead build a local
+        community of friendly, creative, highly-motivated programmers. We're
+        open to every language and every level. The format is self-study with
+        guidance from more experienced members.
+      </p>
+      <div class="lang">
+        <span>Python</span><span>JavaScript</span><span>TypeScript</span
+        ><span>Go</span><span>Rust</span><span>Haskell</span><span>Clojure</span
+        ><span>Elixir</span><span>Racket</span><span>Scala</span
+        ><span>Ruby</span><span>C++</span><span>SQL</span>
+      </div>
+    </section>
+
+    <section class="prose">
+      <h2>Bootcamp supplement</h2>
+      <p>
+        Come as a self-directed bootcamp supplement or alternative. Experienced
+        programmers can offer project-based mentorship &mdash; ask in the forum,
+        the chat, or at a meetup.
+      </p>
+    </section>
+
+    <footer>
+      <div>© Code Self Study</div>
+      <div>Berkeley, CA &middot; Since 2014</div>
+    </footer>
+  </body>
+</html>
