@@ -29,6 +29,8 @@ Use bun. Do not use npm, pnpm, or yarn commands.
 - `bun run db:generate|db:migrate|db:push|db:pull|db:studio`: Drizzle database tasks.
 - `just find_licenses`: list embedded `LICENSE.md` files.
 
+Do NOT add the agent name (e.g. Claude, Generated with Claude Code, Co-Authored-By Claude) anywhere in commit messages, PR descriptions, or other Git/GitHub messages.
+
 ## Coding Style & Naming Conventions
 
 - TypeScript + React, module syntax is ESM.

@@ -1,3 +1,8 @@
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+
+.worktrees/
 *.db
 TANK/
 src/routeTree.gen.ts
