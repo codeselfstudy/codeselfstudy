@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Arcade</title>
+    <style>
+      :root {
+        --bg: #0a0320;
+        --bg-2: #1a0840;
+        --fg: #fef6ff;
+        --yellow: #fde047;
+        --pink: #ff3ea5;
+        --cyan: #22f0ff;
+        --green: #3cff7a;
+        --purple: #9945ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Press Start 2P", "VT323", ui-monospace, Menlo, monospace;
+        line-height: 1.6;
+        font-size: 14px;
+        min-height: 100vh;
+        background-image:
+          linear-gradient(
+            to bottom,
+            var(--bg) 0%,
+            var(--bg-2) 50%,
+            #2e0a5f 100%
+          ),
+          repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.25) 0 2px,
+            transparent 2px 4px
+          );
+        background-blend-mode: normal, overlay;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          ellipse at 50% 100%,
+          rgba(153, 69, 255, 0.35),
+          transparent 60%
+        );
+      }
+      .cabinet {
+        max-width: 960px;
+        margin: 20px auto;
+        padding: 24px;
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 4px solid var(--yellow);
+        margin-bottom: 30px;
+      }
+      .brand {
+        color: var(--yellow);
+        font-weight: 700;
+        letter-spacing: 2px;
+        font-size: 16px;
+        text-shadow: 3px 3px 0 var(--pink);
+      }
+      nav ul {
+        display: flex;
+        list-style: none;
+        gap: 16px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      nav a {
+        color: var(--cyan);
+        text-decoration: none;
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+      nav a:hover {
+        color: var(--yellow);
+      }
+      .title {
+        text-align: center;
+        margin: 20px 0 40px;
+      }
+      .high-score {
+        color: var(--cyan);
+        font-size: 10px;
+        letter-spacing: 4px;
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-size: clamp(28px, 5vw, 48px);
+        letter-spacing: 4px;
+        line-height: 1.3;
+        color: var(--yellow);
+        text-shadow:
+          0 0 8px var(--yellow),
+          4px 4px 0 var(--pink),
+          8px 8px 0 var(--purple);
+        margin: 0;
+      }
+      .subtitle {
+        color: var(--green);
+        font-size: 11px;
+        letter-spacing: 3px;
+        margin-top: 20px;
+      }
+      .blink {
+        animation: blink 0.8s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          visibility: hidden;
+        }
+      }
+      .sprites {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin: 30px 0;
+      }
+      .sprite {
+        width: 48px;
+        height: 48px;
+      }
+      .sprite > div {
+        width: 100%;
+        height: 100%;
+      }
+      .ghost {
+        width: 48px;
+        height: 48px;
+        background:
+          radial-gradient(circle at 12px 14px, #fff 0 5px, transparent 6px),
+          radial-gradient(circle at 32px 14px, #fff 0 5px, transparent 6px),
+          radial-gradient(circle at 14px 16px, #000 0 2px, transparent 3px),
+          radial-gradient(circle at 34px 16px, #000 0 2px, transparent 3px);
+        background-color: var(--pink);
+        clip-path: polygon(
+          0% 30%,
+          50% 0%,
+          100% 30%,
+          100% 100%,
+          85% 85%,
+          70% 100%,
+          50% 85%,
+          30% 100%,
+          15% 85%,
+          0% 100%
+        );
+      }
+      .ghost.g2 {
+        background-color: var(--cyan);
+      }
+      .ghost.g3 {
+        background-color: var(--green);
+      }
+      .ghost.g4 {
+        background-color: var(--yellow);
+      }
+      .pac {
+        width: 48px;
+        height: 48px;
+        background: var(--yellow);
+        border-radius: 50%;
+        clip-path: polygon(100% 0, 50% 50%, 100% 100%, 0 100%, 0 0);
+      }
+      .cta {
+        display: inline-block;
+        background: var(--yellow);
+        color: var(--bg);
+        padding: 16px 28px;
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 3px;
+        font-size: 14px;
+        margin-top: 20px;
+        border: 4px solid var(--fg);
+        box-shadow:
+          6px 6px 0 var(--pink),
+          6px 6px 0 6px var(--fg);
+      }
+      .cta:hover {
+        transform: translate(3px, 3px);
+        box-shadow:
+          3px 3px 0 var(--pink),
+          3px 3px 0 3px var(--fg);
+      }
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin: 50px 0 30px;
+      }
+      .stat {
+        border: 3px solid var(--cyan);
+        background: rgba(34, 240, 255, 0.08);
+        padding: 16px;
+        text-align: center;
+      }
+      .stat .label {
+        color: var(--cyan);
+        font-size: 9px;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+      }
+      .stat .value {
+        color: var(--yellow);
+        font-size: 24px;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 0 var(--pink);
+      }
+      .levels {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin: 30px 0;
+      }
+      .level {
+        border: 3px solid var(--fg);
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        position: relative;
+      }
+      .level .lv {
+        position: absolute;
+        top: -14px;
+        left: 12px;
+        background: var(--bg);
+        color: var(--green);
+        padding: 0 6px;
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+      .level h3 {
+        color: var(--yellow);
+        font-size: 14px;
+        letter-spacing: 2px;
+        margin: 6px 0 10px;
+      }
+      .level p {
+        color: var(--fg);
+        font-size: 11px;
+        line-height: 1.7;
+        letter-spacing: 1px;
+        margin: 0;
+      }
+      .big-box {
+        border: 4px solid var(--pink);
+        padding: 28px;
+        margin-top: 30px;
+        box-shadow: 0 0 30px rgba(255, 62, 165, 0.4);
+      }
+      .big-box h2 {
+        color: var(--pink);
+        font-size: 20px;
+        letter-spacing: 3px;
+        margin: 0 0 14px;
+        text-shadow: 2px 2px 0 var(--cyan);
+      }
+      .big-box p {
+        font-size: 12px;
+        line-height: 1.9;
+        letter-spacing: 1px;
+      }
+      .powerups {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 6px;
+      }
+      .pu {
+        border: 2px dashed var(--green);
+        padding: 6px 8px;
+        font-size: 10px;
+        letter-spacing: 1px;
+        color: var(--green);
+        text-align: center;
+      }
+      .pu:nth-child(3n) {
+        border-color: var(--yellow);
+        color: var(--yellow);
+      }
+      .pu:nth-child(4n) {
+        border-color: var(--pink);
+        color: var(--pink);
+      }
+      footer {
+        margin-top: 40px;
+        padding: 16px 0;
+        text-align: center;
+        color: var(--cyan);
+        font-size: 10px;
+        letter-spacing: 2px;
+        border-top: 3px dashed var(--cyan);
+      }
+      @media (max-width: 700px) {
+        .stats-bar,
+        .levels {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cabinet">
+      <nav>
+        <div class="brand">★ CSS ARCADE</div>
+        <ul>
+          <li><a href="#">EVENTS</a></li>
+          <li><a href="#">LEARN</a></li>
+          <li><a href="#">FORUM</a></li>
+          <li><a href="#">JOBS</a></li>
+          <li><a href="#">PUZZLES</a></li>
+        </ul>
+      </nav>
+
+      <div class="title">
+        <div class="high-score">
+          HIGH · SCORE · 5,247 · MEMBERS · EST · 2014
+        </div>
+        <h1>CODE<br />SELF<br />STUDY</h1>
+        <div class="sprites">
+          <div class="sprite"><div class="pac"></div></div>
+          <div class="sprite"><div class="ghost"></div></div>
+          <div class="sprite"><div class="ghost g2"></div></div>
+          <div class="sprite"><div class="ghost g3"></div></div>
+          <div class="sprite"><div class="ghost g4"></div></div>
+        </div>
+        <div class="subtitle">
+          <span class="blink">▶</span> INSERT COIN TO JOIN BAY AREA PROGRAMMERS
+          <span class="blink">◀</span>
+        </div>
+        <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+          >PRESS START</a
+        >
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="label">PLAYERS</div>
+          <div class="value">5000+</div>
+        </div>
+        <div class="stat">
+          <div class="label">LANGUAGES</div>
+          <div class="value">30+</div>
+        </div>
+        <div class="stat">
+          <div class="label">YEARS UP</div>
+          <div class="value">11</div>
+        </div>
+      </div>
+
+      <div class="levels">
+        <div class="level">
+          <span class="lv">LEVEL 01</span>
+          <h3>COMMUNITY</h3>
+          <p>Get out of your room. Meet players who keep showing up.</p>
+        </div>
+        <div class="level">
+          <span class="lv">LEVEL 02</span>
+          <h3>MENTORSHIP</h3>
+          <p>Experienced members help beginners. Ask for a study plan.</p>
+        </div>
+        <div class="level">
+          <span class="lv">LEVEL 03</span>
+          <h3>NETWORKING</h3>
+          <p>Members have landed jobs via intros inside the group.</p>
+        </div>
+      </div>
+
+      <div class="big-box">
+        <h2>▶ WHAT WE DO</h2>
+        <p>
+          Dozens of meetups teach you to code. We instead build a local
+          community of friendly, motivated programmers. Self-study with
+          mentorship. Every language welcome.
+        </p>
+        <div class="powerups">
+          <div class="pu">PY</div>
+          <div class="pu">JS</div>
+          <div class="pu">TS</div>
+          <div class="pu">GO</div>
+          <div class="pu">RUST</div>
+          <div class="pu">HASKELL</div>
+          <div class="pu">CLOJURE</div>
+          <div class="pu">ELIXIR</div>
+          <div class="pu">RACKET</div>
+          <div class="pu">RUBY</div>
+          <div class="pu">C++</div>
+          <div class="pu">SQL</div>
+        </div>
+      </div>
+
+      <footer>© 2014 CSS · 1 COIN · 1 PLAY · BERKELEY CA</footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Transit</title>
+    <style>
+      :root {
+        --bg: #0b0c0f;
+        --fg: #ffffff;
+        --grey: #a9afb8;
+        --rule: #2a2d33;
+        --red: #e42313;
+        --yellow: #fdb913;
+        --green: #009a44;
+        --blue: #0072ce;
+        --orange: #ff6b00;
+        --purple: #8a2be2;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          "Helvetica Neue", "Helvetica", "Arial", "Inter", ui-sans-serif,
+          system-ui, sans-serif;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      header {
+        border-bottom: 2px solid var(--fg);
+        padding: 18px 0;
+      }
+      .head-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.02em;
+      }
+      .roundel {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--red);
+        display: grid;
+        place-items: center;
+        color: var(--fg);
+        font-weight: 900;
+        font-size: 22px;
+        border: 3px solid var(--fg);
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      nav a {
+        color: var(--fg);
+        text-decoration: none;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 6px 12px;
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+      }
+      nav a:hover {
+        background: var(--fg);
+        color: var(--bg);
+        border-color: var(--fg);
+      }
+      .sign {
+        background: var(--fg);
+        color: var(--bg);
+        margin-top: 20px;
+        padding: 24px;
+        border-radius: 4px;
+      }
+      .sign .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid var(--bg);
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+        font-size: 13px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      .line-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg);
+        color: var(--fg);
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+      .line-chip .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--yellow);
+      }
+      h1 {
+        font-family: inherit;
+        font-size: clamp(48px, 8vw, 104px);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+        margin: 0 0 16px;
+      }
+      .sign p {
+        font-size: 20px;
+        max-width: 48ch;
+        margin: 0 0 18px;
+      }
+      .arrow-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .pill {
+        background: var(--bg);
+        color: var(--fg);
+        padding: 10px 16px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 15px;
+      }
+      .pill.primary {
+        background: var(--red);
+      }
+      .pill:hover {
+        opacity: 0.9;
+      }
+      .next-trains {
+        margin-top: 20px;
+        padding: 20px 0;
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+      .board-head {
+        display: grid;
+        grid-template-columns: 60px 1fr 1fr 100px;
+        gap: 20px;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grey);
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .board-row {
+        display: grid;
+        grid-template-columns: 60px 1fr 1fr 100px;
+        gap: 20px;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--rule);
+        font-size: 17px;
+      }
+      .board-row:last-child {
+        border-bottom: none;
+      }
+      .line {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: var(--bg);
+        font-weight: 900;
+        font-size: 15px;
+      }
+      .l-red {
+        background: var(--red);
+        color: var(--fg);
+      }
+      .l-yellow {
+        background: var(--yellow);
+      }
+      .l-blue {
+        background: var(--blue);
+        color: var(--fg);
+      }
+      .l-green {
+        background: var(--green);
+        color: var(--fg);
+      }
+      .l-orange {
+        background: var(--orange);
+      }
+      .l-purple {
+        background: var(--purple);
+        color: var(--fg);
+      }
+      .eta {
+        text-align: right;
+        font-feature-settings: "tnum";
+        font-weight: 700;
+        color: var(--yellow);
+        font-size: 22px;
+        letter-spacing: 0.05em;
+      }
+      .dest {
+        color: var(--grey);
+        font-size: 14px;
+      }
+      .dest strong {
+        color: var(--fg);
+        display: block;
+        font-size: 17px;
+        margin-bottom: 2px;
+      }
+      .map {
+        margin-top: 30px;
+        padding: 24px;
+        background: #14171c;
+        border-radius: 10px;
+        overflow-x: auto;
+      }
+      .map h2 {
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grey);
+        margin: 0 0 20px;
+        font-weight: 500;
+      }
+      .route {
+        position: relative;
+        padding: 20px 0;
+        min-width: 720px;
+      }
+      .route::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        right: 20px;
+        height: 8px;
+        background: linear-gradient(
+          to right,
+          var(--red) 0% 33%,
+          var(--yellow) 33% 66%,
+          var(--blue) 66% 100%
+        );
+        border-radius: 4px;
+        transform: translateY(-50%);
+      }
+      .stops {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+      }
+      .stop {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 90px;
+        text-align: center;
+      }
+      .stop .tick {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--bg);
+        border: 4px solid var(--fg);
+        z-index: 1;
+      }
+      .stop.big .tick {
+        width: 28px;
+        height: 28px;
+        border-width: 5px;
+        background: var(--red);
+      }
+      .stop .label {
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        line-height: 1.2;
+      }
+      .stop .label strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+      .service-notices {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .notice {
+        padding: 18px;
+        border-radius: 8px;
+        border: 1px solid var(--rule);
+        background: #14171c;
+        position: relative;
+      }
+      .notice .badge {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--grey);
+        margin-bottom: 8px;
+      }
+      .notice .badge .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+      .notice h3 {
+        font-size: 22px;
+        margin: 0 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .notice p {
+        color: var(--grey);
+        margin: 0;
+        font-size: 14px;
+      }
+      .info-strip {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        padding: 20px 0 30px;
+      }
+      .info-strip > div {
+        border-left: 3px solid var(--yellow);
+        padding-left: 14px;
+      }
+      .info-strip .k {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grey);
+      }
+      .info-strip .v {
+        font-size: 24px;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+      footer {
+        border-top: 2px solid var(--fg);
+        padding: 14px 0;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grey);
+        display: flex;
+        justify-content: space-between;
+      }
+      @media (max-width: 820px) {
+        .board-head,
+        .board-row {
+          grid-template-columns: 50px 1fr 80px;
+        }
+        .board-row > .dest-system {
+          display: none;
+        }
+        .service-notices,
+        .info-strip {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 48px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="head-row">
+          <div class="brand">
+            <div class="roundel">CSS</div>
+            Code Self Study Transit Authority
+          </div>
+          <nav>
+            <ul>
+              <li><a href="#">Events</a></li>
+              <li><a href="#">Lines</a></li>
+              <li><a href="#">Forum</a></li>
+              <li><a href="#">Jobs</a></li>
+              <li><a href="#">About</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+
+      <section class="sign">
+        <div class="top">
+          <div class="line-chip"><span class="dot"></span> Now boarding</div>
+          <span>Berkeley · Bay Area · Since 2014</span>
+        </div>
+        <h1>Next train:<br />Curiosity.</h1>
+        <p>
+          A friendly programming community of 5,000+ members. All languages, all
+          levels, weekly in Berkeley. Self-study with mentorship &mdash; all
+          lines run on time.
+        </p>
+        <div class="arrow-row">
+          <a class="pill primary" href="https://www.meetup.com/codeselfstudy/"
+            >Join the Community →</a
+          >
+          <a class="pill" href="#">View schedule</a>
+        </div>
+      </section>
+
+      <section class="next-trains">
+        <div class="board-head">
+          <span>Line</span>
+          <span>Departs</span>
+          <span class="dest-system">Destination</span>
+          <span style="text-align: right">ETA</span>
+        </div>
+        <div class="board-row">
+          <div class="line l-red">C</div>
+          <div class="dest">
+            <strong>Community</strong>
+            Meet programmers who keep showing up
+          </div>
+          <div class="dest dest-system">→ Berkeley &middot; Sat 9:00</div>
+          <div class="eta">5 MIN</div>
+        </div>
+        <div class="board-row">
+          <div class="line l-yellow">M</div>
+          <div class="dest">
+            <strong>Mentorship</strong>
+            Ask for a study plan or project review
+          </div>
+          <div class="dest dest-system">→ Forum &middot; Anytime</div>
+          <div class="eta">8 MIN</div>
+        </div>
+        <div class="board-row">
+          <div class="line l-blue">N</div>
+          <div class="dest">
+            <strong>Networking</strong>
+            Intros that turn into interviews
+          </div>
+          <div class="dest dest-system">→ Jobs Board &middot; Weekly</div>
+          <div class="eta">12 MIN</div>
+        </div>
+        <div class="board-row">
+          <div class="line l-green">P</div>
+          <div class="dest">
+            <strong>Puzzles</strong>
+            Weekly programming challenges
+          </div>
+          <div class="dest dest-system">→ /puzzles &middot; Fri</div>
+          <div class="eta">18 MIN</div>
+        </div>
+        <div class="board-row">
+          <div class="line l-purple">L</div>
+          <div class="dest">
+            <strong>Learn</strong>
+            Study tracks, guides, and reading groups
+          </div>
+          <div class="dest dest-system">→ /learn &middot; Ongoing</div>
+          <div class="eta">22 MIN</div>
+        </div>
+      </section>
+
+      <section class="map">
+        <h2>→ The Self-Study Line &mdash; Stops from Idea to Shipped</h2>
+        <div class="route">
+          <div class="stops">
+            <div class="stop big">
+              <div class="tick"></div>
+              <div class="label"><strong>Show Up</strong>Saturday</div>
+            </div>
+            <div class="stop">
+              <div class="tick"></div>
+              <div class="label"><strong>Ask</strong>Questions</div>
+            </div>
+            <div class="stop">
+              <div class="tick"></div>
+              <div class="label"><strong>Build</strong>Projects</div>
+            </div>
+            <div class="stop">
+              <div class="tick"></div>
+              <div class="label"><strong>Review</strong>Feedback</div>
+            </div>
+            <div class="stop">
+              <div class="tick"></div>
+              <div class="label"><strong>Teach</strong>Someone else</div>
+            </div>
+            <div class="stop big">
+              <div class="tick"></div>
+              <div class="label"><strong>Ship</strong>It</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="service-notices">
+        <div class="notice">
+          <div class="badge"><span class="dot"></span> On time</div>
+          <h3>Saturday Meetup</h3>
+          <p>9:00 am &middot; Berkeley &middot; all lines running normally.</p>
+        </div>
+        <div class="notice">
+          <div class="badge"><span class="dot"></span> Open</div>
+          <h3>Forum &amp; Chat</h3>
+          <p>Ongoing threads in 30+ languages. Tickets checked by members.</p>
+        </div>
+        <div class="notice">
+          <div class="badge"><span class="dot"></span> Accepting</div>
+          <h3>Jobs Board</h3>
+          <p>Openings posted by members. No agencies, no recruiter spam.</p>
+        </div>
+      </section>
+
+      <section class="info-strip">
+        <div>
+          <div class="k">Riders</div>
+          <div class="v">5,247</div>
+        </div>
+        <div>
+          <div class="k">Since</div>
+          <div class="v">2014</div>
+        </div>
+        <div>
+          <div class="k">Lines</div>
+          <div class="v">30+</div>
+        </div>
+        <div>
+          <div class="k">Fare</div>
+          <div class="v">Free</div>
+        </div>
+      </section>
+
+      <footer>
+        <span>Code Self Study Transit Authority</span>
+        <span>Mind the compile errors · Berkeley, CA</span>
+      </footer>
+    </div>
+  </body>
+</html>

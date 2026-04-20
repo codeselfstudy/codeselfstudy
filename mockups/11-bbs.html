@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — BBS</title>
+    <style>
+      :root {
+        --bg: #1a0f00;
+        --amber: #ffb000;
+        --amber-dim: #8a5a00;
+        --cyan: #00d4ff;
+        --red: #ff4444;
+        --green: #7cff7c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--amber);
+        font-family:
+          "VT323", "Perfect DOS VGA 437", "Courier New", ui-monospace, monospace;
+        font-size: 18px;
+        line-height: 1.4;
+        min-height: 100vh;
+        background-image:
+          linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 2px,
+            rgba(0, 0, 0, 0.25) 2px,
+            rgba(0, 0, 0, 0.25) 3px
+          ),
+          radial-gradient(
+            ellipse at center,
+            rgba(255, 176, 0, 0.06) 0%,
+            transparent 70%
+          );
+        background-size:
+          100% 3px,
+          100% 100%;
+        text-shadow: 0 0 4px rgba(255, 176, 0, 0.5);
+      }
+      a {
+        color: var(--cyan);
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--cyan);
+        color: var(--bg);
+      }
+      .screen {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        border: 2px solid var(--amber);
+        padding: 10px;
+        margin-bottom: 16px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 20px;
+        align-items: center;
+      }
+      .logo {
+        white-space: pre;
+        font-size: 12px;
+        line-height: 1.1;
+        color: var(--amber);
+      }
+      .stats {
+        text-align: right;
+        font-size: 14px;
+        color: var(--amber-dim);
+      }
+      .stats strong {
+        color: var(--green);
+      }
+      .menubar {
+        border: 2px solid var(--amber);
+        background: var(--amber);
+        color: var(--bg);
+        padding: 4px 10px;
+        margin-bottom: 16px;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        text-shadow: none;
+      }
+      .menubar span {
+        font-weight: 700;
+      }
+      .menubar .k {
+        color: var(--red);
+      }
+      .welcome {
+        border: 2px solid var(--amber);
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-family: inherit;
+        font-size: 48px;
+        letter-spacing: 4px;
+        margin: 4px 0 12px;
+        color: var(--green);
+        text-shadow: 0 0 8px rgba(124, 255, 124, 0.6);
+      }
+      .blink {
+        animation: blink 1s steps(1) infinite;
+        color: var(--cyan);
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .cta {
+        display: inline-block;
+        border: 2px solid var(--cyan);
+        color: var(--cyan);
+        padding: 6px 14px;
+        margin-top: 12px;
+        text-shadow: 0 0 4px rgba(0, 212, 255, 0.5);
+      }
+      .cta:hover {
+        background: var(--cyan);
+        color: var(--bg);
+      }
+      .sep {
+        color: var(--amber-dim);
+        letter-spacing: -1px;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .box {
+        border: 2px solid var(--amber);
+        padding: 12px;
+      }
+      .box .tag {
+        display: inline-block;
+        background: var(--amber);
+        color: var(--bg);
+        padding: 0 6px;
+        margin-bottom: 6px;
+        text-shadow: none;
+        letter-spacing: 2px;
+      }
+      .box h3 {
+        margin: 0 0 6px;
+        color: var(--green);
+        font-size: 22px;
+      }
+      .box p {
+        margin: 0;
+        color: var(--amber);
+      }
+      .log {
+        border: 2px solid var(--amber);
+        padding: 14px;
+        margin-bottom: 16px;
+      }
+      .log h2 {
+        color: var(--cyan);
+        margin: 0 0 8px;
+        font-size: 24px;
+        letter-spacing: 2px;
+      }
+      .log ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .log li {
+        padding: 2px 0;
+      }
+      .log li::before {
+        content: "> ";
+        color: var(--green);
+      }
+      .langs {
+        border: 2px solid var(--amber);
+        padding: 14px;
+      }
+      .langs h2 {
+        color: var(--cyan);
+        margin: 0 0 8px;
+        font-size: 24px;
+        letter-spacing: 2px;
+      }
+      .lang-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 2px 14px;
+      }
+      .status {
+        margin-top: 12px;
+        color: var(--amber-dim);
+        font-size: 14px;
+        border-top: 1px solid var(--amber-dim);
+        padding-top: 6px;
+      }
+      @media (max-width: 700px) {
+        .cols {
+          grid-template-columns: 1fr;
+        }
+        .header {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <div class="header">
+        <pre class="logo">
+ ██████╗███████╗███████╗    ██████╗ ██████╗ ███████╗
+██╔════╝██╔════╝██╔════╝    ██╔══██╗██╔══██╗██╔════╝
+██║     ███████╗███████╗    ██████╔╝██████╔╝███████╗
+██║     ╚════██║╚════██║    ██╔══██╗██╔══██╗╚════██║
+╚██████╗███████║███████║    ██████╔╝██████╔╝███████║
+ ╚═════╝╚══════╝╚══════╝    ╚═════╝ ╚═════╝ ╚══════╝</pre
+        >
+        <div class="stats">
+          NODE: 01<br />
+          USERS ONLINE: <strong>37</strong><br />
+          TOTAL MEMBERS: <strong>5,247</strong><br />
+          UPTIME: 4,127 DAYS
+        </div>
+      </div>
+
+      <div class="menubar">
+        <span><span class="k">[H]</span>OME</span>
+        <span><span class="k">[E]</span>VENTS</span>
+        <span><span class="k">[L]</span>EARN</span>
+        <span><span class="k">[F]</span>ORUM</span>
+        <span><span class="k">[J]</span>OBS</span>
+        <span><span class="k">[P]</span>UZZLES</span>
+        <span><span class="k">[T]</span>OOLS</span>
+        <span><span class="k">[A]</span>BOUT</span>
+      </div>
+
+      <div class="welcome">
+        <div class="sep">
+          ═══════════════════════════════════════════════════════════
+        </div>
+        <h1>WELCOME, USER</h1>
+        <div class="sep">
+          ═══════════════════════════════════════════════════════════
+        </div>
+        <p>
+          YOU HAVE CONNECTED TO
+          <strong style="color: var(--green)">CODE SELF STUDY</strong> &mdash; A
+          FRIENDLY PROGRAMMING COMMUNITY OF 5,000+ MEMBERS IN BERKELEY AND THE
+          SAN FRANCISCO BAY AREA.
+        </p>
+        <p>
+          ALL LANGUAGES, ALL LEVELS, ALL WELCOME.
+          <span class="blink">█</span>
+        </p>
+        <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+          >[ PRESS RETURN TO JOIN ]</a
+        >
+      </div>
+
+      <div class="cols">
+        <div class="box">
+          <span class="tag">◆ NODE 01</span>
+          <h3>COMMUNITY</h3>
+          <p>
+            Connect to the meetup &mdash; meet 5,000+ programmers who actually
+            keep showing up.
+          </p>
+        </div>
+        <div class="box">
+          <span class="tag">◆ NODE 02</span>
+          <h3>MENTORSHIP</h3>
+          <p>
+            SYSOP-approved mentorship. Ask for a study plan. Beginners welcome.
+          </p>
+        </div>
+        <div class="box">
+          <span class="tag">◆ NODE 03</span>
+          <h3>NETWORKING</h3>
+          <p>
+            Members have landed jobs via intros in the forum and at meetups.
+          </p>
+        </div>
+      </div>
+
+      <div class="log">
+        <h2>▓▓▓ BULLETIN ▓▓▓</h2>
+        <ul>
+          <li>
+            DOZENS OF MEETUPS TEACH YOU TO CODE. WE BUILD A LOCAL COMMUNITY.
+          </li>
+          <li>OPEN TO EVERY LANGUAGE. EVERY LEVEL. EVERY KIND OF PROJECT.</li>
+          <li>
+            FORMAT IS SELF-STUDY WITH ADVICE FROM MORE EXPERIENCED MEMBERS.
+          </li>
+          <li>
+            COMES AS A BOOTCAMP SUPPLEMENT OR ALTERNATIVE &mdash; ASK IN FORUM.
+          </li>
+        </ul>
+      </div>
+
+      <div class="langs">
+        <h2>▓▓▓ SUPPORTED DIALECTS ▓▓▓</h2>
+        <div class="lang-grid">
+          <span>» PYTHON</span><span>» JS</span><span>» TYPESCRIPT</span
+          ><span>» GO</span><span>» RUST</span><span>» HASKELL</span
+          ><span>» CLOJURE</span><span>» ELIXIR</span><span>» RACKET</span
+          ><span>» SCHEME</span><span>» C</span><span>» C++</span
+          ><span>» RUBY</span><span>» SCALA</span><span>» ERLANG</span
+          ><span>» ELM</span><span>» LUA</span><span>» SQL</span
+          ><span>» JULIA</span><span>» R</span><span>» +MORE</span>
+        </div>
+        <div class="status">
+          <span class="sep">───</span> CARRIER: 2400 BAUD · ANSI ON · LOCAL ECHO
+          ON · PRESS ? FOR HELP <span class="sep">───</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

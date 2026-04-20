@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — PCBoard BBS</title>
+    <style>
+      :root {
+        --bg: #000060;
+        --frame: #0000a8;
+        --cyan: #54fefe;
+        --bcyan: #54ffff;
+        --yellow: #fefe54;
+        --white: #ffffff;
+        --gray: #aaaaaa;
+        --green: #54fe54;
+        --red: #fe5454;
+        --magenta: #fe54fe;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #000;
+        color: var(--white);
+        font-family:
+          "Px437 IBM VGA8", "Perfect DOS VGA 437", "Cascadia Mono", "VT323",
+          "Courier New", ui-monospace, Menlo, monospace;
+        font-size: 17px;
+        line-height: 1.15;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        min-height: 100vh;
+      }
+      .crt {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 18px;
+        background: var(--bg);
+        border-radius: 14px / 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+          inset 0 0 60px rgba(0, 0, 0, 0.8),
+          0 0 0 8px #1a1a1a,
+          0 0 0 14px #050505;
+      }
+      .crt::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0) 0 1px,
+          rgba(0, 0, 0, 0.22) 1px 3px
+        );
+        pointer-events: none;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--bcyan);
+        color: var(--bg);
+      }
+      pre.page {
+        white-space: pre;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        color: inherit;
+      }
+      .c {
+        color: var(--cyan);
+      }
+      .y {
+        color: var(--yellow);
+      }
+      .w {
+        color: var(--white);
+      }
+      .g {
+        color: var(--green);
+      }
+      .r {
+        color: var(--red);
+      }
+      .m {
+        color: var(--magenta);
+      }
+      .gr {
+        color: var(--gray);
+      }
+      .bf {
+        color: var(--frame);
+      }
+      .blink {
+        animation: blink 0.9s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .cursor {
+        display: inline-block;
+        width: 0.6em;
+        height: 1em;
+        background: var(--bcyan);
+        vertical-align: text-bottom;
+        animation: blink 0.9s steps(1) infinite;
+      }
+      h1.sr,
+      h2.sr {
+        position: absolute;
+        left: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="crt">
+      <h1 class="sr">Code Self Study PCBoard</h1>
+      <!-- prettier-ignore -->
+      <pre class="page"><span class="c">╔══════════════════════════════════════════════════════════════════════════════╗</span>
+<span class="c">║</span>  <span class="y">PCBoard (R) v15.4/M10 - Node 01</span>     <span class="w">CODE SELF STUDY BBS</span>     <span class="g">5247 Users</span>  <span class="c">║</span>
+<span class="c">╚══════════════════════════════════════════════════════════════════════════════╝</span>
+
+<span class="m">  ╓──────────────────────────────────────────────────────────────────────────╖</span>
+<span class="m">  ║</span>   <span class="y">@</span><span class="w">CODE</span><span class="y">@</span> <span class="y">@</span><span class="w">SELF</span><span class="y">@</span> <span class="y">@</span><span class="w">STUDY</span><span class="y">@</span>            <span class="c">a friendly programming community</span>   <span class="m">║</span>
+<span class="m">  ║</span>   <span class="gr">────────────────────────</span>            <span class="gr">────────────────────────────────</span>   <span class="m">║</span>
+<span class="m">  ║</span>   <span class="g">5,000+ members</span> <span class="gr">·</span> <span class="g">Berkeley, CA</span> <span class="gr">·</span> <span class="g">San Francisco Bay Area</span> <span class="gr">·</span> <span class="g">est. 2014</span>   <span class="m">║</span>
+<span class="m">  ╙──────────────────────────────────────────────────────────────────────────╜</span>
+
+  <span class="c">Conference  </span><span class="w">(0) </span><span class="y">Main Board</span> <span class="gr">───────────────────────────────────────────────</span>
+
+  <span class="c">(N)</span> <span class="w">News</span>           <span class="gr">. . .</span>  the Saturday meetup, who showed up, what they built
+  <span class="c">(B)</span> <span class="w">Bulletins</span>      <span class="gr">. . .</span>  reading group, puzzle of the week, jobs board
+  <span class="c">(F)</span> <span class="w">File areas</span>     <span class="gr">. . .</span>  study plans, references, recommended reading
+  <span class="c">(M)</span> <span class="w">Messages</span>       <span class="gr">. . .</span>  forum threads — questions answered by regulars
+  <span class="c">(D)</span> <span class="w">Doors</span>          <span class="gr">. . .</span>  weekly puzzles, code review queue, pair-up board
+  <span class="c">(C)</span> <span class="w">Chat</span>           <span class="gr">. . .</span>  online right now: <span class="g">37</span> users
+  <span class="c">(J)</span> <span class="w">Join community</span> <span class="gr">. . .</span>  <a href="https://www.meetup.com/codeselfstudy/"><span class="y">→ meetup.com/codeselfstudy ←</span></a>
+  <span class="c">(G)</span> <span class="w">Goodbye</span>        <span class="gr">. . .</span>  log off
+
+<span class="bf">▓▒░</span><span class="c">─── BULLETIN 01 ─────────────────────────────────────────────────────────</span><span class="bf">░▒▓</span>
+
+  <span class="y">Welcome.</span>  Code Self Study is a programming community of <span class="g">5,000+</span> members
+  in Berkeley and the Bay Area.  All languages, all levels of experience.
+
+  The format is <span class="c">self-study with mentorship</span>.  Show up at a meetup, bring a
+  question or a project, get help from the regulars.  Experienced members
+  help beginners.  No curriculum, no gatekeeping, no bootcamp pitch.
+
+<span class="bf">▓▒░</span><span class="c">─── BULLETIN 02  ·  WHY PEOPLE COME ────────────────────────────────────</span><span class="bf">░▒▓</span>
+
+  <span class="y">[1]</span> <span class="w">Community</span>     show up; meet programmers who keep showing up
+  <span class="y">[2]</span> <span class="w">Mentorship</span>    experienced members help beginners — plans, reviews
+  <span class="y">[3]</span> <span class="w">Networking</span>    members have landed jobs through introductions
+
+<span class="bf">▓▒░</span><span class="c">─── FILE AREA 04  ·  LANGUAGES IN ROTATION ────────────────────────────</span><span class="bf">░▒▓</span>
+
+  <a href="#"><span class="g">PYTHON  </span></a>  <a href="#"><span class="g">RUST    </span></a>  <a href="#"><span class="g">HASKELL </span></a>  <a href="#"><span class="g">GO      </span></a>  <a href="#"><span class="g">CLOJURE </span></a>
+  <a href="#"><span class="g">TYPESCRT</span></a>  <a href="#"><span class="g">ELIXIR  </span></a>  <a href="#"><span class="g">RACKET  </span></a>  <a href="#"><span class="g">SCALA   </span></a>  <a href="#"><span class="g">RUBY    </span></a>
+  <a href="#"><span class="g">C++     </span></a>  <a href="#"><span class="g">SQL     </span></a>  <a href="#"><span class="g">JULIA   </span></a>  <a href="#"><span class="g">LUA     </span></a>  <a href="#"><span class="g">+more   </span></a>
+
+<span class="bf">▓▒░</span><span class="c">─── DOOR 09  ·  JOIN THE COMMUNITY ────────────────────────────────────</span><span class="bf">░▒▓</span>
+
+  <a href="https://www.meetup.com/codeselfstudy/"><span class="y">  ►► PRESS J TO ENTER ──→ meetup.com/codeselfstudy ◄◄  </span></a>
+
+<span class="c">═══════════════════════════════════════════════════════════════════════════════</span>
+ <span class="gr">Time on:</span> <span class="w">00:11</span>  <span class="gr">|</span>  <span class="gr">CPS:</span> <span class="w">2400</span>  <span class="gr">|</span>  <span class="gr">Node:</span> <span class="w">01</span>  <span class="gr">|</span>  <span class="gr">SysOp:</span> <span class="w">@regulars</span>  <span class="gr">|</span>  <span class="gr">Carrier:</span> <span class="g">OK</span>
+
+ <span class="y">(H)elp  (N)ews  (B)ulletins  (M)essages  (J)oin  (G)oodbye</span>
+
+ <span class="c">Main Board Command?</span> <span class="cursor"> </span></pre>
+    </div>
+  </body>
+</html>

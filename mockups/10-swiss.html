@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Swiss</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --ink: #0a0a0a;
+        --muted: #555;
+        --rule: #111;
+        --accent: #e4002b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          "Helvetica Neue", "Helvetica", "Arial", "Inter", ui-sans-serif,
+          system-ui, sans-serif;
+        line-height: 1.45;
+        font-size: 15px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 32px;
+      }
+      header {
+        border-bottom: 1px solid var(--rule);
+        padding: 14px 0;
+      }
+      header .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .brand {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        font-size: 20px;
+      }
+      .brand .dot {
+        color: var(--accent);
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 24px;
+        margin: 0;
+        padding: 0;
+      }
+      nav a {
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      nav a:hover {
+        color: var(--accent);
+      }
+      .meta {
+        font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 10px 0;
+        border-bottom: 1px solid var(--rule);
+        display: flex;
+        justify-content: space-between;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1fr 11fr;
+        gap: 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .hero .num {
+        padding: 40px 16px 40px 0;
+        font-size: 14px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        color: var(--muted);
+        border-right: 1px solid var(--rule);
+      }
+      .hero .content {
+        padding: 40px 0 40px 32px;
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 32px;
+      }
+      h1 {
+        font-size: clamp(52px, 9vw, 140px);
+        line-height: 0.9;
+        letter-spacing: -0.045em;
+        margin: 0;
+        font-weight: 700;
+      }
+      h1 .accent {
+        color: var(--accent);
+      }
+      .hero aside {
+        align-self: end;
+      }
+      .hero aside p {
+        font-size: 18px;
+        max-width: 38ch;
+        margin: 0 0 16px;
+      }
+      .hero aside .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--ink);
+        color: var(--bg);
+        padding: 12px 20px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      .hero aside .cta:hover {
+        background: var(--accent);
+      }
+      .specs {
+        display: grid;
+        grid-template-columns: 1fr 3fr 3fr 3fr;
+        border-bottom: 1px solid var(--rule);
+      }
+      .specs > div {
+        padding: 32px 16px 32px 0;
+        border-right: 1px solid var(--rule);
+      }
+      .specs > div:last-child {
+        border-right: none;
+      }
+      .specs > div:first-child {
+        padding-right: 0;
+      }
+      .specs .label {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 32px 16px;
+      }
+      .specs h3 {
+        margin: 0 0 12px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .specs .big {
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+        line-height: 1;
+      }
+      .specs p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      section.article {
+        display: grid;
+        grid-template-columns: 1fr 11fr;
+        border-bottom: 1px solid var(--rule);
+      }
+      section.article .label {
+        padding: 40px 16px 40px 0;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--muted);
+        border-right: 1px solid var(--rule);
+      }
+      section.article .body {
+        padding: 40px 0 40px 32px;
+        display: grid;
+        grid-template-columns: 2fr 3fr;
+        gap: 32px;
+      }
+      section.article h2 {
+        font-size: 36px;
+        letter-spacing: -0.02em;
+        margin: 0;
+        line-height: 1.05;
+      }
+      section.article .copy p {
+        margin: 0 0 12px;
+      }
+      .index {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px 16px;
+        margin-top: 16px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 13px;
+      }
+      .index span {
+        border-top: 1px solid var(--rule);
+        padding-top: 6px;
+      }
+      footer {
+        padding: 24px 0;
+        border-top: 1px solid var(--rule);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+      }
+      .bar {
+        height: 6px;
+        background: var(--accent);
+        margin: 0;
+      }
+      @media (max-width: 820px) {
+        .hero,
+        section.article,
+        .specs {
+          grid-template-columns: 1fr;
+        }
+        .hero .content,
+        section.article .body {
+          grid-template-columns: 1fr;
+          padding-left: 0;
+        }
+        .specs > div,
+        .hero .num,
+        section.article .label {
+          border-right: none;
+          border-bottom: 1px solid var(--rule);
+          padding: 16px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar"></div>
+    <div class="container">
+      <header>
+        <div class="row">
+          <div class="brand">Code Self Study<span class="dot">.</span></div>
+          <nav>
+            <ul>
+              <li><a href="#">Events</a></li>
+              <li><a href="#">Learn</a></li>
+              <li><a href="#">Forum</a></li>
+              <li><a href="#">Jobs</a></li>
+              <li><a href="#">Puzzles</a></li>
+              <li><a href="#">About</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+      <div class="meta">
+        <span>Berkeley, CA &middot; 37.87°N 122.27°W</span>
+        <span>Vol. 12 &middot; Est. 2014 &middot; 5,000+ members</span>
+      </div>
+
+      <section class="hero">
+        <div class="num">§01</div>
+        <div class="content">
+          <h1>
+            Study<br />
+            the <span class="accent">code.</span><br />
+            Together.
+          </h1>
+          <aside>
+            <p>
+              A friendly, self-directed programming community in Berkeley and
+              the San Francisco Bay Area. Every language, every level. No
+              curriculum &mdash; just mentorship and people who show up.
+            </p>
+            <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+              >Join →</a
+            >
+          </aside>
+        </div>
+      </section>
+
+      <section class="specs">
+        <div class="label">§02<br />Why</div>
+        <div>
+          <h3>Community</h3>
+          <p class="big">01</p>
+          <p>
+            Get out of your room. Meet programmers who actually keep showing up.
+          </p>
+        </div>
+        <div>
+          <h3>Mentorship</h3>
+          <p class="big">02</p>
+          <p>
+            Experienced members help beginners &mdash; questions, study plans,
+            code reviews.
+          </p>
+        </div>
+        <div>
+          <h3>Networking</h3>
+          <p class="big">03</p>
+          <p>
+            Members have found jobs through introductions made inside the group.
+          </p>
+        </div>
+      </section>
+
+      <section class="article">
+        <div class="label">§03<br />What</div>
+        <div class="body">
+          <h2>A local community of motivated programmers.</h2>
+          <div class="copy">
+            <p>
+              Dozens of meetups teach people how to code. We instead build a
+              local community of friendly, creative, motivated programmers.
+              We're open to every language, every level, and every type of
+              computer programming.
+            </p>
+            <p>
+              The format is self-study with advice and mentorship from the more
+              experienced members. Ask in the forum or at a meetup &mdash; we
+              can help you shape a study plan.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="article">
+        <div class="label">§04<br />Langs</div>
+        <div class="body" style="grid-template-columns: 2fr 3fr">
+          <h2>Every language<br />in rotation.</h2>
+          <div>
+            <div class="index">
+              <span>Python</span><span>JavaScript</span><span>TypeScript</span
+              ><span>Go</span><span>Rust</span><span>WASM</span><span>Java</span
+              ><span>Scheme</span><span>Racket</span><span>Haskell</span
+              ><span>Clojure</span><span>Lisp</span><span>C</span
+              ><span>C++</span><span>C#</span><span>F#</span><span>Lua</span
+              ><span>Elixir</span><span>Erlang</span><span>Elm</span
+              ><span>PureScript</span><span>Ruby</span><span>Scala</span
+              ><span>PHP</span><span>R</span><span>Julia</span><span>SQL</span
+              ><span>More</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span>© Code Self Study</span>
+        <span>⇣ Scroll for more</span>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Mockups</title>
+    <style>
+      :root {
+        --bg: #0f1115;
+        --fg: #e7e9ee;
+        --muted: #9aa3b2;
+        --card: #151821;
+        --border: #242936;
+        --accent: #7dd3fc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        line-height: 1.5;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 64px 24px;
+      }
+      header h1 {
+        font-size: clamp(28px, 4vw, 44px);
+        margin: 0 0 8px;
+        letter-spacing: -0.02em;
+      }
+      header p {
+        color: var(--muted);
+        margin: 0 0 40px;
+        max-width: 60ch;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      a.card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        transition:
+          transform 0.12s ease,
+          border-color 0.12s ease;
+      }
+      a.card:hover {
+        transform: translateY(-2px);
+        border-color: var(--accent);
+      }
+      .num {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+      }
+      .card h2 {
+        font-size: 18px;
+        margin: 8px 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer {
+        margin-top: 40px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Code Self Study — homepage mockups</h1>
+        <p>
+          Ten standalone design directions for the homepage. Each file is pure
+          HTML/CSS with no build step. Open any one to preview.
+        </p>
+      </header>
+      <div class="grid">
+        <a class="card" href="01-terminal.html"
+          ><div class="num">01</div>
+          <h2>Terminal / Retro hacker</h2>
+          <p>Monospace, CRT glow, green-on-black nostalgia.</p></a
+        >
+        <a class="card" href="02-editorial.html"
+          ><div class="num">02</div>
+          <h2>Editorial / Dev magazine</h2>
+          <p>Serif headlines, drop caps, multi-column prose.</p></a
+        >
+        <a class="card" href="03-brutalist.html"
+          ><div class="num">03</div>
+          <h2>Neo-brutalist</h2>
+          <p>Hard shadows, thick borders, primary blocks.</p></a
+        >
+        <a class="card" href="04-minimal.html"
+          ><div class="num">04</div>
+          <h2>Modern minimalist</h2>
+          <p>Generous whitespace, one accent, quiet.</p></a
+        >
+        <a class="card" href="05-dark-neon.html"
+          ><div class="num">05</div>
+          <h2>Dark tech / neon</h2>
+          <p>Deep navy, neon glow, glassy cards.</p></a
+        >
+        <a class="card" href="06-warm-community.html"
+          ><div class="num">06</div>
+          <h2>Warm community</h2>
+          <p>Friendly palette, rounded shapes, humane tone.</p></a
+        >
+        <a class="card" href="07-zine.html"
+          ><div class="num">07</div>
+          <h2>Zine / indie web</h2>
+          <p>Mixed fonts, paper texture, handcrafted.</p></a
+        >
+        <a class="card" href="08-glass.html"
+          ><div class="num">08</div>
+          <h2>Glassmorphism gradient</h2>
+          <p>Soft gradients, frosted glass panels.</p></a
+        >
+        <a class="card" href="09-bauhaus.html"
+          ><div class="num">09</div>
+          <h2>Bauhaus / geometric</h2>
+          <p>Circles, squares, primary colors, strong grid.</p></a
+        >
+        <a class="card" href="10-swiss.html"
+          ><div class="num">10</div>
+          <h2>Swiss / typographic</h2>
+          <p>Helvetica, asymmetric grid, red accent.</p></a
+        >
+        <a class="card" href="11-bbs.html"
+          ><div class="num">11</div>
+          <h2>BBS / amber monitor</h2>
+          <p>ANSI art, CRT scanlines, dial-up nostalgia.</p></a
+        >
+        <a class="card" href="12-riso.html"
+          ><div class="num">12</div>
+          <h2>Risograph print</h2>
+          <p>Pink + blue overprint, paper grain, reg marks.</p></a
+        >
+        <a class="card" href="13-arcade.html"
+          ><div class="num">13</div>
+          <h2>Arcade / pixel-art</h2>
+          <p>CRT cabinet, sprites, pixel typography.</p></a
+        >
+        <a class="card" href="14-schematic.html"
+          ><div class="num">14</div>
+          <h2>Engineering schematic</h2>
+          <p>Title block, BOM table, technical drawing.</p></a
+        >
+        <a class="card" href="15-newspaper.html"
+          ><div class="num">15</div>
+          <h2>Newspaper front page</h2>
+          <p>Masthead, drop caps, columns, classifieds.</p></a
+        >
+        <a class="card" href="16-ledger.html"
+          ><div class="num">16</div>
+          <h2>Ledger &amp; stamp</h2>
+          <p>Old ledger, notary stamps, blackletter mark.</p></a
+        >
+        <a class="card" href="17-comic.html"
+          ><div class="num">17</div>
+          <h2>Comic book / halftone</h2>
+          <p>Ben-Day dots, speech bubbles, action panels.</p></a
+        >
+        <a class="card" href="18-transit.html"
+          ><div class="num">18</div>
+          <h2>Transit wayfinding</h2>
+          <p>Vignelli-style signage, line roundels, ETA board.</p></a
+        >
+        <a class="card" href="19-punk.html"
+          ><div class="num">19</div>
+          <h2>Punk flyer / xerox</h2>
+          <p>High-contrast B&amp;W, stickered, photocopied.</p></a
+        >
+        <a class="card" href="21-norton.html"
+          ><div class="num">21</div>
+          <h2>Norton Commander / DOS TUI</h2>
+          <p>Blue + cyan panels, F-key bar, file-manager layout.</p></a
+        >
+        <a class="card" href="22-ansi-scene.html"
+          ><div class="num">22</div>
+          <h2>ANSI scene art</h2>
+          <p>CGA palette, block-art logo, warez-scene density.</p></a
+        >
+        <a class="card" href="23-teletext.html"
+          ><div class="num">23</div>
+          <h2>Teletext / Ceefax</h2>
+          <p>Chunky pixel cells, color blocks, page-number index.</p></a
+        >
+        <a class="card" href="24-vt100.html"
+          ><div class="num">24</div>
+          <h2>VT100 monochrome green</h2>
+          <p>Classic phosphor terminal, login banner, MOTD.</p></a
+        >
+        <a class="card" href="25-c64.html"
+          ><div class="num">25</div>
+          <h2>C64 boot screen</h2>
+          <p>Light-blue on blue, BASIC LIST, READY prompt.</p></a
+        >
+        <a class="card" href="26-brutalist-muted.html"
+          ><div class="num">26</div>
+          <h2>Muted brutalist</h2>
+          <p>Charcoal, cream, ochre &amp; olive. Quiet contrast.</p></a
+        >
+        <a class="card" href="27-brutalist-concrete.html"
+          ><div class="num">27</div>
+          <h2>Concrete brutalist</h2>
+          <p>Raw concrete grays, rust &amp; kraft. Architectural.</p></a
+        >
+        <a class="card" href="28-brutalist-stained.html"
+          ><div class="num">28</div>
+          <h2>Stained-glass brutalist</h2>
+          <p>Translucent overlapping panels, lead-line borders.</p></a
+        >
+        <a class="card" href="29-brutalist-forest.html"
+          ><div class="num">29</div>
+          <h2>Forest brutalist</h2>
+          <p>Deep moss, cream, tan. Trail-marker feel.</p></a
+        >
+        <a class="card" href="30-bbs-pcboard.html"
+          ><div class="num">30</div>
+          <h2>PCBoard BBS</h2>
+          <p>Deep blue, cyan @-codes, classic bulletin layout.</p></a
+        >
+        <a class="card" href="31-bbs-renegade.html"
+          ><div class="num">31</div>
+          <h2>Renegade BBS</h2>
+          <p>Orange/red palette, lightbar menus, login banner.</p></a
+        >
+        <a class="card" href="32-bbs-wwiv.html"
+          ><div class="num">32</div>
+          <h2>WWIV BBS</h2>
+          <p>Bright blue field, white/cyan menu, sub-board list.</p></a
+        >
+        <a class="card" href="33-modernist-museum.html"
+          ><div class="num">33</div>
+          <h2>Modernist museum</h2>
+          <p>Gallery whites, thin display type, plate-style works.</p></a
+        >
+        <a class="card" href="34-japanese-editorial.html"
+          ><div class="num">34</div>
+          <h2>Japanese editorial</h2>
+          <p>Warm paper, vermilion seal, italic serif, asymmetric.</p></a
+        >
+        <a class="card" href="35-field-guide.html"
+          ><div class="num">35</div>
+          <h2>Scientific field guide</h2>
+          <p>Paper texture, specimen plates, taxonomic tone.</p></a
+        >
+        <a class="card" href="36-brutalist-rust.html"
+          ><div class="num">36</div>
+          <h2>Brutalist · rust &amp; walnut</h2>
+          <p>Warm cream, rust, walnut, warm slate.</p></a
+        >
+        <a class="card" href="37-brutalist-pastel-sky.html"
+          ><div class="num">37</div>
+          <h2>Brutalist · pastel sky</h2>
+          <p>Muted sky blue, lavender, dusty navy.</p></a
+        >
+        <a class="card" href="38-brutalist-pastel-clay.html"
+          ><div class="num">38</div>
+          <h2>Brutalist · pastel clay</h2>
+          <p>Warm clay terracotta, smoke blue, cream.</p></a
+        >
+        <a class="card" href="39-brutalist-navy-copper.html"
+          ><div class="num">39</div>
+          <h2>Brutalist · navy &amp; copper</h2>
+          <p>Deep navy ink, copper, steel blue on cream.</p></a
+        >
+        <a class="card" href="40-brutalist-mono-cobalt.html"
+          ><div class="num">40</div>
+          <h2>Brutalist · mono &amp; cobalt</h2>
+          <p>Warm grayscale with a single cobalt accent.</p></a
+        >
+        <a class="card" href="41-brutalist-stamped.html"
+          ><div class="num">41</div>
+          <h2>Brutalist · stamped</h2>
+          <p>Tilted panels, hard offset shadows, rubber-stamp overlays.</p></a
+        >
+        <a class="card" href="42-brutalist-graph.html"
+          ><div class="num">42</div>
+          <h2>Brutalist · graph paper</h2>
+          <p>Engineering grid, mono coordinate labels, teal + ochre.</p></a
+        >
+        <a class="card" href="43-brutalist-halftone.html"
+          ><div class="num">43</div>
+          <h2>Brutalist · halftone</h2>
+          <p>Dot-pattern fades, oversize ghost numerals, indigo + rust.</p></a
+        >
+        <a class="card" href="44-brutalist-collage.html"
+          ><div class="num">44</div>
+          <h2>Brutalist · tape collage</h2>
+          <p>Masking-tape strips, kraft cardboard ground, terracotta.</p></a
+        >
+        <a class="card" href="45-brutalist-carbon.html"
+          ><div class="num">45</div>
+          <h2>Brutalist · carbon copy</h2>
+          <p>Typewriter mono, ribbon-red ghost shadow, memo header.</p></a
+        >
+      </div>
+      <footer>All 44 live under <code>./mockups/</code>.</footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Teletext</title>
+    <style>
+      :root {
+        --bg: #000000;
+        --white: #ffffff;
+        --red: #ff0000;
+        --green: #00ff00;
+        --yellow: #ffff00;
+        --blue: #0000ff;
+        --magenta: #ff00ff;
+        --cyan: #00ffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #050505;
+        color: var(--white);
+        font-family:
+          "Bedstead", "Cascadia Mono", "VT323", "Px437 IBM VGA8",
+          "Perfect DOS VGA 437", "Courier New", ui-monospace, monospace;
+        font-size: 22px;
+        line-height: 1;
+        font-weight: 700;
+        min-height: 100vh;
+        letter-spacing: 0.01em;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .tube {
+        max-width: 880px;
+        margin: 24px auto;
+        padding: 18px;
+        background: var(--bg);
+        border-radius: 18px / 28px;
+        box-shadow:
+          inset 0 0 60px rgba(0, 0, 0, 0.9),
+          0 0 0 8px #1a1a1a,
+          0 0 0 14px #0a0a0a;
+        position: relative;
+        overflow: hidden;
+      }
+      .tube::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0) 0 1px,
+          rgba(0, 0, 0, 0.25) 1px 2px
+        );
+        pointer-events: none;
+        mix-blend-mode: multiply;
+      }
+      .page {
+        white-space: pre;
+        line-height: 1.05;
+      }
+      .row {
+        display: block;
+      }
+      .bg-red {
+        background: var(--red);
+      }
+      .bg-green {
+        background: var(--green);
+        color: var(--bg);
+      }
+      .bg-yellow {
+        background: var(--yellow);
+        color: var(--bg);
+      }
+      .bg-blue {
+        background: var(--blue);
+      }
+      .bg-magenta {
+        background: var(--magenta);
+        color: var(--bg);
+      }
+      .bg-cyan {
+        background: var(--cyan);
+        color: var(--bg);
+      }
+      .bg-white {
+        background: var(--white);
+        color: var(--bg);
+      }
+      .fg-red {
+        color: var(--red);
+      }
+      .fg-green {
+        color: var(--green);
+      }
+      .fg-yellow {
+        color: var(--yellow);
+      }
+      .fg-blue {
+        color: var(--blue);
+      }
+      .fg-magenta {
+        color: var(--magenta);
+      }
+      .fg-cyan {
+        color: var(--cyan);
+      }
+      .fg-white {
+        color: var(--white);
+      }
+      .double {
+        font-size: 44px;
+        line-height: 1;
+        letter-spacing: 0.02em;
+      }
+      .blink {
+        animation: blink 0.9s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      h1.sr,
+      h2.sr,
+      h3.sr {
+        position: absolute;
+        left: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tube">
+      <h1 class="sr">Code Self Study Teletext</h1>
+      <div class="page">
+        <span class="fg-cyan">P101 CSS</span>
+        <span class="fg-yellow">CODE SELF STUDY</span>
+        <span class="fg-white">Sat 18 Apr 09:00:01</span>
+
+        <span class="bg-red fg-yellow double"> CSS </span
+        ><span class="bg-yellow fg-red double"> 101 </span
+        ><span class="bg-blue fg-white double"> index </span>
+        <span class="bg-red fg-yellow double"> CSS </span
+        ><span class="bg-yellow fg-red double"> 101 </span
+        ><span class="bg-blue fg-white double"> index </span>
+
+        <span class="fg-cyan"
+          >▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙</span
+        >
+
+        <span class="fg-yellow"> Welcome to the Code Self Study teletext </span>
+        <span class="fg-white"> service. A friendly programming </span>
+        <span class="fg-white"> community of </span
+        ><span class="fg-green">5,247</span
+        ><span class="fg-white"> members in Berkeley </span>
+        <span class="fg-white"> and the San Francisco Bay Area. </span>
+        <span class="fg-white"> All languages. All levels. Welcome. </span>
+
+        <span class="fg-cyan"
+          >▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙</span
+        >
+
+        <span class="fg-magenta"> INDEX</span> <span class="fg-cyan">page</span>
+        <a href="#"
+          ><span class="fg-white"> Home . . . . . . . . . . . . . </span
+          ><span class="fg-yellow">100</span></a
+        >
+        <a href="#"
+          ><span class="fg-white"> Events &amp; meetups . . . . . . . </span
+          ><span class="fg-yellow">200</span></a
+        >
+        <a href="#"
+          ><span class="fg-white"> Forum &amp; chat . . . . . . . . . </span
+          ><span class="fg-yellow">300</span></a
+        >
+        <a href="#"
+          ><span class="fg-white"> Learn &amp; study guides . . . . . </span
+          ><span class="fg-yellow">400</span></a
+        >
+        <a href="#"
+          ><span class="fg-white"> Jobs board . . . . . . . . . . </span
+          ><span class="fg-yellow">500</span></a
+        >
+        <a href="#"
+          ><span class="fg-white"> Puzzles &amp; challenges . . . . . </span
+          ><span class="fg-yellow">600</span></a
+        >
+        <a href="#"
+          ><span class="fg-white"> Tools &amp; references . . . . . . </span
+          ><span class="fg-yellow">700</span></a
+        >
+        <a href="#"
+          ><span class="fg-white"> About . . . . . . . . . . . . . </span
+          ><span class="fg-yellow">800</span></a
+        >
+        <a href="https://www.meetup.com/codeselfstudy/"
+          ><span class="fg-green"> &gt; Join the community . . . . . </span
+          ><span class="fg-green">900</span></a
+        >
+
+        <span class="fg-cyan"
+          >▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙</span
+        >
+
+        <span class="bg-red fg-white"> 1 </span>
+        <span class="fg-red">COMMUNITY</span>
+        <span class="fg-white">Show up. Meet programmers who keep </span>
+        <span class="fg-white">showing up week after week. </span>
+
+        <span class="bg-yellow fg-blue"> 2 </span>
+        <span class="fg-yellow">MENTORSHIP</span>
+        <span class="fg-white">Experienced members help beginners. </span>
+        <span class="fg-white">Ask for a study plan or code review. </span>
+
+        <span class="bg-cyan fg-blue"> 3 </span>
+        <span class="fg-cyan">NETWORKING</span>
+        <span class="fg-white">Members have landed jobs through </span>
+        <span class="fg-white">introductions inside the group. </span>
+
+        <span class="fg-magenta"
+          >▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟</span
+        >
+
+        <span class="bg-green fg-blue"> WHAT'S ON </span>
+        <span class="fg-yellow"> Sat 09:00 Berkeley </span>
+
+        <span class="fg-white"> Weekly meetup . . . . . . . in person </span>
+        <span class="fg-white"> Reading group: Crafting Interpreters </span>
+        <span class="fg-white"> Puzzle of the week . . . . shortest p </span>
+        <span class="fg-white"> New jobs posted . . . . . . . . . . 6 </span>
+
+        <span class="fg-magenta"
+          >▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟</span
+        >
+
+        <span class="bg-blue fg-yellow"> LANGUAGES </span>
+        <span class="fg-cyan"> in active rotation </span>
+
+        <span class="fg-green"> python </span>
+        <span class="fg-yellow"> rust </span>
+        <span class="fg-magenta"> haskell </span>
+        <span class="fg-cyan"> go </span> <span class="fg-cyan"> ts </span>
+        <span class="fg-green"> clojure </span>
+        <span class="fg-yellow"> elixir </span>
+        <span class="fg-magenta"> racket </span>
+        <span class="fg-magenta"> ruby </span>
+        <span class="fg-cyan"> scala </span> <span class="fg-green"> c++ </span>
+        <span class="fg-yellow"> sql </span>
+
+        <span class="fg-cyan"
+          >▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙▟▙</span
+        >
+
+        <span class="bg-red fg-white"> RED </span
+        ><span class="bg-green fg-blue"> GREEN </span
+        ><span class="bg-yellow fg-blue"> YELLOW </span
+        ><span class="bg-cyan fg-blue"> CYAN </span>
+        <a href="#"
+          ><span class="fg-red">100 </span
+          ><span class="fg-white">home </span></a
+        ><a href="#"
+          ><span class="fg-green">200 </span
+          ><span class="fg-white">events </span></a
+        ><a href="#"
+          ><span class="fg-yellow">300 </span
+          ><span class="fg-white">forum </span></a
+        ><a href="https://www.meetup.com/codeselfstudy/"
+          ><span class="fg-cyan">900 </span><span class="fg-green">join</span
+          ><span class="blink">█</span></a
+        >
+      </div>
+    </div>
+  </body>
+</html>

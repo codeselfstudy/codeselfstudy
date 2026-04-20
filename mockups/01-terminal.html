@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Terminal</title>
+    <style>
+      :root {
+        --bg: #0b0f0a;
+        --fg: #9cf59c;
+        --dim: #4a7a4a;
+        --accent: #c4ff5e;
+        --warn: #ffb86b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+      }
+      body {
+        color: var(--fg);
+        font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+        font-size: 15px;
+        line-height: 1.6;
+        min-height: 100vh;
+        background-image:
+          radial-gradient(
+            ellipse at center,
+            rgba(40, 80, 40, 0.3) 0%,
+            transparent 70%
+          ),
+          repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.15) 0 1px,
+            transparent 1px 3px
+          );
+      }
+      a {
+        color: var(--accent);
+      }
+      .wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 32px 20px 80px;
+      }
+      nav {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding-bottom: 20px;
+        border-bottom: 1px dashed var(--dim);
+      }
+      nav a {
+        text-decoration: none;
+      }
+      nav a:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      .brand {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      h1 {
+        font-size: 28px;
+        margin: 40px 0 8px;
+        color: var(--accent);
+      }
+      h1::before {
+        content: "> ";
+      }
+      h2 {
+        font-size: 18px;
+        color: var(--accent);
+        margin: 40px 0 12px;
+      }
+      h2::before {
+        content: "## ";
+        color: var(--dim);
+      }
+      .prompt {
+        color: var(--dim);
+      }
+      .cursor {
+        display: inline-block;
+        width: 9px;
+        height: 16px;
+        background: var(--accent);
+        vertical-align: -2px;
+        animation: blink 1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .ascii {
+        color: var(--dim);
+        white-space: pre;
+        font-size: 12px;
+        margin: 20px 0 30px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 18px;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        text-decoration: none;
+        margin-top: 16px;
+      }
+      .btn:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        margin-top: 24px;
+      }
+      .card {
+        border: 1px solid var(--dim);
+        padding: 16px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        color: var(--warn);
+        font-size: 15px;
+      }
+      .card h3::before {
+        content: "[*] ";
+      }
+      ul {
+        padding-left: 20px;
+      }
+      ul li::marker {
+        content: "» ";
+      }
+      code.tag {
+        color: var(--warn);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav>
+        <span class="brand">codeselfstudy:~$</span>
+        <a href="#">home</a><a href="#">events</a><a href="#">learn</a
+        ><a href="#">forum</a><a href="#">jobs</a><a href="#">puzzles</a
+        ><a href="#">tools</a><a href="#">about</a>
+      </nav>
+      <pre class="ascii">
+   ____          _        ____       _  __   ____  _             _
+  / ___|___   __| | ___  / ___|  ___| |/ _| / ___|| |_ _   _  __| |_   _
+ | |   / _ \ / _` |/ _ \ \___ \ / _ \ | |_  \___ \| __| | | |/ _` | | | |
+ | |__| (_) | (_| |  __/  ___) |  __/ |  _|  ___) | |_| |_| | (_| | |_| |
+  \____\___/ \__,_|\___| |____/ \___|_|_|   |____/ \__|\__,_|\__,_|\__, |
+                                                                   |___/
+</pre
+      >
+      <p class="prompt">
+        // a programming community in the san francisco bay area &mdash; est.
+        2014
+      </p>
+      <h1>hello, world.</h1>
+      <p>
+        Self-study computer programming in a community of like-minded people.
+        5,000+ programmers in Berkeley and the Bay Area. All languages, all
+        levels.<span class="cursor"></span>
+      </p>
+      <a class="btn" href="https://www.meetup.com/codeselfstudy/"
+        >$ join --community</a
+      >
+
+      <h2>features</h2>
+      <div class="cols">
+        <div class="card">
+          <h3>community</h3>
+          <p>
+            Attend meetups. Get out of your room. Meet like-minded programmers.
+          </p>
+        </div>
+        <div class="card">
+          <h3>get help</h3>
+          <p>
+            Experienced members help beginners. Bring questions. Ask for study
+            plans.
+          </p>
+        </div>
+        <div class="card">
+          <h3>networking</h3>
+          <p>
+            Know people in the industry. Members have found jobs through
+            introductions here.
+          </p>
+        </div>
+      </div>
+
+      <h2>what we do</h2>
+      <ul>
+        <li>
+          Build a local community of friendly, highly-motivated programmers.
+        </li>
+        <li>Open to all languages, all levels, all types of programming.</li>
+        <li>Self study with mentorship from experienced members.</li>
+      </ul>
+      <p class="prompt">$ echo $LANGUAGES</p>
+      <p>
+        <code class="tag">python</code> <code class="tag">javascript</code>
+        <code class="tag">typescript</code> <code class="tag">go</code>
+        <code class="tag">rust</code> <code class="tag">haskell</code>
+        <code class="tag">clojure</code> <code class="tag">elixir</code>
+        <code class="tag">racket</code> <code class="tag">ruby</code>
+        <code class="tag">c++</code> <code class="tag">scala</code>
+        <code class="tag">sql</code> <code class="tag">...</code>
+      </p>
+
+      <h2>bootcamp supplement</h2>
+      <p>
+        Attend our meetings as a self-directed bootcamp supplement or
+        alternative. Experienced programmers offer mentorship on project-based
+        learning.
+      </p>
+      <p class="prompt">&mdash; end of transmission &mdash;</p>
+    </div>
+  </body>
+</html>

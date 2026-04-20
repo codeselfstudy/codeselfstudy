@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Japanese editorial</title>
+    <style>
+      :root {
+        --paper: #f5f1e8;
+        --paper-dark: #ebe5d4;
+        --ink: #1c1a16;
+        --ink-soft: #4a463e;
+        --vermilion: #b04632;
+        --indigo: #2d3a55;
+        --rule: #b6ad96;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          "Cormorant Garamond", "EB Garamond", "Iowan Old Style",
+          "Hoefler Text", Georgia, serif;
+        font-weight: 400;
+        line-height: 1.6;
+        background-image:
+          radial-gradient(
+            circle at 20% 10%,
+            rgba(0, 0, 0, 0.03),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(0, 0, 0, 0.025),
+            transparent 35%
+          ),
+          repeating-linear-gradient(
+            45deg,
+            transparent 0 6px,
+            rgba(28, 26, 22, 0.012) 6px 7px
+          );
+      }
+      a {
+        color: inherit;
+      }
+      .sans {
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+      }
+      header {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 36px 48px 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 40px;
+        align-items: end;
+      }
+      .seal {
+        width: 56px;
+        height: 56px;
+        background: var(--vermilion);
+        color: var(--paper);
+        display: grid;
+        place-items: center;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-style: italic;
+        font-weight: 600;
+        font-size: 28px;
+        letter-spacing: -0.02em;
+        box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.15);
+      }
+      .masthead {
+        border-bottom: 1px solid var(--ink);
+        padding-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .masthead .name {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-style: italic;
+        font-size: 26px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .masthead nav ul {
+        list-style: none;
+        display: flex;
+        gap: 22px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      .masthead nav a {
+        text-decoration: none;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+      }
+      .masthead nav a:hover {
+        color: var(--vermilion);
+      }
+      .colophon {
+        max-width: 1200px;
+        margin: 12px auto 0;
+        padding: 0 48px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        flex-wrap: wrap;
+      }
+      .wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 64px 48px 80px;
+      }
+      .lede {
+        display: grid;
+        grid-template-columns: 7fr 5fr;
+        gap: 56px;
+        align-items: start;
+      }
+      .lede .head {
+        position: relative;
+      }
+      .lede .head::after {
+        content: "";
+        position: absolute;
+        bottom: -28px;
+        left: 0;
+        width: 84px;
+        height: 1px;
+        background: var(--vermilion);
+      }
+      .kicker {
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--vermilion);
+        margin-bottom: 14px;
+      }
+      .lede h1 {
+        font-size: clamp(44px, 6vw, 92px);
+        line-height: 1.04;
+        margin: 0 0 6px;
+        font-weight: 400;
+        letter-spacing: -0.02em;
+      }
+      .lede h1 em {
+        font-style: italic;
+      }
+      .lede .sub {
+        font-style: italic;
+        font-size: clamp(20px, 1.8vw, 26px);
+        color: var(--ink-soft);
+      }
+      .lede .body {
+        padding-top: 12px;
+      }
+      .lede .body p {
+        margin: 0 0 14px;
+        font-size: 17px;
+        line-height: 1.7;
+      }
+      .lede .body p::first-letter {
+        font-size: 3.4em;
+        line-height: 0.9;
+        float: left;
+        padding: 6px 10px 0 0;
+        font-weight: 500;
+        font-style: italic;
+        color: var(--vermilion);
+      }
+      .lede .cta {
+        margin-top: 24px;
+        display: inline-block;
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--ink);
+        border-bottom: 1.5px solid var(--vermilion);
+        padding-bottom: 4px;
+      }
+      .lede .cta:hover {
+        color: var(--vermilion);
+      }
+      .ma {
+        height: 96px;
+      }
+      .three {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 56px;
+        align-items: start;
+        padding-top: 40px;
+        border-top: 1px solid var(--rule);
+      }
+      .three .ch {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 64px;
+        line-height: 1;
+        color: var(--vermilion);
+        margin-bottom: 8px;
+      }
+      .three h3 {
+        margin: 0 0 6px;
+        font-weight: 500;
+        font-size: 22px;
+        letter-spacing: -0.005em;
+      }
+      .three p {
+        margin: 0;
+        color: var(--ink-soft);
+        font-size: 16px;
+        line-height: 1.65;
+        max-width: 32ch;
+      }
+      .quiet {
+        margin-top: 72px;
+        padding: 36px 0;
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 56px;
+        align-items: center;
+      }
+      .quiet .label {
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .quiet blockquote {
+        margin: 0;
+        font-style: italic;
+        font-size: clamp(22px, 2.2vw, 32px);
+        line-height: 1.4;
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .quiet blockquote span {
+        color: var(--vermilion);
+      }
+      .meeting {
+        margin-top: 72px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 56px;
+        align-items: start;
+      }
+      .meeting h2 {
+        font-size: clamp(28px, 3.6vw, 42px);
+        margin: 0 0 12px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .meeting .body {
+        font-size: 16px;
+        color: var(--ink);
+        line-height: 1.7;
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 14px;
+      }
+      .table td {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: top;
+      }
+      .table td:first-child {
+        color: var(--ink-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-size: 11px;
+        width: 38%;
+        padding-right: 16px;
+      }
+      .langs {
+        margin-top: 56px;
+      }
+      .langs .label {
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin-bottom: 14px;
+      }
+      .langs ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        column-count: 4;
+        column-gap: 32px;
+      }
+      .langs li {
+        padding: 6px 0;
+        border-bottom: 1px solid var(--rule);
+        break-inside: avoid;
+        display: flex;
+        justify-content: space-between;
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 13px;
+      }
+      .langs li small {
+        color: var(--ink-soft);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+      }
+      footer {
+        max-width: 1200px;
+        margin: 64px auto 0;
+        padding: 18px 48px 36px;
+        border-top: 1px solid var(--ink);
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 880px) {
+        .lede,
+        .three,
+        .quiet,
+        .meeting {
+          grid-template-columns: 1fr;
+        }
+        .langs ul {
+          column-count: 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="seal">己</div>
+      <div class="masthead">
+        <div class="name">Code Self Study — a quiet weekly</div>
+        <nav>
+          <ul>
+            <li><a href="#">Events</a></li>
+            <li><a href="#">Learn</a></li>
+            <li><a href="#">Forum</a></li>
+            <li><a href="#">Jobs</a></li>
+            <li><a href="#">Puzzles</a></li>
+            <li><a href="#">About</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <div class="colophon">
+      <span>Vol. XII · Bay Area · Spring 2026</span>
+      <span>Members 5,247 · Free admission</span>
+    </div>
+
+    <main class="wrap">
+      <section class="lede">
+        <div class="head">
+          <div class="kicker">— Number 01 · the room</div>
+          <h1>Study code.<br /><em>Together.</em><br />In person.</h1>
+          <div class="sub">
+            A small, friendly community of programmers in the Bay Area.
+          </div>
+        </div>
+        <div class="body">
+          <p>
+            Code Self Study has met, week after week, since 2014 — five thousand
+            programmers in Berkeley and the wider Bay Area, working quietly side
+            by side on whatever they happened to be learning that morning. All
+            languages. All levels. The hard part is done; the room already
+            exists.
+          </p>
+          <p>
+            The format is unhurried: bring a notebook, a question, a stuck
+            commit, or a long-running project. Sit down with people who keep
+            showing up. Ask. Answer. Drink the coffee. Repeat next Saturday.
+          </p>
+          <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+            >Join the community →</a
+          >
+        </div>
+      </section>
+
+      <div class="ma" aria-hidden="true"></div>
+
+      <section class="three">
+        <div>
+          <div class="ch">一</div>
+          <h3>Community</h3>
+          <p>
+            Show up. Meet programmers who keep showing up week after week. The
+            hard part is done.
+          </p>
+        </div>
+        <div>
+          <div class="ch">二</div>
+          <h3>Mentorship</h3>
+          <p>
+            Experienced members help beginners — questions, study plans, code
+            reviews, stuck commits.
+          </p>
+        </div>
+        <div>
+          <div class="ch">三</div>
+          <h3>Networking</h3>
+          <p>
+            Members have landed jobs through introductions made inside the
+            group. Quietly, no pitch.
+          </p>
+        </div>
+      </section>
+
+      <section class="quiet">
+        <div class="label">From the colophon</div>
+        <blockquote>
+          Dozens of groups will teach you to code. We build a local community of
+          <span>highly-motivated programmers</span> instead.
+        </blockquote>
+      </section>
+
+      <section class="meeting">
+        <div>
+          <h2>The Saturday meeting.</h2>
+          <p class="body">
+            One room, one morning a week, a table of regulars, a few first-time
+            visitors, and a kettle. No talks. No slides. People bring whatever
+            they are working on and help one another along.
+          </p>
+          <p class="body">
+            If you are new — show up. If you are stuck — bring the stuck thing.
+            If you are advanced — there is almost certainly someone who would
+            welcome an hour of your help.
+          </p>
+        </div>
+        <table class="table">
+          <tr>
+            <td>When</td>
+            <td>Saturdays, 9 am</td>
+          </tr>
+          <tr>
+            <td>Where</td>
+            <td>Berkeley, CA</td>
+          </tr>
+          <tr>
+            <td>Format</td>
+            <td>Self-study with mentorship</td>
+          </tr>
+          <tr>
+            <td>Cover</td>
+            <td>Free</td>
+          </tr>
+          <tr>
+            <td>Bring</td>
+            <td>A laptop and a question</td>
+          </tr>
+          <tr>
+            <td>Founded</td>
+            <td>2014</td>
+          </tr>
+        </table>
+      </section>
+
+      <section class="langs">
+        <div class="label">Languages in rotation</div>
+        <ul>
+          <li>Python <small>weekly</small></li>
+          <li>JavaScript <small>weekly</small></li>
+          <li>TypeScript <small>weekly</small></li>
+          <li>Go <small>weekly</small></li>
+          <li>Rust <small>weekly</small></li>
+          <li>Haskell <small>often</small></li>
+          <li>Clojure <small>often</small></li>
+          <li>Elixir <small>often</small></li>
+          <li>Racket <small>often</small></li>
+          <li>Scheme <small>sometimes</small></li>
+          <li>Common Lisp <small>sometimes</small></li>
+          <li>Ruby <small>sometimes</small></li>
+          <li>Scala <small>sometimes</small></li>
+          <li>C++ <small>sometimes</small></li>
+          <li>Lua <small>sometimes</small></li>
+          <li>SQL <small>weekly</small></li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <span>Code Self Study — Berkeley, Bay Area</span>
+      <span>己 · Est. 2014</span>
+    </footer>
+  </body>
+</html>

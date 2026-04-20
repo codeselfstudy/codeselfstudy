@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Field guide</title>
+    <style>
+      :root {
+        --paper: #f4eedf;
+        --paper-edge: #ddd3b8;
+        --ink: #1f2117;
+        --ink-soft: #4a4d3d;
+        --olive: #6b7a3a;
+        --rust: #8a3a1c;
+        --rule: #b9b09a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          "EB Garamond", "Iowan Old Style", "Hoefler Text", Georgia, serif;
+        font-weight: 400;
+        line-height: 1.55;
+        background-image:
+          radial-gradient(
+            circle at 20% 30%,
+            rgba(0, 0, 0, 0.025),
+            transparent 35%
+          ),
+          radial-gradient(
+            circle at 80% 70%,
+            rgba(0, 0, 0, 0.02),
+            transparent 35%
+          ),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0 18px,
+            rgba(31, 33, 23, 0.04) 18px 19px
+          );
+      }
+      a {
+        color: inherit;
+      }
+      .mono {
+        font-family:
+          "IBM Plex Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+      }
+      header {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 28px 40px 0;
+      }
+      .title-block {
+        border-top: 4px double var(--ink);
+        border-bottom: 4px double var(--ink);
+        padding: 18px 0;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 24px;
+        align-items: center;
+      }
+      .title-block .vol {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .title-block .name {
+        font-family: "EB Garamond", Georgia, serif;
+        font-size: clamp(22px, 2.4vw, 32px);
+        font-weight: 600;
+        text-align: center;
+        letter-spacing: -0.005em;
+      }
+      .title-block .name em {
+        font-style: italic;
+        color: var(--olive);
+      }
+      .title-block .right {
+        text-align: right;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      nav.bar {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 10px 40px;
+        border-bottom: 1px solid var(--rule);
+      }
+      nav.bar ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      nav.bar a {
+        text-decoration: none;
+      }
+      nav.bar a:hover {
+        color: var(--rust);
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 36px 40px 80px;
+      }
+      .lede {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 40px;
+        align-items: start;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .lede .meta {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--olive);
+        margin-bottom: 14px;
+      }
+      .lede h1 {
+        font-size: clamp(38px, 5.4vw, 76px);
+        line-height: 1;
+        margin: 0 0 12px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .lede h1 em {
+        font-style: italic;
+        color: var(--rust);
+      }
+      .lede .sci {
+        font-style: italic;
+        color: var(--ink-soft);
+        font-size: 18px;
+      }
+      .lede .body p {
+        margin: 0 0 12px;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+      .lede .body p:first-child::first-letter {
+        font-size: 3em;
+        line-height: 0.9;
+        float: left;
+        padding: 4px 8px 0 0;
+        font-weight: 600;
+        font-style: italic;
+        color: var(--rust);
+      }
+      .cta {
+        display: inline-block;
+        margin-top: 12px;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 8px 0;
+        border-top: 1px solid var(--ink);
+        border-bottom: 1px solid var(--ink);
+      }
+      .cta:hover {
+        color: var(--rust);
+        border-color: var(--rust);
+      }
+
+      .specimens {
+        margin-top: 36px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+      }
+      .spec {
+        border: 1px solid var(--rule);
+        background: var(--paper);
+        padding: 16px;
+      }
+      .plate {
+        background: var(--paper-edge);
+        border: 1px solid var(--rule);
+        height: 130px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .plate.a {
+        background:
+          radial-gradient(circle at 30% 60%, #6b7a3a55 0 18%, transparent 19%),
+          radial-gradient(circle at 65% 35%, #8a3a1c44 0 14%, transparent 15%),
+          var(--paper-edge);
+      }
+      .plate.b {
+        background:
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 22px,
+            #b9b09a 22px 23px
+          ),
+          var(--paper-edge);
+      }
+      .plate.c {
+        background:
+          radial-gradient(circle at 50% 50%, #4a4d3d 0 6px, transparent 7px),
+          radial-gradient(circle at 25% 30%, #4a4d3d 0 4px, transparent 5px),
+          radial-gradient(circle at 75% 70%, #4a4d3d 0 4px, transparent 5px),
+          var(--paper-edge);
+      }
+      .plate .lab {
+        position: absolute;
+        bottom: 6px;
+        right: 8px;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--ink-soft);
+      }
+      .spec .ord {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--olive);
+      }
+      .spec h3 {
+        margin: 4px 0 2px;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+      }
+      .spec h3 em {
+        font-style: italic;
+        font-weight: 400;
+        font-size: 14px;
+        color: var(--ink-soft);
+        margin-left: 6px;
+      }
+      .spec p {
+        margin: 6px 0 0;
+        font-size: 14.5px;
+        line-height: 1.55;
+      }
+
+      .key {
+        margin-top: 48px;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 36px;
+        padding-top: 28px;
+        border-top: 1px solid var(--rule);
+      }
+      .key h2 {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        margin: 0;
+        color: var(--ink-soft);
+      }
+      .key .body {
+        font-size: 17px;
+        line-height: 1.7;
+      }
+      .key .body em {
+        font-style: italic;
+        color: var(--rust);
+      }
+      .key .table {
+        margin-top: 18px;
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 13px;
+      }
+      .key .table td {
+        padding: 8px 0;
+        border-bottom: 1px dotted var(--rule);
+      }
+      .key .table td:first-child {
+        color: var(--ink-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-size: 11px;
+        width: 28%;
+      }
+
+      .index {
+        margin-top: 48px;
+        padding-top: 28px;
+        border-top: 1px solid var(--rule);
+      }
+      .index h2 {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        margin: 0 0 14px;
+        color: var(--ink-soft);
+      }
+      .index ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        column-count: 4;
+        column-gap: 24px;
+      }
+      .index li {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 13px;
+        padding: 4px 0;
+        border-bottom: 1px dotted var(--rule);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        break-inside: avoid;
+      }
+      .index li small {
+        color: var(--ink-soft);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+      }
+      footer {
+        max-width: 1180px;
+        margin: 64px auto 0;
+        padding: 16px 40px 32px;
+        border-top: 4px double var(--ink);
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 880px) {
+        .lede,
+        .specimens,
+        .key {
+          grid-template-columns: 1fr;
+        }
+        .index ul {
+          column-count: 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="title-block">
+        <div class="vol">Vol. XII · Plate 01</div>
+        <div class="name">A Field Guide to <em>Code Self Study</em></div>
+        <div class="right">Berkeley, CA · 2014–</div>
+      </div>
+    </header>
+    <nav class="bar">
+      <ul>
+        <li><a href="#">Plates</a></li>
+        <li><a href="#">Events</a></li>
+        <li><a href="#">Forum</a></li>
+        <li><a href="#">Learn</a></li>
+        <li><a href="#">Jobs</a></li>
+        <li><a href="#">Puzzles</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+
+    <main class="wrap">
+      <section class="lede">
+        <div>
+          <div class="meta">Genus · Community · No. 01</div>
+          <h1>The Bay Area <em>programmer.</em></h1>
+          <div class="sci">Programmator congregans var. <em>Berkeley</em></div>
+          <div class="body" style="margin-top: 18px">
+            <p>
+              Common throughout the Bay Area, particularly in Berkeley.
+              Gregarious; observed in groups of five or more on Saturday
+              mornings. Plumage varies — Python, JavaScript, Rust, Haskell,
+              Clojure, and several dozen lesser dialects have been documented in
+              the same flock.
+            </p>
+            <p>
+              The species is best identified by its habit of returning, week
+              after week, to the same study site, where it sits beside other
+              members of the flock and quietly works on whatever it is learning
+              that morning.
+            </p>
+          </div>
+          <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+            >Add to your sightings — meetup.com/codeselfstudy →</a
+          >
+        </div>
+        <div class="body">
+          <table
+            class="key table"
+            style="width: 100%; border-collapse: collapse"
+          >
+            <tr>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  color: var(--ink-soft);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.16em;
+                  text-transform: uppercase;
+                "
+              >
+                Range
+              </td>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 13px;
+                "
+              >
+                Berkeley · S.F. Bay Area
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  color: var(--ink-soft);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.16em;
+                  text-transform: uppercase;
+                "
+              >
+                Population
+              </td>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 13px;
+                "
+              >
+                5,247 (2026 census)
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  color: var(--ink-soft);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.16em;
+                  text-transform: uppercase;
+                "
+              >
+                Active since
+              </td>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 13px;
+                "
+              >
+                2014
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  color: var(--ink-soft);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.16em;
+                  text-transform: uppercase;
+                "
+              >
+                Best observed
+              </td>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 13px;
+                "
+              >
+                Saturdays, 9 am
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  color: var(--ink-soft);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.16em;
+                  text-transform: uppercase;
+                "
+              >
+                Habitat
+              </td>
+              <td
+                style="
+                  padding: 8px 0;
+                  border-bottom: 1px dotted var(--rule);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 13px;
+                "
+              >
+                A real room, in person
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 8px 0;
+                  color: var(--ink-soft);
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.16em;
+                  text-transform: uppercase;
+                "
+              >
+                Admission
+              </td>
+              <td
+                style="
+                  padding: 8px 0;
+                  font-family: &quot;IBM Plex Mono&quot;, monospace;
+                  font-size: 13px;
+                "
+              >
+                Free
+              </td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <section class="specimens">
+        <article class="spec">
+          <div class="plate a"><span class="lab">PL-01 · COMMUNITY</span></div>
+          <div class="ord">Order I · Communitas</div>
+          <h3>Show up. <em>Coetus</em></h3>
+          <p>
+            Programmers who keep showing up week after week. The hard part is
+            done — the room exists.
+          </p>
+        </article>
+        <article class="spec">
+          <div class="plate b"><span class="lab">PL-02 · MENTORSHIP</span></div>
+          <div class="ord">Order II · Mentorship</div>
+          <h3>Ask for a plan. <em>Auxilium</em></h3>
+          <p>
+            Experienced members help beginners — questions, study plans, code
+            reviews, stuck commits.
+          </p>
+        </article>
+        <article class="spec">
+          <div class="plate c"><span class="lab">PL-03 · NETWORKING</span></div>
+          <div class="ord">Order III · Networking</div>
+          <h3>Doors open. <em>Introitus</em></h3>
+          <p>
+            Members have landed jobs through introductions made inside the
+            group. Quietly, no pitch.
+          </p>
+        </article>
+      </section>
+
+      <section class="key">
+        <h2>Habitat note</h2>
+        <div class="body">
+          Dozens of groups will teach you to code. We build a local community of
+          <em>highly-motivated programmers</em> instead. The format is
+          self-study with mentorship — show up at a meetup, bring a question or
+          a project, get help from the regulars. No curriculum, no gatekeeping,
+          no bootcamp pitch.
+        </div>
+      </section>
+
+      <section class="index">
+        <h2>Index of dialects observed in the field</h2>
+        <ul>
+          <li><span>Python</span><small>weekly</small></li>
+          <li><span>JavaScript</span><small>weekly</small></li>
+          <li><span>TypeScript</span><small>weekly</small></li>
+          <li><span>Go</span><small>weekly</small></li>
+          <li><span>Rust</span><small>weekly</small></li>
+          <li><span>Haskell</span><small>often</small></li>
+          <li><span>Clojure</span><small>often</small></li>
+          <li><span>Elixir</span><small>often</small></li>
+          <li><span>Racket</span><small>often</small></li>
+          <li><span>Scheme</span><small>seen</small></li>
+          <li><span>Common Lisp</span><small>seen</small></li>
+          <li><span>Ruby</span><small>seen</small></li>
+          <li><span>Scala</span><small>seen</small></li>
+          <li><span>C++</span><small>seen</small></li>
+          <li><span>C</span><small>seen</small></li>
+          <li><span>Lua</span><small>seen</small></li>
+          <li><span>SQL</span><small>weekly</small></li>
+          <li><span>Erlang</span><small>seen</small></li>
+          <li><span>Elm</span><small>seen</small></li>
+          <li><span>Julia</span><small>seen</small></li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <span>Code Self Study Field Guide · Berkeley, Bay Area</span>
+      <span>Vol. XII · Plate 01 · Est. 2014</span>
+    </footer>
+  </body>
+</html>

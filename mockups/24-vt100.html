@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — VT100</title>
+    <style>
+      :root {
+        --bg: #050a05;
+        --fg: #b6f3b6;
+        --bright: #ddffdd;
+        --dim: #4f8a4f;
+        --shadow: rgba(120, 255, 120, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #000;
+        color: var(--fg);
+        font-family:
+          "VT323", "IBM Plex Mono", "JetBrains Mono", "Courier New",
+          ui-monospace, Menlo, monospace;
+        font-size: 19px;
+        line-height: 1.35;
+        min-height: 100vh;
+        padding: 24px 0 60px;
+      }
+      .crt {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 32px 40px;
+        background: radial-gradient(
+          ellipse at center,
+          #061e0a 0%,
+          #021004 70%,
+          #000 100%
+        );
+        border-radius: 16px / 38px;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+          inset 0 0 80px rgba(0, 0, 0, 0.85),
+          0 0 0 6px #1a1a1a,
+          0 0 0 12px #0a0a0a,
+          0 30px 60px rgba(0, 0, 0, 0.7);
+        text-shadow: 0 0 4px var(--shadow);
+        white-space: pre-wrap;
+      }
+      .crt::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0) 0 1px,
+          rgba(0, 0, 0, 0.22) 1px 3px
+        );
+        pointer-events: none;
+      }
+      .crt::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 0%,
+          rgba(255, 255, 255, 0.06),
+          transparent 60%
+        );
+        pointer-events: none;
+      }
+      a {
+        color: var(--bright);
+        text-decoration: underline;
+        text-decoration-color: var(--dim);
+      }
+      a:hover {
+        background: var(--bright);
+        color: var(--bg);
+        text-shadow: none;
+      }
+      .b {
+        color: var(--bright);
+      }
+      .d {
+        color: var(--dim);
+      }
+      .blink {
+        animation: blink 1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .cursor {
+        display: inline-block;
+        width: 0.55em;
+        background: var(--bright);
+        color: var(--bright);
+        animation: blink 1s steps(1) infinite;
+      }
+      hr {
+        border: 0;
+        border-top: 1px dashed var(--dim);
+        margin: 14px 0;
+      }
+      h1.sr {
+        position: absolute;
+        left: -9999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="crt">
+      <h1 class="sr">Code Self Study terminal</h1>
+      <span class="d">DEC VT100 ─ tty/css0 ─ 24x80 ─ login banner</span>
+
+      <span class="d">Trying 192.0.2.14...</span>
+      <span class="d">Connected to css.local. Escape character is '^]'.</span>
+
+      <span class="d"
+        >─────────────────────────────────────────────────────────────────────</span
+      >
+      <span class="b">code-self-study</span>
+      <span class="d">issue 5247 · est. 2014</span>
+      <span class="d"
+        >─────────────────────────────────────────────────────────────────────</span
+      >
+
+      <span class="d"> Berkeley, CA ─ unauthorized study is encouraged</span>
+      <span class="d">
+        All connections are logged in friendly memory only.</span
+      >
+
+      login: <span class="b">guest</span> password:
+      <span class="d">····················</span>
+
+      Last login: Sat Apr 18 09:00:01 on console You have
+      <span class="b">new mail.</span>
+
+      <span class="d"
+        >─[ message of the day
+        ]─────────────────────────────────────────────</span
+      >
+
+      <span class="b">Welcome.</span> Code Self Study is a friendly programming
+      community of <span class="b">5,247</span> members in Berkeley and the San
+      Francisco Bay Area. All languages, all levels of experience are welcome.
+      The format is self-study with mentorship. Show up at a meetup, bring a
+      question or a project, get help from the regulars. The experienced members
+      help the beginners. No curriculum, no gatekeeping, no bootcamp pitch. To
+      enlist:
+      <a href="https://www.meetup.com/codeselfstudy/">$ join --community</a>
+
+      <span class="d"
+        >────────────────────────────────────────────────────────────────────</span
+      >
+
+      guest@css:~$ <span class="b">cat /etc/css/about.txt</span>
+      <span class="b">community </span> show up; meet programmers who keep
+      showing up. <span class="b">mentorship </span> experienced members help
+      beginners — questions, study plans, project reviews.
+      <span class="b">networking </span> members have landed jobs through
+      introductions made inside the group. guest@css:~$
+      <span class="b">ls /var/log/events</span> total
+      <span class="b">11y</span> drwxr-xr-x meetup-saturday-9am.log -rw-r--r--
+      forum-threads.live -rw-r--r-- reading-group-crafting-interpreters.live
+      -rw-r--r-- puzzles-weekly.live -rw-r--r-- jobs-board.live guest@css:~$
+      <span class="b">finger languages</span>
+      <span class="b">Active dialects (rotating, partial list):</span>
+      <a href="#">python</a> <a href="#">javascript</a>
+      <a href="#">typescript</a> <a href="#">go</a> <a href="#">rust</a>
+      <a href="#">haskell</a> <a href="#">clojure</a> <a href="#">elixir</a>
+      <a href="#">racket</a> <a href="#">scheme</a> <a href="#">common-lisp</a>
+      <a href="#">elm</a> <a href="#">purescript</a> <a href="#">ruby</a>
+      <a href="#">scala</a> <a href="#">c</a> <a href="#">c++</a>
+      <a href="#">f#</a> <a href="#">lua</a> <a href="#">julia</a>
+      <a href="#">erlang</a> <a href="#">r</a> <a href="#">sql</a>
+      <a href="#">octave</a> ...
+      <span class="d">use `man &lt;name&gt;` for details</span>
+
+      guest@css:~$ <span class="b">whoami</span> someone who is about to enlist.
+      guest@css:~$ <span class="b">join --community</span> Confirm? [<span
+        class="b"
+        >Y</span
+      >/n] <span class="cursor">y</span>
+
+      <a href="https://www.meetup.com/codeselfstudy/"
+        >▶ Connecting to meetup.com/codeselfstudy ─ press RETURN to confirm</a
+      >
+
+      <hr />
+      <span class="d"
+        >tty/css0 · uptime 11y 87d · load 0.42 0.38 0.31 · signal: clear</span
+      >
+      guest@css:~$ <span class="cursor"> </span>
+    </div>
+  </body>
+</html>
