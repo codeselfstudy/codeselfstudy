@@ -29,3 +29,7 @@ db_push:
 # Introspect the database to generate schema files
 db_pull:
   bun run --bun drizzle-kit pull
+
+mockups:
+  @echo "\n\nServing mockups at http://localhost:5555\n\n"
+  cd mockups && python3 -m http.server 5555
