@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Brutalist (halftone)</title>
+    <style>
+      :root {
+        --paper: #ece9e1;
+        --ink: #1a1d2b;
+        --soft: #d6dae5;
+        --rule: #1a1d2b;
+        --indigo: #3a4a8c;
+        --rust: #b75a36;
+        --slate: #58607a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+      a {
+        color: inherit;
+      }
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 28px;
+        border-bottom: 2px solid var(--rule);
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .logo {
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        font-size: 14px;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 2px solid var(--rule);
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      nav a {
+        text-decoration: none;
+        padding: 4px 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: 2px solid transparent;
+      }
+      nav a:hover {
+        border-color: var(--rule);
+        background: var(--soft);
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 36px 28px 80px;
+      }
+      .panel {
+        border: 2px solid var(--rule);
+        background: var(--paper);
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+      .ht {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(
+          var(--indigo) 1.6px,
+          transparent 1.8px
+        );
+        background-size: 10px 10px;
+        opacity: 0.18;
+        pointer-events: none;
+        mask-image: linear-gradient(135deg, #000 0%, #000 30%, transparent 60%);
+        -webkit-mask-image: linear-gradient(
+          135deg,
+          #000 0%,
+          #000 30%,
+          transparent 60%
+        );
+      }
+      .ht.tr {
+        mask-image: linear-gradient(225deg, #000 0%, #000 30%, transparent 60%);
+        -webkit-mask-image: linear-gradient(
+          225deg,
+          #000 0%,
+          #000 30%,
+          transparent 60%
+        );
+      }
+      .ht.rust {
+        background-image: radial-gradient(var(--rust) 1.6px, transparent 1.8px);
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 24px;
+      }
+      .hero .main {
+        background: var(--soft);
+      }
+      .hero .main h1 {
+        font-size: clamp(40px, 6.4vw, 92px);
+        line-height: 0.95;
+        margin: 0 0 16px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        position: relative;
+        z-index: 1;
+      }
+      .hero .main h1 em {
+        font-style: normal;
+        color: var(--rust);
+      }
+      .hero .main p {
+        font-size: 17px;
+        max-width: 38ch;
+        margin: 0 0 22px;
+        position: relative;
+        z-index: 1;
+      }
+      .btn {
+        display: inline-block;
+        text-decoration: none;
+        background: var(--ink);
+        color: var(--paper);
+        padding: 12px 18px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 13px;
+        border: 2px solid var(--ink);
+        position: relative;
+        z-index: 1;
+      }
+      .btn:hover {
+        background: var(--rust);
+      }
+      .side h2 {
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--slate);
+        position: relative;
+        z-index: 1;
+      }
+      .side .stat {
+        font-size: 96px;
+        font-weight: 800;
+        line-height: 0.9;
+        margin: 4px 0 6px;
+        letter-spacing: -0.05em;
+        position: relative;
+        z-index: 1;
+      }
+      .side .stat span {
+        color: var(--rust);
+      }
+      .side ul {
+        list-style: none;
+        padding: 0;
+        margin: 18px 0 0;
+        border-top: 1px solid var(--rule);
+        position: relative;
+        z-index: 1;
+      }
+      .side li {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--rule);
+        font-size: 14px;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-top: 32px;
+      }
+      .features .panel {
+        padding: 22px;
+        min-height: 220px;
+      }
+      .features .bignum {
+        position: absolute;
+        right: -14px;
+        bottom: -38px;
+        font-size: 220px;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--rule);
+        opacity: 0.08;
+        pointer-events: none;
+        letter-spacing: -0.05em;
+      }
+      .features h3 {
+        margin: 0 0 6px;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        position: relative;
+        z-index: 1;
+      }
+      .features p {
+        margin: 0;
+        font-size: 15px;
+        position: relative;
+        z-index: 1;
+      }
+      .features .num {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        color: var(--indigo);
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+        text-transform: uppercase;
+      }
+      .features .panel:nth-child(2) .num {
+        color: var(--rust);
+      }
+      .features .panel:nth-child(3) .num {
+        color: var(--slate);
+      }
+      .big {
+        margin-top: 32px;
+        padding: 32px;
+      }
+      .big h2 {
+        font-size: clamp(26px, 3.5vw, 44px);
+        margin: 0 0 12px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        position: relative;
+        z-index: 1;
+      }
+      .big p {
+        position: relative;
+        z-index: 1;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 18px;
+        position: relative;
+        z-index: 1;
+      }
+      .tag {
+        border: 1.5px solid var(--rule);
+        padding: 3px 8px;
+        font-size: 13px;
+        letter-spacing: 0.02em;
+        background: var(--paper);
+      }
+      .tag.a {
+        background: var(--indigo);
+        color: var(--paper);
+      }
+      .tag.b {
+        background: var(--rust);
+        color: var(--paper);
+      }
+      .tag.c {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      footer {
+        padding: 22px 28px;
+        border-top: 2px solid var(--rule);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 820px) {
+        .hero,
+        .features {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">Code · Self · Study</div>
+      <ul>
+        <li><a href="#">Events</a></li>
+        <li><a href="#">Learn</a></li>
+        <li><a href="#">Forum</a></li>
+        <li><a href="#">Jobs</a></li>
+        <li><a href="#">Puzzles</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+    <div class="wrap">
+      <section class="hero">
+        <div class="panel main">
+          <span class="ht"></span>
+          <h1>Study code. <em>Together.</em><br />In person.</h1>
+          <p>
+            A friendly programming community of 5,000+ people in Berkeley and
+            the San Francisco Bay Area. All languages, all levels welcome.
+          </p>
+          <a class="btn" href="https://www.meetup.com/codeselfstudy/"
+            >Join the community</a
+          >
+        </div>
+        <div class="panel side">
+          <span class="ht tr rust"></span>
+          <h2>Since 2014</h2>
+          <div class="stat">5<span>,</span>000<span>+</span></div>
+          <p style="margin: 0; font-size: 14px; color: var(--slate)">
+            programmers, all levels, all languages
+          </p>
+          <ul>
+            <li><span>Weekly meetup</span><b>Sat 9am</b></li>
+            <li><span>Location</span><b>Berkeley</b></li>
+            <li><span>Format</span><b>Self-study + mentorship</b></li>
+            <li><span>Cover</span><b>Free</b></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="features">
+        <div class="panel">
+          <span class="ht"></span>
+          <span class="bignum">01</span>
+          <div class="num">Community</div>
+          <h3>Show up. Meet people.</h3>
+          <p>
+            Programmers who keep showing up week after week. The hard part is
+            done: the room exists.
+          </p>
+        </div>
+        <div class="panel">
+          <span class="ht rust"></span>
+          <span class="bignum">02</span>
+          <div class="num">Mentorship</div>
+          <h3>Ask for a plan.</h3>
+          <p>
+            Experienced members help beginners. Bring a question, a project, or
+            a stuck commit.
+          </p>
+        </div>
+        <div class="panel">
+          <span class="ht"></span>
+          <span class="bignum">03</span>
+          <div class="num">Networking</div>
+          <h3>Doors open quietly.</h3>
+          <p>
+            Members have landed jobs through introductions made inside the
+            group. No pitch, just people.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel big">
+        <span class="ht tr"></span>
+        <h2>All languages. All levels.</h2>
+        <p style="max-width: 65ch">
+          Dozens of groups will teach you to code. We build a local community of
+          friendly, highly-motivated programmers instead. The format is
+          self-study with mentorship.
+        </p>
+        <div class="tags">
+          <span class="tag a">Python</span><span class="tag">JavaScript</span
+          ><span class="tag b">TypeScript</span><span class="tag">Go</span
+          ><span class="tag c">Rust</span><span class="tag">Haskell</span
+          ><span class="tag">Clojure</span><span class="tag a">Elixir</span
+          ><span class="tag">Racket</span><span class="tag">Ruby</span
+          ><span class="tag b">Scala</span><span class="tag">C++</span
+          ><span class="tag">Lua</span><span class="tag c">SQL</span
+          ><span class="tag">+ more</span>
+        </div>
+      </section>
+    </div>
+    <footer>
+      <span>Code Self Study — Berkeley, CA</span>
+      <span>Est. 2014</span>
+    </footer>
+  </body>
+</html>

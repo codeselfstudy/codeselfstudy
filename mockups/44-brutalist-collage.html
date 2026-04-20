@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — Brutalist (collage)</title>
+    <style>
+      :root {
+        --paper: #d8c8a8;
+        --card: #f0e9da;
+        --ink: #221a12;
+        --rule: #221a12;
+        --tape: #ece2c8;
+        --terra: #a0492a;
+        --denim: #3a5a78;
+        --slate: #5e544a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--paper);
+        background-image:
+          radial-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px),
+          radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+        background-size:
+          5px 5px,
+          11px 11px;
+        background-position:
+          0 0,
+          2px 3px;
+        color: var(--ink);
+        font-family:
+          "Inter", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+      a {
+        color: inherit;
+      }
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 28px;
+        border-bottom: 2px solid var(--rule);
+        flex-wrap: wrap;
+        gap: 12px;
+        background: var(--card);
+      }
+      .logo {
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        font-size: 14px;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 2px solid var(--rule);
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+      }
+      nav a {
+        text-decoration: none;
+        padding: 4px 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: 2px solid transparent;
+      }
+      nav a:hover {
+        border-color: var(--rule);
+        background: var(--tape);
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 56px 28px 96px;
+      }
+      .panel {
+        border: 2px solid var(--rule);
+        background: var(--card);
+        padding: 28px 28px 32px;
+        position: relative;
+        box-shadow: 4px 4px 0 rgba(34, 26, 18, 0.25);
+      }
+      .tape {
+        position: absolute;
+        background: var(--tape);
+        border: 1px solid rgba(34, 26, 18, 0.18);
+        width: 110px;
+        height: 22px;
+        opacity: 0.85;
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.2),
+          inset 0 0 12px rgba(0, 0, 0, 0.04);
+      }
+      .tape.tl {
+        top: -10px;
+        left: 24px;
+        transform: rotate(-6deg);
+      }
+      .tape.tr {
+        top: -10px;
+        right: 24px;
+        transform: rotate(7deg);
+        background: #e6dabe;
+      }
+      .tape.bl {
+        bottom: -10px;
+        left: 32px;
+        transform: rotate(5deg);
+      }
+      .tape.br {
+        bottom: -10px;
+        right: 32px;
+        transform: rotate(-5deg);
+        background: #e6dabe;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.55fr 1fr;
+        gap: 32px;
+      }
+      .hero .main h1 {
+        font-size: clamp(36px, 5.6vw, 78px);
+        line-height: 0.98;
+        margin: 0 0 16px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .hero .main h1 em {
+        font-style: italic;
+        color: var(--terra);
+      }
+      .hero .main p {
+        font-size: 17px;
+        max-width: 38ch;
+        margin: 0 0 22px;
+      }
+      .btn {
+        display: inline-block;
+        text-decoration: none;
+        background: var(--ink);
+        color: var(--card);
+        padding: 12px 18px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 13px;
+        border: 2px solid var(--ink);
+      }
+      .btn:hover {
+        background: var(--terra);
+      }
+      .label {
+        position: absolute;
+        background: var(--ink);
+        color: var(--card);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        font-weight: 700;
+      }
+      .label.tl {
+        top: 14px;
+        left: -10px;
+        transform: rotate(-3deg);
+      }
+      .label.terra {
+        background: var(--terra);
+      }
+      .label.denim {
+        background: var(--denim);
+      }
+      .side {
+        transform: rotate(0.8deg);
+      }
+      .side h2 {
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--slate);
+      }
+      .side .stat {
+        font-size: 84px;
+        font-weight: 800;
+        line-height: 0.95;
+        margin: 4px 0 6px;
+        letter-spacing: -0.04em;
+      }
+      .side .stat span {
+        color: var(--terra);
+      }
+      .side ul {
+        list-style: none;
+        padding: 0;
+        margin: 18px 0 0;
+        border-top: 1px solid var(--rule);
+      }
+      .side li {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--rule);
+        font-size: 14px;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+        margin-top: 56px;
+      }
+      .features .panel {
+        padding: 24px;
+      }
+      .features .panel:nth-child(1) {
+        transform: rotate(-1.2deg);
+      }
+      .features .panel:nth-child(2) {
+        transform: rotate(0.6deg) translateY(8px);
+      }
+      .features .panel:nth-child(3) {
+        transform: rotate(-0.4deg);
+      }
+      .features h3 {
+        margin: 6px 0 6px;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+      .features p {
+        margin: 0;
+        font-size: 15px;
+      }
+      .big {
+        margin-top: 56px;
+        padding: 32px;
+        transform: rotate(-0.3deg);
+      }
+      .big h2 {
+        font-size: clamp(26px, 3.5vw, 44px);
+        margin: 0 0 12px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+      .tag {
+        border: 1.5px solid var(--rule);
+        padding: 4px 10px;
+        font-size: 13px;
+        letter-spacing: 0.02em;
+        background: var(--card);
+        box-shadow: 2px 2px 0 rgba(34, 26, 18, 0.2);
+      }
+      .tag.a {
+        background: var(--terra);
+        color: var(--card);
+      }
+      .tag.b {
+        background: var(--denim);
+        color: var(--card);
+      }
+      .tag.c {
+        background: var(--ink);
+        color: var(--card);
+      }
+      footer {
+        padding: 22px 28px;
+        border-top: 2px solid var(--rule);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        background: var(--card);
+      }
+      @media (max-width: 820px) {
+        .hero,
+        .features {
+          grid-template-columns: 1fr;
+        }
+        .features .panel {
+          transform: none;
+        }
+        .side {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">Code · Self · Study</div>
+      <ul>
+        <li><a href="#">Events</a></li>
+        <li><a href="#">Learn</a></li>
+        <li><a href="#">Forum</a></li>
+        <li><a href="#">Jobs</a></li>
+        <li><a href="#">Puzzles</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+    <div class="wrap">
+      <section class="hero">
+        <div class="panel main">
+          <span class="tape tl"></span>
+          <span class="tape tr"></span>
+          <span class="label tl">Berkeley · 2014→</span>
+          <h1>Study code. <em>Together.</em><br />In person.</h1>
+          <p>
+            A friendly programming community of 5,000+ people in Berkeley and
+            the San Francisco Bay Area. All languages, all levels welcome.
+          </p>
+          <a class="btn" href="https://www.meetup.com/codeselfstudy/"
+            >Join the community</a
+          >
+        </div>
+        <div class="panel side">
+          <span class="tape tl"></span>
+          <span class="tape br"></span>
+          <span class="label tl terra">Members</span>
+          <h2>Since 2014</h2>
+          <div class="stat">5<span>,</span>000<span>+</span></div>
+          <p style="margin: 0; font-size: 14px; color: var(--slate)">
+            programmers, all levels, all languages
+          </p>
+          <ul>
+            <li><span>Weekly meetup</span><b>Sat 9am</b></li>
+            <li><span>Location</span><b>Berkeley</b></li>
+            <li><span>Format</span><b>Self-study + mentorship</b></li>
+            <li><span>Cover</span><b>Free</b></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="features">
+        <div class="panel">
+          <span class="tape tl"></span>
+          <span class="label tl">01 · Community</span>
+          <h3>Show up. Meet people.</h3>
+          <p>
+            Programmers who keep showing up week after week. The hard part is
+            done: the room exists.
+          </p>
+        </div>
+        <div class="panel">
+          <span class="tape tr"></span>
+          <span class="label tl terra">02 · Mentorship</span>
+          <h3>Ask for a plan.</h3>
+          <p>
+            Experienced members help beginners. Bring a question, a project, or
+            a stuck commit.
+          </p>
+        </div>
+        <div class="panel">
+          <span class="tape tl"></span>
+          <span class="label tl denim">03 · Networking</span>
+          <h3>Doors open quietly.</h3>
+          <p>
+            Members have landed jobs through introductions made inside the
+            group. No pitch, just people.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel big">
+        <span class="tape tl"></span>
+        <span class="tape tr"></span>
+        <span class="tape bl"></span>
+        <span class="tape br"></span>
+        <h2>All languages. All levels.</h2>
+        <p style="max-width: 65ch">
+          Dozens of groups will teach you to code. We build a local community of
+          friendly, highly-motivated programmers instead. The format is
+          self-study with mentorship.
+        </p>
+        <div class="tags">
+          <span class="tag a">Python</span><span class="tag">JavaScript</span
+          ><span class="tag b">TypeScript</span><span class="tag">Go</span
+          ><span class="tag c">Rust</span><span class="tag">Haskell</span
+          ><span class="tag">Clojure</span><span class="tag a">Elixir</span
+          ><span class="tag">Racket</span><span class="tag">Ruby</span
+          ><span class="tag b">Scala</span><span class="tag">C++</span
+          ><span class="tag">Lua</span><span class="tag c">SQL</span
+          ><span class="tag">+ more</span>
+        </div>
+      </section>
+    </div>
+    <footer>
+      <span>Code Self Study — Berkeley, CA</span>
+      <span>Est. 2014</span>
+    </footer>
+  </body>
+</html>
