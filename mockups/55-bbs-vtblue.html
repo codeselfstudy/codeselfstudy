@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — BBS · VT blue</title>
+    <style>
+      :root {
+        --bg: #000814;
+        --fg: #7fc9ff;
+        --fg-dim: #3a6a94;
+        --accent: #ffffff;
+        --warn: #ff8a6a;
+        --ok: #9cffd1;
+        --glow-fg: rgba(127, 201, 255, 0.45);
+        --glow-ok: rgba(156, 255, 209, 0.5);
+        --glow-accent: rgba(255, 255, 255, 0.55);
+        --scanline: rgba(0, 0, 0, 0.25);
+        --vignette: rgba(127, 201, 255, 0.06);
+      }
+      [data-theme="light"] {
+        --bg: #eaf0f6;
+        --fg: #0a2238;
+        --fg-dim: #4a6680;
+        --accent: #1a3a5a;
+        --warn: #8a1a2a;
+        --ok: #1a5a4a;
+        --glow-fg: rgba(10, 34, 56, 0.15);
+        --glow-ok: rgba(26, 90, 74, 0.2);
+        --glow-accent: rgba(26, 58, 90, 0.2);
+        --scanline: rgba(0, 0, 0, 0.06);
+        --vignette: rgba(10, 34, 56, 0.04);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          "VT323", "Perfect DOS VGA 437", "Courier New", ui-monospace, monospace;
+        font-size: 18px;
+        line-height: 1.4;
+        min-height: 100vh;
+        background-image:
+          linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 2px,
+            var(--scanline) 2px,
+            var(--scanline) 3px
+          ),
+          radial-gradient(
+            ellipse at center,
+            var(--vignette) 0%,
+            transparent 70%
+          );
+        background-size:
+          100% 3px,
+          100% 100%;
+        text-shadow: 0 0 4px var(--glow-fg);
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      .screen {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        border: 2px solid var(--fg);
+        padding: 14px 10px;
+        margin-bottom: 16px;
+        overflow-x: auto;
+      }
+      .logo {
+        white-space: pre;
+        font-size: 10px;
+        line-height: 1.1;
+        color: var(--fg);
+        margin: 0;
+      }
+      .menubar {
+        border: 2px solid var(--fg);
+        background: var(--fg);
+        color: var(--bg);
+        padding: 4px 10px;
+        margin-bottom: 16px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        text-shadow: none;
+        font-size: 16px;
+      }
+      .menubar span {
+        white-space: nowrap;
+      }
+      .menubar span {
+        font-weight: 700;
+      }
+      .menubar .k {
+        color: var(--warn);
+      }
+      .menubar .toggle {
+        margin-left: auto;
+        cursor: pointer;
+        user-select: none;
+        border: 1px solid var(--bg);
+        padding: 0 8px;
+      }
+      .menubar .toggle:hover {
+        background: var(--bg);
+        color: var(--fg);
+      }
+      .welcome {
+        border: 2px solid var(--fg);
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-family: inherit;
+        font-size: 48px;
+        letter-spacing: 4px;
+        margin: 4px 0 12px;
+        color: var(--ok);
+        text-shadow: 0 0 8px var(--glow-ok);
+      }
+      .blink {
+        animation: blink 1s steps(1) infinite;
+        color: var(--accent);
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .cta {
+        display: inline-block;
+        border: 2px solid var(--accent);
+        color: var(--accent);
+        padding: 6px 14px;
+        margin-top: 12px;
+        text-shadow: 0 0 4px var(--glow-accent);
+      }
+      .cta:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      .sep {
+        color: var(--fg-dim);
+        letter-spacing: -1px;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .box {
+        border: 2px solid var(--fg);
+        padding: 12px;
+      }
+      .box h3 {
+        margin: 0 0 6px;
+        color: var(--ok);
+        font-size: 22px;
+      }
+      .box p {
+        margin: 0;
+        color: var(--fg);
+      }
+      .log {
+        border: 2px solid var(--fg);
+        padding: 14px;
+        margin-bottom: 16px;
+      }
+      .log h2 {
+        color: var(--accent);
+        margin: 0 0 8px;
+        font-size: 24px;
+        letter-spacing: 2px;
+      }
+      .log ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .log li {
+        padding: 2px 0;
+      }
+      .log li::before {
+        content: "> ";
+        color: var(--ok);
+      }
+      .langs {
+        border: 2px solid var(--fg);
+        padding: 14px;
+      }
+      .langs h2 {
+        color: var(--accent);
+        margin: 0 0 8px;
+        font-size: 24px;
+        letter-spacing: 2px;
+      }
+      .lang-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 2px 14px;
+      }
+      .status {
+        margin-top: 12px;
+        color: var(--fg-dim);
+        font-size: 14px;
+        border-top: 1px solid var(--fg-dim);
+        padding-top: 6px;
+      }
+      @media (max-width: 700px) {
+        .cols {
+          grid-template-columns: 1fr;
+        }
+        .logo {
+          font-size: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <div class="header">
+        <pre class="logo">
+ ██████╗ ██████╗ ██████╗ ███████╗  ███████╗███████╗██╗     ███████╗  ███████╗████████╗██╗   ██╗██████╗ ██╗   ██╗
+██╔════╝██╔═══██╗██╔══██╗██╔════╝  ██╔════╝██╔════╝██║     ██╔════╝  ██╔════╝╚══██╔══╝██║   ██║██╔══██╗╚██╗ ██╔╝
+██║     ██║   ██║██║  ██║█████╗    ███████╗█████╗  ██║     █████╗    ███████╗   ██║   ██║   ██║██║  ██║ ╚████╔╝
+██║     ██║   ██║██║  ██║██╔══╝    ╚════██║██╔══╝  ██║     ██╔══╝    ╚════██║   ██║   ██║   ██║██║  ██║  ╚██╔╝
+╚██████╗╚██████╔╝██████╔╝███████╗  ███████║███████╗███████╗██║       ███████║   ██║   ╚██████╔╝██████╔╝   ██║
+ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝  ╚══════╝╚══════╝╚══════╝╚═╝       ╚══════╝   ╚═╝    ╚═════╝ ╚═════╝    ╚═╝</pre
+        >
+      </div>
+
+      <div class="menubar">
+        <span><span class="k">[H]</span>OME</span>
+        <span><span class="k">[E]</span>VENTS</span>
+        <span><span class="k">[L]</span>EARN</span>
+        <span><span class="k">[F]</span>ORUM</span>
+        <span><span class="k">[J]</span>OBS</span>
+        <span><span class="k">[P]</span>UZZLES</span>
+        <span><span class="k">[T]</span>OOLS</span>
+        <span><span class="k">[A]</span>BOUT</span>
+        <span
+          class="toggle"
+          id="theme-toggle"
+          role="button"
+          tabindex="0"
+          aria-label="Toggle light and dark mode"
+          >◐ <span id="theme-label">DARK</span></span
+        >
+      </div>
+
+      <div class="welcome">
+        <div class="sep">
+          ═══════════════════════════════════════════════════════════
+        </div>
+        <h1>WELCOME, USER</h1>
+        <div class="sep">
+          ═══════════════════════════════════════════════════════════
+        </div>
+        <p>
+          YOU HAVE CONNECTED TO
+          <strong style="color: var(--ok)">CODE SELF STUDY</strong> &mdash; A
+          FRIENDLY PROGRAMMING COMMUNITY OF 5,000+ MEMBERS IN BERKELEY AND THE
+          SAN FRANCISCO BAY AREA.
+        </p>
+        <p>
+          ALL LANGUAGES, ALL LEVELS, ALL WELCOME.
+          <span class="blink">█</span>
+        </p>
+        <a class="cta" href="https://www.meetup.com/codeselfstudy/"
+          >[ PRESS RETURN TO JOIN ]</a
+        >
+      </div>
+
+      <div class="cols">
+        <div class="box">
+          <h3>COMMUNITY</h3>
+          <p>
+            Connect to the meetup &mdash; meet 5,000+ programmers who actually
+            keep showing up.
+          </p>
+        </div>
+        <div class="box">
+          <h3>MENTORSHIP</h3>
+          <p>
+            SYSOP-approved mentorship. Ask for a study plan. Beginners welcome.
+          </p>
+        </div>
+        <div class="box">
+          <h3>NETWORKING</h3>
+          <p>
+            Members have landed jobs via intros in the forum and at meetups.
+          </p>
+        </div>
+      </div>
+
+      <div class="log">
+        <h2>▓▓▓ BULLETIN ▓▓▓</h2>
+        <ul>
+          <li>
+            DOZENS OF MEETUPS TEACH YOU TO CODE. WE BUILD A LOCAL COMMUNITY.
+          </li>
+          <li>OPEN TO EVERY LANGUAGE. EVERY LEVEL. EVERY KIND OF PROJECT.</li>
+          <li>
+            FORMAT IS SELF-STUDY WITH ADVICE FROM MORE EXPERIENCED MEMBERS.
+          </li>
+          <li>
+            COMES AS A BOOTCAMP SUPPLEMENT OR ALTERNATIVE &mdash; ASK IN FORUM.
+          </li>
+        </ul>
+      </div>
+
+      <div class="langs">
+        <h2>▓▓▓ SUPPORTED DIALECTS ▓▓▓</h2>
+        <div class="lang-grid">
+          <span>» PYTHON</span><span>» JS</span><span>» TYPESCRIPT</span
+          ><span>» GO</span><span>» RUST</span><span>» HASKELL</span
+          ><span>» CLOJURE</span><span>» ELIXIR</span><span>» RACKET</span
+          ><span>» SCHEME</span><span>» C</span><span>» C++</span
+          ><span>» RUBY</span><span>» SCALA</span><span>» ERLANG</span
+          ><span>» ELM</span><span>» LUA</span><span>» SQL</span
+          ><span>» JULIA</span><span>» R</span><span>» +MORE</span>
+        </div>
+        <div class="status">
+          <span class="sep">───</span> CARRIER: 2400 BAUD · ANSI ON · LOCAL ECHO
+          ON · PRESS ? FOR HELP <span class="sep">───</span>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var label = document.getElementById("theme-label");
+        var toggle = document.getElementById("theme-toggle");
+        var KEY = "bbs-theme";
+        function apply(theme) {
+          if (theme === "light") {
+            root.setAttribute("data-theme", "light");
+            label.textContent = "LIGHT";
+          } else {
+            root.removeAttribute("data-theme");
+            label.textContent = "DARK";
+          }
+        }
+        apply(localStorage.getItem(KEY) || "dark");
+        function flip() {
+          var next =
+            root.getAttribute("data-theme") === "light" ? "dark" : "light";
+          apply(next);
+          localStorage.setItem(KEY, next);
+        }
+        toggle.addEventListener("click", flip);
+        toggle.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            flip();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
