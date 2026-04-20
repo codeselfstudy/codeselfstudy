@@ -1,4 +1,18 @@
 fly.toml
+mockups/
+.claude/
+.gemini/
+.output/
+.tanstack/
+manual/
+tmp/
+AGENTS.md
+CLAUDE.md
+CONTRIBUTING.md
+justfile
+README.md
+dev.db
+scripts/
 
 **/*.db
 **/TANK
@@ -76,5 +90,4 @@ priv/static
 **/.vinxi
 **/todos.json
 
-manual/
 .git
