@@ -250,6 +250,21 @@
     text-shadow: 0 0 6px var(--term-glow);
   }
 
+  /* Home page grid — welcome + forum span full width; languages + stats
+     sit side by side in the third row. Mockup 68. */
+  .terminal-home-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0;
+    flex: 1;
+  }
+
+  @media (width <= 820px) {
+    .terminal-home-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   /* The patterns are from https://www.heropatterns.com/ */
   .bg-bevel-circle {
     background-color: var(--background);
