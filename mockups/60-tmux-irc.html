@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — tmux · weechat</title>
+    <style>
+      :root {
+        --bg: #050805;
+        --pane: #0a0f0a;
+        --pane-2: #0d130d;
+        --fg: #b8f5b8;
+        --fg-dim: #4a7a4a;
+        --fg-mute: #2a4a2a;
+        --border: #2a5a2a;
+        --accent: #c4ff5e;
+        --magenta: #ff7ac6;
+        --cyan: #66ddff;
+        --yellow: #ffe066;
+        --orange: #ffb86b;
+        --red: #ff7a7a;
+        --green: #6ce46c;
+        --blue: #82b0ff;
+        --status-bg: #1f4a1f;
+        --status-fg: #050805;
+        --bar-bg: #1f4a1f;
+        --bar-fg: #c4ff5e;
+        --dot-red: #ff5f56;
+        --dot-yellow: #ffbd2e;
+        --dot-green: #27c93f;
+        --glow: rgba(184, 245, 184, 0.16);
+        --scanline: rgba(0, 0, 0, 0.18);
+      }
+      [data-theme="light"] {
+        --bg: #d8d2c0;
+        --pane: #efe9d6;
+        --pane-2: #e6dfca;
+        --fg: #1a1a14;
+        --fg-dim: #6a6860;
+        --fg-mute: #a8a294;
+        --border: #807a6a;
+        --accent: #1a4a8a;
+        --magenta: #8a1a5a;
+        --cyan: #1a6a8a;
+        --yellow: #6a5a00;
+        --orange: #8a4a14;
+        --red: #8a1a2a;
+        --green: #1a5a2a;
+        --blue: #1a3a8a;
+        --status-bg: #1a1a14;
+        --status-fg: #efe9d6;
+        --bar-bg: #1a1a14;
+        --bar-fg: #efe9d6;
+        --dot-red: #b8513f;
+        --dot-yellow: #b88a1f;
+        --dot-green: #2a8a35;
+        --glow: rgba(26, 26, 20, 0);
+        --scanline: rgba(0, 0, 0, 0.04);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          "JetBrains Mono", "IBM Plex Mono", "Iosevka", "Fira Code",
+          ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        min-height: 100vh;
+        padding: 24px;
+        background-image: repeating-linear-gradient(
+          0deg,
+          transparent 0 2px,
+          var(--scanline) 2px 3px
+        );
+        text-shadow: 0 0 6px var(--glow);
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .term {
+        max-width: 1180px;
+        margin: 0 auto;
+        background: var(--pane);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.3),
+          0 18px 60px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+      }
+      .titlebar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: linear-gradient(180deg, var(--pane-2) 0%, var(--pane) 100%);
+        border-bottom: 1px solid var(--border);
+        padding: 8px 12px;
+      }
+      .dots {
+        display: flex;
+        gap: 7px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--dot-red);
+      }
+      .dot.y {
+        background: var(--dot-yellow);
+      }
+      .dot.g {
+        background: var(--dot-green);
+      }
+      .ttitle {
+        flex: 1;
+        text-align: center;
+        color: var(--fg-dim);
+        font-size: 12px;
+      }
+      .ttitle b {
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .toggle {
+        cursor: pointer;
+        user-select: none;
+        color: var(--fg-dim);
+        font-size: 12px;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+      }
+      .toggle:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .titletop {
+        background: var(--bar-bg);
+        color: var(--bar-fg);
+        padding: 3px 12px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 14px;
+      }
+      .titletop .info {
+        margin-left: auto;
+        opacity: 0.85;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 200px 1fr 200px;
+        min-height: 540px;
+      }
+      .col {
+        border-right: 1px solid var(--border);
+        background: var(--pane);
+        overflow: hidden;
+      }
+      .col.last {
+        border-right: none;
+      }
+      .col h4 {
+        margin: 0;
+        padding: 6px 10px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--fg-dim);
+        font-weight: 500;
+        background: var(--pane-2);
+        border-bottom: 1px dashed var(--border);
+      }
+
+      .buflist ul,
+      .nicks ul {
+        list-style: none;
+        padding: 4px 0;
+        margin: 0;
+        font-size: 13px;
+      }
+      .buflist li,
+      .nicks li {
+        padding: 1px 12px;
+        cursor: pointer;
+      }
+      .buflist li:hover,
+      .nicks li:hover {
+        background: var(--pane-2);
+      }
+      .buflist li.cur {
+        background: var(--accent);
+        color: var(--pane);
+      }
+      .buflist li.cur .num,
+      .buflist li.cur .nm {
+        color: var(--pane);
+      }
+      .buflist li .num {
+        color: var(--fg-mute);
+        margin-right: 4px;
+      }
+      .buflist li .nm {
+        color: var(--fg);
+      }
+      .buflist .net {
+        color: var(--magenta);
+        padding: 6px 10px 2px;
+        font-size: 12px;
+      }
+      .buflist .badge {
+        float: right;
+        background: var(--red);
+        color: var(--pane);
+        font-size: 11px;
+        padding: 0 5px;
+        border-radius: 8px;
+      }
+      .buflist .badge.hl {
+        background: var(--accent);
+      }
+
+      .chat {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .topic {
+        padding: 4px 12px;
+        background: var(--bar-bg);
+        color: var(--bar-fg);
+        font-size: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .topic b {
+        color: var(--yellow);
+      }
+      .log {
+        flex: 1;
+        padding: 6px 12px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .msg {
+        display: grid;
+        grid-template-columns: 60px 110px 1fr;
+        gap: 8px;
+        padding: 1px 0;
+      }
+      .msg .t {
+        color: var(--fg-mute);
+        font-size: 12px;
+      }
+      .msg .who {
+        text-align: right;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .msg .body {
+        color: var(--fg);
+        word-break: break-word;
+      }
+      .nick-1 {
+        color: var(--cyan);
+      }
+      .nick-2 {
+        color: var(--magenta);
+      }
+      .nick-3 {
+        color: var(--yellow);
+      }
+      .nick-4 {
+        color: var(--orange);
+      }
+      .nick-5 {
+        color: var(--green);
+      }
+      .nick-6 {
+        color: var(--blue);
+      }
+      .msg.sys .who {
+        color: var(--fg-mute);
+      }
+      .msg.sys .body {
+        color: var(--fg-dim);
+        font-style: italic;
+      }
+      .msg.bot .who {
+        color: var(--accent);
+      }
+      .msg.bot .body {
+        color: var(--fg);
+      }
+      .msg.bot .body b {
+        color: var(--accent);
+      }
+      .msg.act .who::before {
+        content: "* ";
+      }
+      .msg.act .who,
+      .msg.act .body {
+        color: var(--magenta);
+      }
+      .msg.hl {
+        background: rgba(196, 255, 94, 0.06);
+      }
+      .msg.hl .body {
+        color: var(--accent);
+      }
+      a.url {
+        color: var(--cyan);
+        text-decoration: underline;
+      }
+      .pill {
+        background: var(--accent);
+        color: var(--pane);
+        padding: 0 4px;
+      }
+
+      .statusbar {
+        display: flex;
+        gap: 14px;
+        background: var(--bar-bg);
+        color: var(--bar-fg);
+        font-size: 12px;
+        padding: 3px 12px;
+        border-top: 1px solid var(--border);
+      }
+      .statusbar .right {
+        margin-left: auto;
+        opacity: 0.85;
+      }
+      .input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px;
+        font-size: 13px;
+        background: var(--pane);
+      }
+      .input .nick {
+        color: var(--accent);
+      }
+      .input .pmt {
+        color: var(--fg-dim);
+      }
+      .input .typed {
+        flex: 1;
+        color: var(--fg);
+      }
+      .input .cur {
+        display: inline-block;
+        width: 8px;
+        height: 14px;
+        background: var(--accent);
+        vertical-align: -2px;
+        margin-left: 2px;
+        animation: blink 1.1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .nicks li::before {
+        margin-right: 4px;
+        color: var(--fg-mute);
+      }
+      .nicks li.op::before {
+        content: "@";
+        color: var(--accent);
+      }
+      .nicks li.voice::before {
+        content: "+";
+        color: var(--cyan);
+      }
+      .nicks li.away {
+        color: var(--fg-mute);
+      }
+      .nicks li.away::before {
+        content: "·";
+      }
+      .nicks .count {
+        font-size: 11px;
+        color: var(--fg-dim);
+        padding: 2px 12px;
+      }
+
+      .tmux {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 4px 12px;
+        background: var(--status-bg);
+        color: var(--status-fg);
+        font-size: 12px;
+      }
+      .tmux .session {
+        background: var(--accent);
+        color: var(--pane);
+        padding: 0 6px;
+        font-weight: 600;
+      }
+      .tmux .win {
+        opacity: 0.7;
+      }
+      .tmux .win.active {
+        opacity: 1;
+        text-decoration: underline;
+      }
+      .tmux .right {
+        margin-left: auto;
+        opacity: 0.85;
+      }
+      .btn {
+        display: inline-block;
+        padding: 1px 8px;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+      }
+      .btn:hover {
+        background: var(--accent);
+        color: var(--pane);
+      }
+
+      @media (max-width: 860px) {
+        body {
+          padding: 8px;
+        }
+        .grid {
+          grid-template-columns: 160px 1fr;
+        }
+        .col.last {
+          display: none;
+        }
+      }
+      @media (max-width: 600px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .col.first {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="term">
+      <div class="titlebar">
+        <div class="dots">
+          <span class="dot"></span><span class="dot y"></span
+          ><span class="dot g"></span>
+        </div>
+        <div class="ttitle">
+          <b>codeselfstudy</b>@neo: ~/community — tmux: weechat · 1180×640
+        </div>
+        <span
+          class="toggle"
+          id="theme-toggle"
+          role="button"
+          tabindex="0"
+          aria-label="Toggle light and dark mode"
+          >◐ <span id="theme-label">dark</span></span
+        >
+      </div>
+
+      <div class="titletop">
+        <span>weechat 4.4.0</span>
+        <span>11 buffers</span>
+        <span class="info">codeselfstudy.chat · TLS · since 2014-04-09</span>
+      </div>
+
+      <div class="grid">
+        <aside class="col first buflist">
+          <h4>buffers</h4>
+          <div class="net">codeselfstudy</div>
+          <ul>
+            <li class="cur">
+              <span class="num">1.</span><span class="nm">#welcome</span>
+            </li>
+            <li>
+              <span class="num">2.</span><span class="nm">#beginners</span>
+              <span class="badge hl">3</span>
+            </li>
+            <li>
+              <span class="num">3.</span><span class="nm">#python</span>
+              <span class="badge">12</span>
+            </li>
+            <li>
+              <span class="num">4.</span><span class="nm">#javascript</span>
+            </li>
+            <li>
+              <span class="num">5.</span><span class="nm">#rust</span>
+              <span class="badge">2</span>
+            </li>
+            <li><span class="num">6.</span><span class="nm">#haskell</span></li>
+            <li><span class="num">7.</span><span class="nm">#clojure</span></li>
+            <li><span class="num">8.</span><span class="nm">#elixir</span></li>
+            <li>
+              <span class="num">9.</span><span class="nm">#jobs</span>
+              <span class="badge hl">1</span>
+            </li>
+            <li><span class="num">10.</span><span class="nm">#events</span></li>
+            <li>
+              <span class="num">11.</span><span class="nm">#puzzles</span>
+            </li>
+          </ul>
+          <div class="net">queries</div>
+          <ul>
+            <li>
+              <span class="num">12.</span><span class="nm">@mentor-bot</span>
+            </li>
+          </ul>
+        </aside>
+
+        <main class="chat">
+          <div class="topic">
+            <b>#welcome</b> · topic: a friendly programming community in the SF
+            Bay Area · est. 2014 · all langs, all levels · /join #beginners to
+            start
+          </div>
+
+          <div class="log">
+            <div class="msg sys">
+              <span class="t">17:54</span><span class="who">--</span
+              ><span class="body"
+                >You joined <b style="color: var(--accent)">#welcome</b> · 217
+                users · topic set by <span class="nick-1">sysop</span></span
+              >
+            </div>
+            <div class="msg bot">
+              <span class="t">17:54</span><span class="who">mentor-bot</span
+              ><span class="body"
+                >Hello! Code Self Study is <b>5,000+</b> programmers in Berkeley
+                and the SF Bay Area. We meet in person and online, weekly.
+                <b>All</b> languages, <b>all</b> levels.</span
+              >
+            </div>
+            <div class="msg bot">
+              <span class="t">17:54</span><span class="who">mentor-bot</span
+              ><span class="body"
+                >Type <span class="pill">/help</span> &mdash; or
+                <a class="url" href="https://www.meetup.com/codeselfstudy/"
+                  >https://www.meetup.com/codeselfstudy/</a
+                >
+                to RSVP for the next meetup.</span
+              >
+            </div>
+            <div class="msg">
+              <span class="t">18:02</span><span class="who nick-2">alice</span
+              ><span class="body"
+                >hi! first time here. been writing python for a year, want to
+                learn rust without burning out.</span
+              >
+            </div>
+            <div class="msg">
+              <span class="t">18:02</span><span class="who nick-3">bob</span
+              ><span class="body"
+                >welcome! /join #rust &mdash; we have a study group most
+                wednesdays at 7pm</span
+              >
+            </div>
+            <div class="msg">
+              <span class="t">18:03</span><span class="who nick-4">carol</span
+              ><span class="body"
+                >also #beginners is great even if you're not a beginner anymore
+                &mdash; lots of rubber-ducking</span
+              >
+            </div>
+            <div class="msg act">
+              <span class="t">18:04</span><span class="who nick-5">dan</span
+              ><span class="body"
+                >is updating the puzzle of the day &mdash; today: implement a
+                tiny json parser, any language</span
+              >
+            </div>
+            <div class="msg">
+              <span class="t">18:05</span><span class="who nick-6">eve</span
+              ><span class="body"
+                >btw the in-person meetup at the berkeley library is this
+                saturday 1pm. bring a laptop. or don't.</span
+              >
+            </div>
+            <div class="msg sys">
+              <span class="t">18:06</span><span class="who">--</span
+              ><span class="body"
+                ><span class="nick-1">frank</span> joined #welcome</span
+              >
+            </div>
+            <div class="msg">
+              <span class="t">18:06</span><span class="who nick-1">frank</span
+              ><span class="body"
+                >hey all &mdash; bootcamp grad, looking for project ideas /
+                accountability</span
+              >
+            </div>
+            <div class="msg">
+              <span class="t">18:07</span><span class="who nick-3">bob</span
+              ><span class="body"
+                >we run as a self-study group with mentorship. you bring the
+                project, we'll help with the plan. ask in #beginners and someone
+                will pair up.</span
+              >
+            </div>
+            <div class="msg hl">
+              <span class="t">18:08</span><span class="who nick-2">alice</span
+              ><span class="body">this is great. how do i join properly?</span>
+            </div>
+            <div class="msg bot">
+              <span class="t">18:08</span><span class="who">mentor-bot</span
+              ><span class="body"
+                >→ rsvp on meetup:
+                <a class="url" href="https://www.meetup.com/codeselfstudy/"
+                  >meetup.com/codeselfstudy</a
+                >
+                · /msg me <b>plan</b> for a study plan template ·
+                <span class="pill">all welcome</span></span
+              >
+            </div>
+            <div class="msg">
+              <span class="t">18:09</span><span class="who nick-5">dan</span
+              ><span class="body"
+                >languages we actively use here: python, js, ts, go, rust,
+                haskell, clojure, elixir, racket, scheme, ruby, c++, scala,
+                erlang, elm, lua, sql &mdash; and more in #other-langs</span
+              >
+            </div>
+          </div>
+
+          <div class="statusbar">
+            <span>[<span style="color: var(--accent)">18:11</span>]</span>
+            <span>[codeselfstudy] 1:#welcome(+nt)</span>
+            <span>217 nicks</span>
+            <span>(0/0/0)</span>
+            <span class="right">[H: 2:#beginners(3,hl), 9:#jobs(1,hl)]</span>
+          </div>
+          <div class="input">
+            <span class="nick">[you]</span><span class="pmt">›</span>
+            <span class="typed">/join #beginners<span class="cur"></span></span>
+          </div>
+        </main>
+
+        <aside class="col last nicks">
+          <h4>#welcome · 217</h4>
+          <ul>
+            <li class="op nick-1">sysop</li>
+            <li class="op nick-3">bob</li>
+            <li class="op nick-5">dan</li>
+            <li class="voice nick-2">alice</li>
+            <li class="voice nick-4">carol</li>
+            <li class="voice nick-6">eve</li>
+            <li class="nick-1">frank</li>
+            <li class="nick-2">grace</li>
+            <li class="nick-3">heng</li>
+            <li class="nick-4">irene</li>
+            <li class="nick-5">jess</li>
+            <li class="nick-6">kai</li>
+            <li class="away">leo</li>
+            <li class="away">mira</li>
+            <li class="away">nico</li>
+            <li class="away">otto</li>
+            <li class="away">priya</li>
+            <li class="count">… +200 more</li>
+          </ul>
+        </aside>
+      </div>
+
+      <div class="tmux" role="status">
+        <span class="session">[codeselfstudy]</span>
+        <span class="win">0:btop</span>
+        <span class="win">1:nvim</span>
+        <span class="win">2:lazygit</span>
+        <span class="win active">3:weechat*</span>
+        <span class="win">4:yazi</span>
+        <span class="right"
+          >"neo" &nbsp;<a
+            class="btn"
+            href="https://www.meetup.com/codeselfstudy/"
+            >join meetup</a
+          >&nbsp; <span id="clock">18:42</span></span
+        >
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var label = document.getElementById("theme-label");
+        var toggle = document.getElementById("theme-toggle");
+        var KEY = "tmux-theme";
+        function apply(t) {
+          if (t === "light") {
+            root.setAttribute("data-theme", "light");
+            label.textContent = "light";
+          } else {
+            root.removeAttribute("data-theme");
+            label.textContent = "dark";
+          }
+        }
+        apply(localStorage.getItem(KEY) || "dark");
+        function flip() {
+          var n =
+            root.getAttribute("data-theme") === "light" ? "dark" : "light";
+          apply(n);
+          localStorage.setItem(KEY, n);
+        }
+        toggle.addEventListener("click", flip);
+        toggle.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            flip();
+          }
+        });
+        var c = document.getElementById("clock");
+        function tick() {
+          var d = new Date();
+          c.textContent =
+            String(d.getHours()).padStart(2, "0") +
+            ":" +
+            String(d.getMinutes()).padStart(2, "0");
+        }
+        tick();
+        setInterval(tick, 30000);
+      })();
+    </script>
+  </body>
+</html>

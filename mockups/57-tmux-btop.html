@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Self Study — tmux · btop</title>
+    <style>
+      :root {
+        --bg: #050805;
+        --pane: #0a0f0a;
+        --pane-2: #0d130d;
+        --fg: #b8f5b8;
+        --fg-dim: #4a7a4a;
+        --fg-mute: #2a4a2a;
+        --border: #2a5a2a;
+        --border-hi: #5cd65c;
+        --accent: #c4ff5e;
+        --magenta: #ff7ac6;
+        --cyan: #66ddff;
+        --yellow: #ffe066;
+        --red: #ff7a7a;
+        --status-bg: #1f4a1f;
+        --status-fg: #050805;
+        --status-active: #ffe066;
+        --dot-red: #ff5f56;
+        --dot-yellow: #ffbd2e;
+        --dot-green: #27c93f;
+        --glow: rgba(184, 245, 184, 0.18);
+        --scanline: rgba(0, 0, 0, 0.18);
+      }
+      [data-theme="light"] {
+        --bg: #d8d2c0;
+        --pane: #efe9d6;
+        --pane-2: #e6dfca;
+        --fg: #1a1a14;
+        --fg-dim: #6a6860;
+        --fg-mute: #a8a294;
+        --border: #807a6a;
+        --border-hi: #1a1a14;
+        --accent: #1a4a8a;
+        --magenta: #8a1a5a;
+        --cyan: #1a6a8a;
+        --yellow: #6a5a00;
+        --red: #8a1a2a;
+        --status-bg: #1a1a14;
+        --status-fg: #efe9d6;
+        --status-active: #ffe066;
+        --dot-red: #b8513f;
+        --dot-yellow: #b88a1f;
+        --dot-green: #2a8a35;
+        --glow: rgba(26, 26, 20, 0);
+        --scanline: rgba(0, 0, 0, 0.04);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          "JetBrains Mono", "IBM Plex Mono", "Iosevka", "Fira Code",
+          ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.45;
+        min-height: 100vh;
+        padding: 24px;
+        background-image: repeating-linear-gradient(
+          0deg,
+          transparent 0 2px,
+          var(--scanline) 2px 3px
+        );
+        text-shadow: 0 0 6px var(--glow);
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--accent);
+        color: var(--pane);
+      }
+      .term {
+        max-width: 1180px;
+        margin: 0 auto;
+        background: var(--pane);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.3),
+          0 18px 60px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+      }
+      .titlebar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: linear-gradient(180deg, var(--pane-2) 0%, var(--pane) 100%);
+        border-bottom: 1px solid var(--border);
+        padding: 8px 12px;
+      }
+      .dots {
+        display: flex;
+        gap: 7px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--dot-red);
+        box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.3);
+      }
+      .dot.y {
+        background: var(--dot-yellow);
+      }
+      .dot.g {
+        background: var(--dot-green);
+      }
+      .ttitle {
+        flex: 1;
+        text-align: center;
+        color: var(--fg-dim);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+      .ttitle b {
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .toggle {
+        cursor: pointer;
+        user-select: none;
+        color: var(--fg-dim);
+        font-size: 12px;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+      }
+      .toggle:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0;
+      }
+      .pane {
+        border-right: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 0;
+        background: var(--pane);
+      }
+      .pane.full {
+        grid-column: 1 / -1;
+        border-right: none;
+      }
+      .pane.last {
+        border-right: none;
+      }
+      .pane-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        color: var(--fg-dim);
+        font-size: 12px;
+        border-bottom: 1px dashed var(--border);
+        background: var(--pane-2);
+      }
+      .pane-bar .lab {
+        color: var(--accent);
+      }
+      .pane-bar .lab.cyan {
+        color: var(--cyan);
+      }
+      .pane-bar .lab.mag {
+        color: var(--magenta);
+      }
+      .pane-bar .lab.yel {
+        color: var(--yellow);
+      }
+      .pane-bar .fill {
+        flex: 1;
+        border-bottom: 1px dashed var(--fg-mute);
+        margin: 0 4px;
+        height: 0;
+        transform: translateY(2px);
+      }
+      .pane-bar .keys {
+        color: var(--fg-mute);
+      }
+      .pane-body {
+        padding: 12px 14px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 90px 1fr 60px;
+        gap: 10px;
+        align-items: center;
+        padding: 1px 0;
+      }
+      .row .name {
+        color: var(--fg);
+      }
+      .row .pct {
+        text-align: right;
+        color: var(--accent);
+      }
+      .bar {
+        font-family: inherit;
+        color: var(--accent);
+        white-space: pre;
+        overflow: hidden;
+        letter-spacing: -1px;
+      }
+      .bar.cyan {
+        color: var(--cyan);
+      }
+      .bar.yel {
+        color: var(--yellow);
+      }
+      .bar.mag {
+        color: var(--magenta);
+      }
+      .meter-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 2px 0;
+      }
+      .meter-row .lbl {
+        width: 70px;
+        color: var(--fg-dim);
+      }
+      .meter-row .val {
+        margin-left: auto;
+        color: var(--accent);
+      }
+      .meter {
+        flex: 1;
+        height: 10px;
+        border: 1px solid var(--border);
+        background: var(--pane-2);
+        position: relative;
+      }
+      .meter > i {
+        display: block;
+        height: 100%;
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+      }
+      .meter.cyan > i {
+        background: var(--cyan);
+        box-shadow: 0 0 6px var(--cyan);
+      }
+      .meter.mag > i {
+        background: var(--magenta);
+        box-shadow: 0 0 6px var(--magenta);
+      }
+      .ascii {
+        white-space: pre;
+        color: var(--fg-dim);
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.05;
+      }
+      .ascii .hi {
+        color: var(--accent);
+      }
+      .lead {
+        margin: 8px 0 4px;
+        color: var(--fg);
+      }
+      .lead b {
+        color: var(--yellow);
+      }
+      .ctas {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 4px 12px;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+      }
+      .btn:hover {
+        background: var(--accent);
+        color: var(--pane);
+      }
+      .btn.ghost {
+        border-color: var(--fg-dim);
+        color: var(--fg-dim);
+      }
+      .btn.ghost:hover {
+        background: var(--fg-dim);
+        color: var(--pane);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 2px 8px 2px 0;
+        white-space: nowrap;
+      }
+      thead th {
+        color: var(--fg-dim);
+        border-bottom: 1px dashed var(--border);
+        font-weight: normal;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 11px;
+      }
+      tbody tr:hover {
+        background: var(--pane-2);
+      }
+      td.user {
+        color: var(--cyan);
+      }
+      td.pid {
+        color: var(--fg-dim);
+      }
+      td.cmd {
+        color: var(--fg);
+        white-space: normal;
+        width: 100%;
+      }
+      td.cpu,
+      td.mem {
+        color: var(--accent);
+        text-align: right;
+      }
+      .langs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        margin-top: 6px;
+      }
+      .langs span {
+        color: var(--fg);
+      }
+      .langs span::before {
+        content: "▸ ";
+        color: var(--fg-mute);
+      }
+      .blink {
+        color: var(--accent);
+        animation: blink 1.1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .tmux {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 4px 12px;
+        background: var(--status-bg);
+        color: var(--status-fg);
+        font-size: 12px;
+      }
+      .tmux .session {
+        background: var(--status-active);
+        color: var(--status-bg);
+        padding: 0 6px;
+        font-weight: 600;
+      }
+      .tmux .win {
+        opacity: 0.7;
+      }
+      .tmux .win.active {
+        opacity: 1;
+        text-decoration: underline;
+      }
+      .tmux .right {
+        margin-left: auto;
+        opacity: 0.85;
+      }
+      @media (max-width: 820px) {
+        body {
+          padding: 8px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .pane {
+          border-right: none;
+        }
+        .ttitle {
+          font-size: 11px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="term">
+      <div class="titlebar">
+        <div class="dots">
+          <span class="dot"></span><span class="dot y"></span
+          ><span class="dot g"></span>
+        </div>
+        <div class="ttitle">
+          <b>codeselfstudy</b>@neo: ~/community — tmux: btop · 1180×640
+        </div>
+        <span
+          class="toggle"
+          id="theme-toggle"
+          role="button"
+          tabindex="0"
+          aria-label="Toggle light and dark mode"
+          >◐ <span id="theme-label">dark</span></span
+        >
+      </div>
+
+      <div class="grid">
+        <!-- pane 0 : btop CPU (languages) -->
+        <div class="pane">
+          <div class="pane-bar">
+            <span>0</span><span class="lab">btop</span>
+            <span class="fill"></span>
+            <span class="keys">q quit · h help</span>
+          </div>
+          <div class="pane-body">
+            <div style="color: var(--fg-dim); margin-bottom: 6px">
+              ── cpu · languages in use ─────────────────────────
+            </div>
+            <div class="row">
+              <span class="name">python</span>
+              <span class="bar"
+                >█████████████████████████████████████████░░░░░</span
+              >
+              <span class="pct">62%</span>
+            </div>
+            <div class="row">
+              <span class="name">javascript</span>
+              <span class="bar cyan"
+                >██████████████████████████████████░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--cyan)">54%</span>
+            </div>
+            <div class="row">
+              <span class="name">typescript</span>
+              <span class="bar cyan"
+                >███████████████████████████████░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--cyan)">48%</span>
+            </div>
+            <div class="row">
+              <span class="name">go</span>
+              <span class="bar yel"
+                >████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--yellow)">35%</span>
+            </div>
+            <div class="row">
+              <span class="name">rust</span>
+              <span class="bar yel"
+                >██████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--yellow)">31%</span>
+            </div>
+            <div class="row">
+              <span class="name">haskell</span>
+              <span class="bar mag"
+                >██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--magenta)">22%</span>
+            </div>
+            <div class="row">
+              <span class="name">clojure</span>
+              <span class="bar mag"
+                >████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--magenta)">19%</span>
+            </div>
+            <div class="row">
+              <span class="name">elixir</span>
+              <span class="bar mag"
+                >███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--magenta)">17%</span>
+            </div>
+            <div class="row">
+              <span class="name">racket</span>
+              <span class="bar"
+                >█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct">14%</span>
+            </div>
+            <div class="row">
+              <span class="name">+ 12 more</span>
+              <span class="bar" style="color: var(--fg-mute)"
+                >░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span
+              >
+              <span class="pct" style="color: var(--fg-dim)">··</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- pane 1 : MEM/NET (community) -->
+        <div class="pane last">
+          <div class="pane-bar">
+            <span>1</span><span class="lab cyan">mem · net</span>
+            <span class="fill"></span><span class="keys">e expand</span>
+          </div>
+          <div class="pane-body">
+            <div style="color: var(--fg-dim); margin-bottom: 6px">
+              ── community pool ─────────────────
+            </div>
+            <div class="meter-row">
+              <span class="lbl">members</span>
+              <span class="meter"><i style="width: 92%"></i></span>
+              <span class="val">5,000+</span>
+            </div>
+            <div class="meter-row">
+              <span class="lbl">years up</span>
+              <span class="meter cyan"><i style="width: 82%"></i></span>
+              <span class="val" style="color: var(--cyan)">11</span>
+            </div>
+            <div class="meter-row">
+              <span class="lbl">langs</span>
+              <span class="meter mag"><i style="width: 70%"></i></span>
+              <span class="val" style="color: var(--magenta)">20+</span>
+            </div>
+            <div style="color: var(--fg-dim); margin: 12px 0 6px">
+              ── net · this week ────────────────
+            </div>
+            <div style="color: var(--fg)">
+              ↓ <span style="color: var(--accent)">12</span> meetups / month
+            </div>
+            <div style="color: var(--fg)">
+              ↑ <span style="color: var(--cyan)">234</span> forum posts
+            </div>
+            <div style="color: var(--fg)">
+              ⇄ <span style="color: var(--yellow)">38</span> intros & jobs
+            </div>
+            <div style="color: var(--fg-dim); margin: 12px 0 4px">
+              ── load avg ───────────────────────
+            </div>
+            <pre
+              class="ascii"
+            ><span class="hi">▁▂▃▅▆▇█▇▆▅▆▇█▇▆▅▃▂▃▅▇█▇▆▅▆▇█▇▆▅</span>
+12mo · steady &amp; rising</pre>
+          </div>
+        </div>
+
+        <!-- pane 2 : welcome / CTA -->
+        <div class="pane full">
+          <div class="pane-bar">
+            <span>2</span><span class="lab yel">★ codeselfstudy --intro</span>
+            <span class="fill"></span>
+            <span class="keys">prefix + ? help</span>
+          </div>
+          <div class="pane-body">
+            <pre class="ascii">
+  <span class="hi">code self study</span> · a friendly programming community in the san francisco bay area
+  <span class="hi">────────────────</span>   est. 2014 · all languages, all levels, in person + online</pre>
+            <p class="lead">
+              Self-study computer programming alongside <b>5,000+</b> members in
+              Berkeley and the SF Bay Area. Bring a project, bring a question,
+              or just show up. We meet in person and online.<span class="blink"
+                >▮</span
+              >
+            </p>
+            <div class="ctas">
+              <a class="btn" href="https://www.meetup.com/codeselfstudy/"
+                >$ meetup --join</a
+              >
+              <a class="btn ghost" href="#">$ forum</a>
+              <a class="btn ghost" href="#">$ events --upcoming</a>
+              <a class="btn ghost" href="#">$ puzzles</a>
+            </div>
+            <div style="margin-top: 14px; color: var(--fg-dim)">
+              what we do ::
+            </div>
+            <div class="langs">
+              <span>build a local community of motivated programmers</span>
+              <span>open to every language &amp; level</span>
+              <span>self-study with mentorship from experienced members</span>
+              <span>bootcamp supplement or alternative</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- pane 3 : process list (recent activity) -->
+        <div class="pane full" style="border-bottom: none">
+          <div class="pane-bar">
+            <span>3</span><span class="lab mag">proc · recent activity</span>
+            <span class="fill"></span>
+            <span class="keys">/ filter · k kill</span>
+          </div>
+          <div class="pane-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>pid</th>
+                  <th>user</th>
+                  <th>cpu</th>
+                  <th>mem</th>
+                  <th>uptime</th>
+                  <th>cmd</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="pid">1284</td>
+                  <td class="user">alice</td>
+                  <td class="cpu">12.4</td>
+                  <td class="mem">8.2</td>
+                  <td class="pid">02:14</td>
+                  <td class="cmd">
+                    rustc puzzles/day-7.rs &nbsp;<span
+                      style="color: var(--fg-dim)"
+                      >· asked for review in #rust</span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pid">1391</td>
+                  <td class="user">bob</td>
+                  <td class="cpu">24.1</td>
+                  <td class="mem">3.4</td>
+                  <td class="pid">00:42</td>
+                  <td class="cmd">
+                    meetup --where berkeley --in 3d &nbsp;<span
+                      style="color: var(--fg-dim)"
+                      >· 18 RSVPs</span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pid">1432</td>
+                  <td class="user">carol</td>
+                  <td class="cpu">7.0</td>
+                  <td class="mem">4.1</td>
+                  <td class="pid">11:08</td>
+                  <td class="cmd">
+                    hs-projects/parser
+                    <span style="color: var(--accent)">← merged</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pid">1518</td>
+                  <td class="user">dan</td>
+                  <td class="cpu">3.2</td>
+                  <td class="mem">2.0</td>
+                  <td class="pid">04:31</td>
+                  <td class="cmd">
+                    forum reply: "study plan for going from JS → systems"
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pid">1607</td>
+                  <td class="user">eve</td>
+                  <td class="cpu">15.7</td>
+                  <td class="mem">6.8</td>
+                  <td class="pid">00:09</td>
+                  <td class="cmd">
+                    intro &nbsp;<span style="color: var(--yellow)"
+                      >job referral · backend role</span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pid">1684</td>
+                  <td class="user">frank</td>
+                  <td class="cpu">9.3</td>
+                  <td class="mem">2.7</td>
+                  <td class="pid">06:55</td>
+                  <td class="cmd">
+                    tools/regex-trainer
+                    <span style="color: var(--cyan)">+ new contributor</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pid">1711</td>
+                  <td class="user">grace</td>
+                  <td class="cpu">5.5</td>
+                  <td class="mem">1.9</td>
+                  <td class="pid">13:20</td>
+                  <td class="cmd">elixir/phoenix study group · weds 7pm</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="tmux" role="status">
+        <span class="session">[codeselfstudy]</span>
+        <span class="win active">0:btop*</span>
+        <span class="win">1:nvim</span>
+        <span class="win">2:lazygit</span>
+        <span class="win">3:weechat</span>
+        <span class="win">4:yazi</span>
+        <span class="right"
+          >"neo" load 1.42 · ↑11y · <span id="clock">18:42</span></span
+        >
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var label = document.getElementById("theme-label");
+        var toggle = document.getElementById("theme-toggle");
+        var KEY = "tmux-theme";
+        function apply(t) {
+          if (t === "light") {
+            root.setAttribute("data-theme", "light");
+            label.textContent = "light";
+          } else {
+            root.removeAttribute("data-theme");
+            label.textContent = "dark";
+          }
+        }
+        apply(localStorage.getItem(KEY) || "dark");
+        function flip() {
+          var n =
+            root.getAttribute("data-theme") === "light" ? "dark" : "light";
+          apply(n);
+          localStorage.setItem(KEY, n);
+        }
+        toggle.addEventListener("click", flip);
+        toggle.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            flip();
+          }
+        });
+        var c = document.getElementById("clock");
+        function tick() {
+          var d = new Date();
+          c.textContent =
+            String(d.getHours()).padStart(2, "0") +
+            ":" +
+            String(d.getMinutes()).padStart(2, "0");
+        }
+        tick();
+        setInterval(tick, 30000);
+      })();
+    </script>
+  </body>
+</html>
