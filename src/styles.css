@@ -46,6 +46,63 @@
     "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
     "Helvetica Neue", sans-serif;
   --header-font: "Anton", var(--root-font-sans);
+
+  /* Terminal/tmux redesign tokens (mockup 68). Namespaced --term-* so they
+     don't clash with shadcn's --accent / --border / etc. Default = dark. */
+  --term-bg: #050805;
+  --term-pane: #0a0f0a;
+  --term-pane-2: #0d130d;
+  --term-fg: #b8f5b8;
+  --term-fg-dim: #4a7a4a;
+  --term-fg-mute: #2a4a2a;
+  --term-border: #2a5a2a;
+  --term-border-hi: #5cd65c;
+  --term-accent: #c4ff5e;
+  --term-magenta: #ff7ac6;
+  --term-cyan: #6df;
+  --term-yellow: #ffe066;
+  --term-red: #ff7a7a;
+  --term-status-bg: #1f4a1f;
+  --term-status-fg: #050805;
+  --term-status-active: #ffe066;
+  --term-dot-red: #ff5f56;
+  --term-dot-yellow: #ffbd2e;
+  --term-dot-green: #27c93f;
+  --term-glow: rgb(184 245 184 / 18%);
+  --term-scanline: rgb(0 0 0 / 18%);
+  --font-terminal-mono:
+    "JetBrains Mono", "IBM Plex Mono", "Iosevka", "Fira Code", ui-monospace,
+    "SF Mono", menlo, consolas, monospace;
+}
+
+[data-theme="light"] {
+  --term-bg: #d8d2c0;
+  --term-pane: #efe9d6;
+  --term-pane-2: #e6dfca;
+  --term-fg: #1a1a14;
+  --term-fg-dim: #6a6860;
+  --term-fg-mute: #a8a294;
+  --term-border: #807a6a;
+  --term-border-hi: #1a1a14;
+  --term-accent: #1a4a8a;
+  --term-magenta: #8a1a5a;
+  --term-cyan: #1a6a8a;
+  --term-yellow: #6a5a00;
+  --term-red: #8a1a2a;
+  --term-status-bg: #1a1a14;
+  --term-status-fg: #efe9d6;
+  --term-status-active: #ffe066;
+  --term-dot-red: #b8513f;
+  --term-dot-yellow: #b88a1f;
+  --term-dot-green: #2a8a35;
+  --term-glow: rgb(26 26 20 / 0%);
+  --term-scanline: rgb(0 0 0 / 4%);
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .dark {
@@ -175,6 +232,24 @@
 }
 
 @layer components {
+  /* Terminal shell wrapper — used by Phase 2's <TerminalShell> component
+     (mockup 68). Kept off <body> on purpose so existing pages keep their
+     current look until the chrome is swapped in Phase 4. */
+  .terminal-shell {
+    background: var(--term-pane);
+    color: var(--term-fg);
+    font-family: var(--font-terminal-mono);
+    font-size: 13px;
+    line-height: 1.45;
+    min-height: 100vh;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent 0 2px,
+      var(--term-scanline) 2px 3px
+    );
+    text-shadow: 0 0 6px var(--term-glow);
+  }
+
   /* The patterns are from https://www.heropatterns.com/ */
   .bg-bevel-circle {
     background-color: var(--background);
