@@ -17,9 +17,16 @@ import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
 import { Analytics } from "@/components/analytics";
 import { ErrorPage } from "@/components/error-page";
-import { Footer } from "@/components/footer";
-import { Navbar } from "@/components/navbar";
 import { NotFound } from "@/components/not-found";
+import { TerminalShell } from "@/components/terminal/terminal-shell";
+import { TermNav } from "@/components/terminal/term-nav";
+import { ThemeToggle } from "@/components/terminal/theme-toggle";
+import { Clock, TmuxStatusBar } from "@/components/terminal/tmux-status-bar";
+import {
+  TMUX_RIGHT_TEXT,
+  TMUX_SESSION,
+  TMUX_WINDOWS,
+} from "@/content/mock-home-data";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -62,6 +69,15 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   errorComponent: ({ error }) => <ErrorPage error={error} />,
 });
 
+function activeWindowIndex(pathname: string): number {
+  const i = TMUX_WINDOWS.findIndex(
+    (w) =>
+      w.href === pathname ||
+      (w.href !== "/" && pathname.startsWith(`${w.href}/`))
+  );
+  return i === -1 ? 0 : i;
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
@@ -77,9 +93,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <WorkOSProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <TerminalShell
+            nav={<TermNav themeToggle={<ThemeToggle />} />}
+            statusBar={
+              <TmuxStatusBar
+                session={TMUX_SESSION}
+                windows={TMUX_WINDOWS}
+                activeIndex={activeWindowIndex(location.pathname)}
+                right={
+                  <>
+                    {TMUX_RIGHT_TEXT} · <Clock />
+                  </>
+                }
+              />
+            }
+          >
+            {children}
+          </TerminalShell>
           <TanStackDevtools
             config={{
               position: "bottom-right",
