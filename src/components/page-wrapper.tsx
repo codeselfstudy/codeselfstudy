@@ -1,16 +1,32 @@
+import { useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { TermPane } from "@/components/terminal/term-pane";
 
-interface PageWrapperProps {
+type PageWrapperProps = {
   children: ReactNode;
-  className?: string;
+  /** Pane label override. Defaults to `~/<first route segment>`. */
+  paneTitle?: string;
+  paneIndex?: number;
+};
+
+function deriveTitle(pathname: string): string {
+  const seg = pathname.replace(/^\/+/, "").split("/")[0] ?? "";
+  return seg ? `~/${seg}` : "~/home";
 }
 
-export function PageWrapper({ children, className = "" }: PageWrapperProps) {
+export function PageWrapper({
+  children,
+  paneTitle,
+  paneIndex = 0,
+}: PageWrapperProps) {
+  const { pathname } = useLocation();
   return (
-    <div
-      className={`container mx-auto px-4 pt-24 pb-12 sm:px-6 lg:px-8 ${className}`}
+    <TermPane
+      index={paneIndex}
+      label={paneTitle ?? deriveTitle(pathname)}
+      variant="full"
     >
       {children}
-    </div>
+    </TermPane>
   );
 }
