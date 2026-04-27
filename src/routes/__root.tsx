@@ -16,8 +16,10 @@ import WorkOSProvider from "@/integrations/workos/provider";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
 import { Analytics } from "@/components/analytics";
+import { ErrorPage } from "@/components/error-page";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
+import { NotFound } from "@/components/not-found";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -56,6 +58,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   }),
 
   shellComponent: RootDocument,
+  notFoundComponent: NotFound,
+  errorComponent: ({ error }) => <ErrorPage error={error} />,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
