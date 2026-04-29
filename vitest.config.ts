@@ -20,5 +20,26 @@ const viteConfig = {
 export default mergeConfig(viteConfig, {
   test: {
     globals: true,
+    environment: "jsdom",
+    setupFiles: ["./test/setup.ts"],
+    css: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "lcov", "json-summary"],
+      reportsDirectory: "./coverage",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.d.ts",
+        "src/routeTree.gen.ts",
+        "src/router.tsx",
+      ],
+      thresholds: {
+        lines: 0,
+        branches: 0,
+        functions: 0,
+        statements: 0,
+      },
+    },
   },
 });
