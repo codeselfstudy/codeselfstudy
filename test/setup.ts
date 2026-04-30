@@ -10,7 +10,10 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-if (typeof window !== "undefined" && !window.matchMedia) {
+if (
+  typeof window !== "undefined" &&
+  !(window as { matchMedia?: unknown }).matchMedia
+) {
   Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
