@@ -2,6 +2,18 @@
 default:
   @just --list
 
+# Cleans out build files and things like .DS_Store files
+clean:
+  ./scripts/clean.sh
+
+# Run the dev server
+dev:
+  bun run dev
+
+# Run the build process
+build: clean
+  bun run build
+
 # Find all the license files
 find_licenses:
   find . -name "LICENSE.md" -not -path "*/node_modules/*"
