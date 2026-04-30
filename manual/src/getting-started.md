@@ -11,7 +11,7 @@
 bun install
 
 # Run the dev server
-bun run dev
+just dev
 ```
 
 The dev server runs at `http://localhost:7001`.
@@ -19,7 +19,7 @@ The dev server runs at `http://localhost:7001`.
 ## Build and Preview
 
 ```bash
-bun run build
+just build
 bun run preview
 ```
 
@@ -52,7 +52,11 @@ console.log(env.SERVER_URL);
 ## Database Tasks
 
 ```bash
-bun run db:generate
-bun run db:migrate
-bun run db:studio
+just db_generate
+just db_migrate
+just db_studio
+just db_push
+just db_pull
 ```
+
+These are wrappers around `drizzle-kit` that ensure it runs under Bun.
