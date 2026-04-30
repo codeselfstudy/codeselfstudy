@@ -43,7 +43,7 @@ scripts/
 **/tags
 **/tags.*
 **/.idea
-**/.vs
+**/.vscode
 **/.vim
 **/*.sw[op]
 
