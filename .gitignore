@@ -102,3 +102,6 @@ count.txt
 .output
 .vinxi
 todos.json
+
+# Test coverage
+coverage/
