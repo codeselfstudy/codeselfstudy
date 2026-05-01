@@ -6,6 +6,10 @@ default:
 clean:
   ./scripts/clean.sh
 
+# Run tests
+test:
+  bun run test
+
 # Run the dev server
 dev:
   bun run dev
