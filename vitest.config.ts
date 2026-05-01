@@ -51,6 +51,12 @@ export default mergeConfig(viteConfig, {
           functions: 100,
           statements: 100,
         },
+        "src/hooks/**": {
+          lines: 100,
+          branches: 100,
+          functions: 100,
+          statements: 100,
+        },
         "src/env.ts": {
           lines: 100,
           branches: 66,
