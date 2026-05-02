@@ -12,10 +12,17 @@ const config = defineConfig({
   plugins: [
     devtools(),
     nitro({
-      preset: "bun",
+      preset: "node",
     }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      prerender: {
+        enabled: true,
+        autoStaticPathsDiscovery: true,
+        crawlLinks: true,
+        failOnError: true,
+      },
+    }),
     viteReact({
       babel: {
         plugins: ["babel-plugin-react-compiler"],
