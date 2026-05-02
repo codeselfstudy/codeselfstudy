@@ -34,7 +34,7 @@ if (typeof globalThis.ResizeObserver === "undefined") {
     observe() {}
     unobserve() {}
     disconnect() {}
-  } as unknown as typeof ResizeObserver;
+  };
 }
 
 if (typeof globalThis.IntersectionObserver === "undefined") {
@@ -48,5 +48,5 @@ if (typeof globalThis.IntersectionObserver === "undefined") {
     takeRecords() {
       return [];
     }
-  } as unknown as typeof IntersectionObserver;
+  };
 }
