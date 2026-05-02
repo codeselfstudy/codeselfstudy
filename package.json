@@ -26,7 +26,7 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/anton": "^5.2.7",
     "@icons-pack/react-simple-icons": "^13.13.0",
-    "@libsql/client": "^0.15.15",
+    "@libsql/client": "^0.17.3",
     "@orpc/client": "^1.14.0",
     "@orpc/json-schema": "^1.14.0",
     "@orpc/openapi": "^1.14.0",
