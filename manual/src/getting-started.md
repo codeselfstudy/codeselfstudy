@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Install [Bun](https://bun.sh/). It's an alternative to Node.js.
+- Install [just](https://just.systems/). It's a command runner.
 
 ## Install and Run
 

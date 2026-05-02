@@ -4,7 +4,7 @@ This is the new [Code Self Study](https://codeselfstudy.com/) website.
 
 Attend a meetup to find out how to contribute. :construction:
 
-See the documentation in [manual](./manual/src/SUMMARY.md).
+See the documentation in [manual](./manual/src/SUMMARY.md). If [just](https://just.systems/) is installed, you can view the manual in the browser with the command: `just manual`.
 
 ## Goals:
 

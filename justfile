@@ -10,6 +10,14 @@ clean:
 test:
   bun run test
 
+# Run tests in watch mode
+test_watch:
+  bun run test:watch
+
+# Run tests with coverage report
+test_coverage:
+  bun run test:coverage
+
 # Run the dev server
 dev:
   bun run dev
@@ -50,6 +58,11 @@ db_push:
 db_pull:
   bun run --bun drizzle-kit pull
 
+# View HTML mockups
 mockups:
   @echo "\n\nServing mockups at http://localhost:5555\n\n"
   cd mockups && python3 -m http.server 5555
+
+# View the manual in the browser
+manual:
+  cd manual && mdbook serve -p 8001 --open
