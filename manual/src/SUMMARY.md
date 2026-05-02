@@ -2,6 +2,7 @@
 
 - [The Manual](./index.md)
 - [Getting Started](./getting-started.md)
+- [Development](./development.md)
 - [Scripts](./scripts.md)
 - [Project Structure](./project-structure.md)
 - [Routing & Data](./routing-and-data.md)

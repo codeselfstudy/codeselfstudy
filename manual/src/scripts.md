@@ -14,11 +14,10 @@ just <script-name>
 
 ## Available scripts
 
-```bash
-just --list
+List available scripts:
 
-# or
-just -l
+```bash
+just
 ```
 
 Common recipes: `just dev`, `just build`, `just clean`, `just deploy`,
@@ -36,6 +35,12 @@ Bun can also run TypeScript scripts directly without a build step.
 
 ```bash
 bun run file.ts
+```
+
+or render markdown in the terminal for easier reading:
+
+```bash
+bun run README.md
 ```
 
 To install autocompletion functionality, run:
