@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,12 +15,28 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/auth"
 )
 
 const staticDir = "static"
 
 func main() {
-	e := newServer(staticDir)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Wire WorkOS auth when the env is set. In barebones dev (no env) the
+	// static-serve + /healthz path still works — useful for smoke testing
+	// the binary without a real WorkOS tenant.
+	v := newVerifierFromEnv()
+	if v != nil {
+		if err := v.Start(ctx); err != nil {
+			log.Fatalf("auth: %v", err)
+		}
+	} else {
+		log.Printf("auth: WORKOS_CLIENT_ID / WORKOS_API_HOSTNAME not set; /api/me disabled")
+	}
+	e := newServer(staticDir, v)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -36,17 +53,64 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+	if err := e.Shutdown(shutdownCtx); err != nil {
 		e.Logger.Fatal(err)
 	}
 }
 
+// newVerifierFromEnv reads WorkOS client config from the environment. The
+// web app already validates the same pair as VITE_WORKOS_CLIENT_ID /
+// VITE_WORKOS_API_HOSTNAME (a Vite prefix convention; the OS-level vars are
+// the same values), so production deploys reuse them. Returns nil if either
+// is missing — the caller falls back to running without auth.
+func newVerifierFromEnv() *auth.Verifier {
+	clientID := firstNonEmpty(os.Getenv("WORKOS_CLIENT_ID"), os.Getenv("VITE_WORKOS_CLIENT_ID"))
+	hostname := firstNonEmpty(os.Getenv("WORKOS_API_HOSTNAME"), os.Getenv("VITE_WORKOS_API_HOSTNAME"))
+	if clientID == "" || hostname == "" {
+		return nil
+	}
+	v, err := auth.NewVerifier(clientID, hostname)
+	if err != nil {
+		log.Fatalf("auth: %v", err)
+	}
+	return v
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+// handleMe returns the validated claims for the authenticated user. Light
+// shape on purpose — tighten the response to whatever the frontend ends up
+// needing.
+func handleMe(c echo.Context) error {
+	tok := auth.Claims(c)
+	if tok == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	resp := map[string]any{
+		"sub": tok.Subject(),
+		"iss": tok.Issuer(),
+		"exp": tok.Expiration().Unix(),
+	}
+	if email, ok := tok.Get("email"); ok {
+		resp["email"] = email
+	}
+	return c.JSON(http.StatusOK, resp)
+}
+
 // newServer wires the routes and middleware for an Echo instance rooted at
-// staticRoot. Split out from main so tests can build a server against a
-// fixture directory.
-func newServer(staticRoot string) *echo.Echo {
+// staticRoot. When v is non-nil, /api/me is mounted under WorkOS-validated
+// auth; when nil, /api/* falls through to a JSON 404. Split out from main so
+// tests can build a server against a fixture directory and a stub verifier.
+func newServer(staticRoot string, v *auth.Verifier) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
@@ -63,6 +127,13 @@ func newServer(staticRoot string) *echo.Echo {
 	e.GET("/healthz", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
+
+	// Authenticated API routes go before the /api/* catchall so the static
+	// paths win over the JSON-404 fallback.
+	if v != nil {
+		api := e.Group("/api", auth.Middleware(v))
+		api.GET("/me", handleMe)
+	}
 
 	// Reserve /api/* and /ws so unrecognized requests there reach Echo's
 	// default 404 (JSON, no SSG fallback).
