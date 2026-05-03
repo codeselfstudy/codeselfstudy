@@ -1,0 +1,6 @@
+# Populated at build time by `just build` (Phase 3).
+static/
+
+# Local binary from `go build .` if anyone runs it.
+api
+server
