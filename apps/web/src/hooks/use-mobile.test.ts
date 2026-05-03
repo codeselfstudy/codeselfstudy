@@ -1,12 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { useIsMobile } from "./use-mobile";
 
 const MOBILE_BREAKPOINT = 768;
@@ -88,7 +81,7 @@ describe("useIsMobile", () => {
     expect(mql.media).toBe(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     expect(mql.addEventListener).toHaveBeenCalledWith(
       "change",
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -141,7 +134,7 @@ describe("useIsMobile", () => {
     unmount();
     expect(mql.removeEventListener).toHaveBeenCalledWith(
       "change",
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 });

@@ -6,6 +6,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
 const config = defineConfig({
+  // The web app lives in apps/web/. Keep .env.local at the repo root so it's
+  // shared by both the web and api workspaces.
+  envDir: "..",
   resolve: {
     tsconfigPaths: true,
   },

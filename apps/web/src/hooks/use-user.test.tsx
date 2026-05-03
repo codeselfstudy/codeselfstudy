@@ -1,12 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { useUser } from "./use-user";
 
 const { useAuthMock, useLocationMock } = vi.hoisted(() => ({

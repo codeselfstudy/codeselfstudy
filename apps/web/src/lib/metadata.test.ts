@@ -57,7 +57,9 @@ describe("createMetadata", () => {
 
   test("omits og:image entry when no image provided", () => {
     const meta = createMetadata({ title: TITLE, description: DESCRIPTION });
-    expect(meta.some((entry) => "property" in entry && entry.property === "og:image")).toBe(false);
+    expect(
+      meta.some((entry) => "property" in entry && entry.property === "og:image")
+    ).toBe(false);
   });
 
   test("appends og:image entry when image provided", () => {
