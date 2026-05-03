@@ -6,6 +6,48 @@ Attend a meetup to find out how to contribute. :construction:
 
 See the documentation in [manual](./manual/src/SUMMARY.md). If [just](https://just.systems/) is installed, you can view the manual in the browser with the command: `just manual`.
 
+## Architecture
+
+Bun workspace with two apps and a Go binary that fronts the whole thing in production.
+
+```
+codeselfstudy/
+├── apps/
+│   ├── web/                  TanStack Start (Vite + React + TS).
+│   │   └── .output/public/   Prerendered static site (build-time output).
+│   └── api/                  Go + Echo backend.
+│       └── static/           Mirrored from web's .output/public at build time.
+├── Dockerfile                Multi-stage: Go build + distroless runtime.
+├── fly.toml                  256 MB shared-cpu-1x.
+└── justfile                  dev / build / test / deploy.
+```
+
+The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future WebSocket endpoint (`/ws`). No JS runtime in production. Targets a single 256 MB Fly machine.
+
+**Auth.** WorkOS AuthKit on the client; the Go middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes.
+
+**Database.** SQLite via `modernc.org/sqlite` (pure Go). Drizzle owns the schema in `apps/web/src/db/schema.ts`; the Go side reads/writes through plain SQL. Remote Turso (libsql://) is a follow-up.
+
+**Build.** `bun run build` prerenders all routes; `just build` mirrors the output into `apps/api/static/` so the Go binary picks it up. The Docker build runs locally and ships the prebuilt `dist` in the build context — Fly's remote builder doesn't re-run `bun install`.
+
+## Quick start
+
+```sh
+# clone, then:
+bun install
+cp env.local.example .env.local   # fill in WorkOS + DATABASE_URL
+just dev                          # web :7001, api :8080, proxied
+```
+
+```sh
+# Common tasks
+just build       # produce a deployable artifact
+just test        # Go race tests + Vitest
+just deploy      # build, then fly deploy
+```
+
+See [AGENTS.md](AGENTS.md) for the full developer guide.
+
 ## Goals:
 
 - help people in the group find something in common to work on
