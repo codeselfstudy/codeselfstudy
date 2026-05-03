@@ -62,11 +62,18 @@ package.json
 **/dist
 **/dist-ssr
 **/build
+**/_site
+**/coverage
+**/.nyc_output
 **/.astro
 **/.output
 **/.tanstack
 **/.nitro
 **/.vinxi
+**/.next
+**/.nuxt
+**/.svelte-kit
+**/.vercel
 **/.cache
 **/.mypy_cache
 **/.parcel-cache
@@ -74,6 +81,22 @@ package.json
 **/.swc
 **/.gradle
 **/.wrangler
+**/.turbo
+**/.bun
+**/.yarn
+**/.pnp.*
+**/target
+
+# Test / coverage artifacts (HTML reports, lcov, etc).
+**/coverage-final.json
+**/lcov.info
+**/lcov-report
+
+# Lockfiles from other package managers — bun.lock is already excluded
+# in the explicit list above; these are pure noise if they ever sneak in.
+**/package-lock.json
+**/pnpm-lock.yaml
+**/yarn.lock
 
 # Editor / OS junk
 **/*~
@@ -81,7 +104,16 @@ package.json
 **/tags.*
 **/.idea
 **/.vim
+**/.vs
 **/*.sw[op]
+**/*.swn
+**/*.swm
+**/.history
+**/.ionide
+**/*.code-workspace
+**/Thumbs.db
+**/Desktop.ini
+**/ehthumbs.db
 
 # Logs
 **/npm-debug.log*
@@ -99,9 +131,57 @@ package.json
 **/.env*
 **/.env.local
 **/.env.production
+**/.env.development
 **/.envrc
 **/*.bak
 **/*.orig
+**/*.rej
 **/*PENDING_DELETION*
 **/*.db
+**/*.db-journal
+**/*.db-shm
+**/*.db-wal
+**/*.sqlite
+**/*.sqlite3
 **/.DS_Store
+
+# Language ecosystem build artifacts. Defensive — most aren't used here,
+# but the cost of listing them is zero and the cost of one slipping
+# through is leaking source / secrets / large binaries into the image.
+
+# Python
+**/*.py[cod]
+**/__pycache__
+**/.venv
+**/.tox
+**/.pytest_cache
+**/.ruff_cache
+
+# Ruby
+**/.bundle
+**/vendor/bundle
+**/.rspec_status
+
+# Rust / Go (Go build cache lives under GOCACHE, not in tree)
+**/target
+
+# Haskell
+**/.stack-work
+**/dist-newstyle
+
+# Elixir / Erlang
+**/.elixir_ls
+**/_build
+**/cover
+**/deps
+**/doc
+**/.fetch
+**/erl_crash.dump
+**/*.ez
+**/my_app-*.tar
+**/priv/static
+
+# Java / Kotlin
+**/*.class
+**/out
+**/.gradle
