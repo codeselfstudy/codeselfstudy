@@ -1,11 +1,4 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const REQUIRED = {
   WORKOS_API_KEY: "test_workos_api_key",
@@ -40,14 +33,14 @@ describe("env (client/browser branch — window defined)", () => {
     const { env } = await import("./env");
     expect(env.VITE_WORKOS_CLIENT_ID).toBe(REQUIRED.VITE_WORKOS_CLIENT_ID);
     expect(env.VITE_WORKOS_API_HOSTNAME).toBe(
-      REQUIRED.VITE_WORKOS_API_HOSTNAME,
+      REQUIRED.VITE_WORKOS_API_HOSTNAME
     );
   });
 
   test("blocks server-only var access at runtime in the browser", async () => {
     const { env } = await import("./env");
     expect(() => (env as { WORKOS_API_KEY: string }).WORKOS_API_KEY).toThrow(
-      /server-side environment variable/,
+      /server-side environment variable/
     );
   });
 });
