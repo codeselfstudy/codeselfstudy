@@ -11,9 +11,11 @@ dev:
 dev-web:
   bun run --env-file=.env.local --filter web dev
 
-# Go API dev server only
+# Go API dev server only. Loads .env.local into the shell so /api/me and
+# /api/todos can wire themselves up — Go has no built-in .env support.
+# Skipped silently when the file is absent (smoke-test mode).
 dev-api:
-  cd apps/api && go run .
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run .
 
 # Build the prerendered web app, then mirror dist into apps/api/static so the
 # Go binary can serve it locally and so the Dockerfile picks it up directly.
