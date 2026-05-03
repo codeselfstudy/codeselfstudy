@@ -17,7 +17,10 @@ pre-push:
       run: bun run test
     lint:
       glob: "*.{ts,js,mjs,cjs,jsx,tsx,astro}"
-      run: bun run eslint {push_files}
+      # bunx finds eslint via apps/web's hoisted node_modules. `bun run eslint`
+      # used to work pre-workspace but stopped after Phase 1 since eslint moved
+      # out of the root package.
+      run: bunx eslint {push_files}
     stylelint:
       glob: "*.{css,scss}"
-      run: bun run stylelint {push_files}
+      run: bunx stylelint {push_files}
