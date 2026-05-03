@@ -10,6 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { SignInButton } from "@/components/workos-user";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -34,7 +35,7 @@ export function Navbar() {
               Code Self Study
             </Link>
           </div>
-          <div className="hidden sm:flex sm:space-x-4">
+          <div className="hidden sm:flex sm:items-center sm:space-x-4">
             {LINKS.map((link) => (
               <Link
                 key={link.label}
@@ -47,6 +48,7 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <SignInButton />
           </div>
           <div className="sm:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -69,6 +71,9 @@ export function Navbar() {
                       {link.label}
                     </Link>
                   ))}
+                  <div className="pt-2">
+                    <SignInButton large />
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
