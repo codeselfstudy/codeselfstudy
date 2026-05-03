@@ -6,9 +6,22 @@ import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
 const config = defineConfig({
-  // The web app lives in apps/web/. Keep .env.local at the repo root so it's
-  // shared by both the web and api workspaces.
-  envDir: "..",
+  // .env.local lives at the repo root and is forwarded into the Bun process
+  // via `--env-file=.env.local` in the root package.json scripts and
+  // justfile. envDir would only inject VITE_* into the client build; it
+  // wouldn't make non-VITE vars (DATABASE_URL, WORKOS_API_KEY) visible to
+  // server-side code in env.ts. So we rely on --env-file instead.
+  // Proxy API + WebSocket traffic to the Go server in dev so local routing
+  // matches production (Go serves both /api and the prerendered HTML there).
+  server: {
+    proxy: {
+      "/api": "http://localhost:8080",
+      "/ws": {
+        target: "ws://localhost:8080",
+        ws: true,
+      },
+    },
+  },
   resolve: {
     tsconfigPaths: true,
   },

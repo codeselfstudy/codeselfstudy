@@ -7,10 +7,10 @@
     "apps/web"
   ],
   "scripts": {
-    "dev": "bun run --filter web dev",
-    "dev:web": "bun run --filter web dev",
-    "build": "bun run --filter web build",
-    "build:web": "bun run --filter web build",
+    "dev": "bun run --env-file=.env.local --filter web dev",
+    "dev:web": "bun run --env-file=.env.local --filter web dev",
+    "build": "bun run --env-file=.env.local --filter web build",
+    "build:web": "bun run --env-file=.env.local --filter web build",
     "test": "bun run --filter web test",
     "test:web": "bun run --filter web test",
     "lint": "bun run --filter web lint",
