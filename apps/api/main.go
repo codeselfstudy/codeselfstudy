@@ -17,6 +17,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/auth"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/db"
 )
 
 const staticDir = "static"
@@ -36,7 +37,21 @@ func main() {
 	} else {
 		log.Printf("auth: WORKOS_CLIENT_ID / WORKOS_API_HOSTNAME not set; /api/me disabled")
 	}
-	e := newServer(staticDir, v)
+
+	// Open the database when DATABASE_URL is set. Same opt-in shape as auth.
+	var todos *db.Todos
+	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+		conn, err := db.Open(dbURL)
+		if err != nil {
+			log.Fatalf("db: %v", err)
+		}
+		defer conn.Close()
+		todos = &db.Todos{DB: conn}
+	} else {
+		log.Printf("db: DATABASE_URL not set; /api/todos disabled")
+	}
+
+	e := newServer(staticDir, v, todos)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -106,11 +121,42 @@ func handleMe(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
+func handleListTodos(repo *db.Todos) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		rows, err := repo.List(c.Request().Context(), 100)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		}
+		if rows == nil {
+			rows = []db.Todo{}
+		}
+		return c.JSON(http.StatusOK, rows)
+	}
+}
+
+func handleCreateTodo(repo *db.Todos) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var body struct {
+			Title string `json:"title"`
+		}
+		if err := c.Bind(&body); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest)
+		}
+		td, err := repo.Create(c.Request().Context(), body.Title)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		return c.JSON(http.StatusCreated, td)
+	}
+}
+
 // newServer wires the routes and middleware for an Echo instance rooted at
 // staticRoot. When v is non-nil, /api/me is mounted under WorkOS-validated
-// auth; when nil, /api/* falls through to a JSON 404. Split out from main so
-// tests can build a server against a fixture directory and a stub verifier.
-func newServer(staticRoot string, v *auth.Verifier) *echo.Echo {
+// auth; when todos is non-nil, /api/todos GET/POST are mounted under the
+// same auth. Either or both may be nil — anything left out falls through to
+// the /api/* JSON 404. Split out from main so tests can build a server
+// against fixtures.
+func newServer(staticRoot string, v *auth.Verifier, todos *db.Todos) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
@@ -133,6 +179,10 @@ func newServer(staticRoot string, v *auth.Verifier) *echo.Echo {
 	if v != nil {
 		api := e.Group("/api", auth.Middleware(v))
 		api.GET("/me", handleMe)
+		if todos != nil {
+			api.GET("/todos", handleListTodos(todos))
+			api.POST("/todos", handleCreateTodo(todos))
+		}
 	}
 
 	// Reserve /api/* and /ws so unrecognized requests there reach Echo's
