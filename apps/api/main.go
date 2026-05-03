@@ -170,7 +170,12 @@ func newServer(staticRoot string, v *auth.Verifier, todos *db.Todos) *echo.Echo 
 		},
 	}))
 
-	e.GET("/healthz", func(c echo.Context) error {
+	// Every read endpoint accepts both GET and HEAD. HEAD is GET-without-body
+	// per RFC 9110; declaring only GET makes Echo return 405 to HEAD probes
+	// from curl -I, monitoring agents, and load balancers, which is wrong.
+	getOrHead := []string{http.MethodGet, http.MethodHead}
+
+	e.Match(getOrHead, "/healthz", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
 
@@ -178,15 +183,15 @@ func newServer(staticRoot string, v *auth.Verifier, todos *db.Todos) *echo.Echo 
 	// paths win over the JSON-404 fallback.
 	if v != nil {
 		api := e.Group("/api", auth.Middleware(v))
-		api.GET("/me", handleMe)
+		api.Match(getOrHead, "/me", handleMe)
 		if todos != nil {
-			api.GET("/todos", handleListTodos(todos))
+			api.Match(getOrHead, "/todos", handleListTodos(todos))
 			api.POST("/todos", handleCreateTodo(todos))
 		}
 	}
 
 	// Reserve /api/* and /ws so unrecognized requests there reach Echo's
-	// default 404 (JSON, no SSG fallback).
+	// default 404 (JSON, no SSG fallback). Any() already covers HEAD.
 	e.Any("/api/*", func(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound)
 	})
@@ -194,7 +199,7 @@ func newServer(staticRoot string, v *auth.Verifier, todos *db.Todos) *echo.Echo 
 		return echo.NewHTTPError(http.StatusNotFound)
 	})
 
-	e.GET("/*", staticHandler(staticRoot))
+	e.Match(getOrHead, "/*", staticHandler(staticRoot))
 	return e
 }
 

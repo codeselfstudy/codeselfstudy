@@ -74,6 +74,35 @@ func TestStaticFileServed(t *testing.T) {
 	}
 }
 
+// HEAD must work everywhere GET works (RFC 9110 §9.3.2). Curl -I, fly's
+// healthcheck probes, and ad-hoc monitoring all use HEAD; without explicit
+// support Echo returns 405 instead of mirroring the GET status.
+func TestHeadMirrorsGet(t *testing.T) {
+	e := newServer(fixtureDir(t), nil, nil)
+	cases := []struct {
+		name       string
+		path       string
+		wantStatus int
+	}{
+		{"healthz", "/healthz", http.StatusNoContent},
+		{"root index", "/", http.StatusOK},
+		{"about index", "/about/", http.StatusOK},
+		{"missing page", "/nonexistent/", http.StatusNotFound},
+		{"missing api", "/api/missing", http.StatusNotFound},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodHead, tc.path, nil)
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			if rec.Code != tc.wantStatus {
+				t.Fatalf("status: want %d got %d body=%q", tc.wantStatus, rec.Code, rec.Body.String())
+			}
+		})
+	}
+}
+
 func TestSSGFallbackOnUnknownPageRoute(t *testing.T) {
 	e := newServer(fixtureDir(t), nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/nonexistent/", nil)

@@ -141,6 +141,35 @@ func TestApiMeRejectsMissingToken(t *testing.T) {
 	}
 }
 
+func TestApiMeHeadHonorsAuth(t *testing.T) {
+	f := newMeFixture(t)
+	v := startedVerifierFor(t, f)
+	e := newServer(fixtureDir(t), v, nil)
+
+	cases := []struct {
+		name       string
+		header     string
+		wantStatus int
+	}{
+		{"missing token", "", http.StatusUnauthorized},
+		{"valid token", "Bearer " + f.sign(t), http.StatusOK},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodHead, "/api/me", nil)
+			if tc.header != "" {
+				req.Header.Set(echo.HeaderAuthorization, tc.header)
+			}
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			if rec.Code != tc.wantStatus {
+				t.Fatalf("status: want %d got %d body=%s", tc.wantStatus, rec.Code, rec.Body.String())
+			}
+		})
+	}
+}
+
 func TestApiMeIsDisabledWithoutVerifier(t *testing.T) {
 	// /api/me without a verifier should fall through to the /api/* JSON 404,
 	// not return 401 — that's the smoke-test ergonomics we lean on for
