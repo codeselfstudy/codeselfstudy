@@ -54,7 +54,7 @@ function AuthDevPanel() {
         {isLoading
           ? "loading"
           : user
-            ? `signed in as ${user.email ?? user.id}`
+            ? `signed in as ${user.email}`
             : "signed out"}
       </section>
 
