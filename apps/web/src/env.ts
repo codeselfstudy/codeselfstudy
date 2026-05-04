@@ -5,8 +5,6 @@ export const env = createEnv({
   server: {
     SERVER_URL: z.url().optional(), // Make optional or ensure it's set in Prod
     WORKOS_API_KEY: z.string(),
-    DATABASE_URL: z.string(),
-    TURSO_AUTH_TOKEN: z.string().optional(),
   },
 
   /**

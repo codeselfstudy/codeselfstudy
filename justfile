@@ -64,25 +64,22 @@ status:
 ssh:
   fly ssh console
 
-# Generate a database migration (Drizzle, web workspace)
-db_generate:
-  cd apps/web && bun run --bun drizzle-kit generate
-
-# Migrate the database
+# Apply pending migrations against DATABASE_URL. The server also runs this
+# on startup, so this is mainly for ad-hoc dev runs.
 db_migrate:
-  cd apps/web && bun run --bun drizzle-kit migrate
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run ./cmd/migrate up
 
-# Open the Drizzle studio
-db_studio:
-  cd apps/web && bun run --bun drizzle-kit studio
+# Show migration status (which versions have/haven't been applied)
+db_status:
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run ./cmd/migrate status
 
-# Push schema changes directly (prototyping)
-db_push:
-  cd apps/web && bun run --bun drizzle-kit push
+# Roll back the most recent migration. Dev only — never against shared data.
+db_down:
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run ./cmd/migrate down
 
-# Introspect the database to generate schema files
-db_pull:
-  cd apps/web && bun run --bun drizzle-kit pull
+# Scaffold a new migration in apps/api/internal/db/migrations/. Pass a snake_case name.
+db_create name:
+  cd apps/api && go run ./cmd/migrate create {{name}}
 
 # Find all the license files
 find_licenses:

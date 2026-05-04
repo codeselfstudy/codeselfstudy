@@ -1,6 +1,5 @@
-// Package db opens a SQLite database for the API. The schema is owned by
-// apps/web/ via Drizzle; the Go side only reads and writes through plain
-// SQL.
+// Package db opens a SQLite database for the API and applies the embedded
+// goose migrations under migrations/. The Go side owns the schema.
 //
 // Driver choice: modernc.org/sqlite is pure Go (no CGO) so the distroless
 // runtime image stays static. Remote Turso (libsql://) is not handled here
@@ -52,25 +51,4 @@ func unsupportedScheme(u string) string {
 		}
 	}
 	return ""
-}
-
-// Schema is the SQL that mirrors apps/web/src/db/schema.ts. We keep it here
-// (rather than running Drizzle migrations from Go) so tests can bootstrap an
-// in-memory DB. The web workspace remains the source of truth for
-// production migrations.
-const Schema = `
-CREATE TABLE IF NOT EXISTS todos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    created_at INTEGER DEFAULT (unixepoch())
-);
-`
-
-// ApplySchema runs Schema against db. Used by tests; production relies on
-// Drizzle migrations from apps/web/.
-func ApplySchema(db *sql.DB) error {
-	if _, err := db.Exec(Schema); err != nil {
-		return fmt.Errorf("db: apply schema: %w", err)
-	}
-	return nil
 }

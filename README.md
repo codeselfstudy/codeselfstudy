@@ -26,7 +26,7 @@ The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future
 
 **Auth.** WorkOS AuthKit on the client; an Echo middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes.
 
-**Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO). Drizzle owns the schema in `apps/web/src/db/schema.ts` and runs migrations from the web side; the Go API reads and writes through plain SQL. Remote Turso (libsql://) is a follow-up.
+**Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO). The Go side owns the schema: goose migrations live in `apps/api/internal/db/migrations/`, are embedded into the binary via `//go:embed`, and apply automatically on server startup. Remote Turso (libsql://) is a follow-up.
 
 **Build.** `bun run build` prerenders all routes; `just build` mirrors the output into `apps/api/static/` so the Go binary picks it up. The Docker build runs locally and ships the prebuilt artifact in the build context — Fly's remote builder doesn't re-run `bun install`.
 

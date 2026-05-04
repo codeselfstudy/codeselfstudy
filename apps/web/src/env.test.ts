@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const REQUIRED = {
   WORKOS_API_KEY: "test_workos_api_key",
-  DATABASE_URL: "libsql://test.local",
   VITE_WORKOS_CLIENT_ID: "client_test",
   VITE_WORKOS_API_HOSTNAME: "auth.example.com",
 } as const;
@@ -19,7 +18,6 @@ beforeEach(() => {
   vi.unstubAllGlobals();
   stubAllRequired();
   vi.stubEnv("SERVER_URL", "");
-  vi.stubEnv("TURSO_AUTH_TOKEN", "");
 });
 
 afterEach(() => {
@@ -54,17 +52,11 @@ describe("env (server branch — window undefined)", () => {
     expect(typeof window).toBe("undefined");
     const { env } = await import("./env");
     expect(env.WORKOS_API_KEY).toBe(REQUIRED.WORKOS_API_KEY);
-    expect(env.DATABASE_URL).toBe(REQUIRED.DATABASE_URL);
   });
 
   test("treats empty SERVER_URL as undefined", async () => {
     const { env } = await import("./env");
     expect(env.SERVER_URL).toBeUndefined();
-  });
-
-  test("treats empty TURSO_AUTH_TOKEN as undefined", async () => {
-    const { env } = await import("./env");
-    expect(env.TURSO_AUTH_TOKEN).toBeUndefined();
   });
 
   test("accepts a valid SERVER_URL", async () => {
@@ -75,11 +67,6 @@ describe("env (server branch — window undefined)", () => {
 
   test("throws when WORKOS_API_KEY is missing", async () => {
     vi.stubEnv("WORKOS_API_KEY", "");
-    await expect(import("./env")).rejects.toThrow();
-  });
-
-  test("throws when DATABASE_URL is missing", async () => {
-    vi.stubEnv("DATABASE_URL", "");
     await expect(import("./env")).rejects.toThrow();
   });
 
