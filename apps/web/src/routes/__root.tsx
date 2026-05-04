@@ -14,6 +14,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { findRedirect } from "@/lib/redirects";
 import WorkOSProvider from "@/integrations/workos/provider";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
+import AuthDevtools from "@/integrations/auth-devtools/panel";
 import appCss from "@/styles.css?url";
 import { Analytics } from "@/components/analytics";
 import { ErrorPage } from "@/components/error-page";
@@ -90,6 +91,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 render: <TanStackRouterDevtoolsPanel />,
               },
               TanStackQueryDevtools,
+              AuthDevtools,
             ]}
           />
         </WorkOSProvider>
