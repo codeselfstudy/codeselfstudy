@@ -75,10 +75,14 @@ Do NOT add the agent name (e.g. Claude, Generated with Claude Code, Co-Authored-
 
 ## Configuration & Environment
 
-- Required env vars (in `.env.local` at the repo root):
-  - **Server-side**: `WORKOS_API_KEY`, `DATABASE_URL`. Optionally `TURSO_AUTH_TOKEN`, `WORKOS_CLIENT_ID`, `WORKOS_API_HOSTNAME`.
-  - **Client-side (Vite)**: `VITE_WORKOS_CLIENT_ID`, `VITE_WORKOS_API_HOSTNAME`. Client-side variables must be prefixed with `VITE_`.
-- `.env.local` lives at the repo root. The root scripts and justfile recipes pass `--env-file=.env.local` into `bun run` so the env propagates through Bun's `--filter` (which `cd`s into `apps/web/` and otherwise wouldn't auto-load it).
-- The Go API also reads `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (falling back to the `VITE_`-prefixed versions) and `DATABASE_URL`. Both `/api/me` and `/api/todos` are disabled if the relevant env is missing — useful for static-only smoke tests.
-- The schema lives in Drizzle (`apps/web/src/db/schema.ts`). The Go side mirrors it in `apps/api/internal/db/db.go` (`Schema` constant) for tests; production migrations stay JS-side.
+- Copy `env.local.example` to `.env.local` at the repo root and fill in the values.
+- Required vars:
+  - `VITE_WORKOS_CLIENT_ID`, `VITE_WORKOS_API_HOSTNAME` — used by the web client and re-used by the Go API as fallbacks.
+  - `WORKOS_API_KEY` — server-only WorkOS key, validated by `apps/web/src/env.ts`.
+  - `DATABASE_URL` — SQLite path or libsql URL.
+- Optional vars: `TURSO_AUTH_TOKEN` (when DATABASE*URL is a remote libsql URL), `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (override the `VITE*`-prefixed values for the Go API).
+- Client-side variables must be prefixed with `VITE_` to be exposed to the browser.
+- Env propagation: the root `package.json` scripts and the `justfile` pass `--env-file=.env.local` into `bun run`, since Bun's `--filter` `cd`s into `apps/web/` and would otherwise miss the root file. `just dev-api` sources `.env.local` into the Go process the same way.
+- `/api/me` is disabled if WorkOS env is missing; `/api/todos` is disabled if `DATABASE_URL` is missing. Static serving and `/healthz` always work — useful for barebones smoke tests.
+- The schema lives in Drizzle (`apps/web/src/db/schema.ts`). The Go side mirrors it in `apps/api/internal/db/db.go` (`Schema` constant) for tests; production migrations stay JS-side via `just db_*`.
 - Don't read files or directories ending in `.bak` or that are blocked by `.gitignore`.

@@ -22,21 +22,23 @@ codeselfstudy/
 └── justfile                  dev / build / test / deploy.
 ```
 
-The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future WebSocket endpoint (`/ws`). No JS runtime in production. Targets a single 256 MB Fly machine.
+The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future WebSocket endpoint at `/ws`. No JS runtime in production. Targets a single 256 MB Fly machine.
 
-**Auth.** WorkOS AuthKit on the client; the Go middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes.
+**Auth.** WorkOS AuthKit on the client; an Echo middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes.
 
-**Database.** SQLite via `modernc.org/sqlite` (pure Go). Drizzle owns the schema in `apps/web/src/db/schema.ts`; the Go side reads/writes through plain SQL. Remote Turso (libsql://) is a follow-up.
+**Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO). Drizzle owns the schema in `apps/web/src/db/schema.ts` and runs migrations from the web side; the Go API reads and writes through plain SQL. Remote Turso (libsql://) is a follow-up.
 
-**Build.** `bun run build` prerenders all routes; `just build` mirrors the output into `apps/api/static/` so the Go binary picks it up. The Docker build runs locally and ships the prebuilt `dist` in the build context — Fly's remote builder doesn't re-run `bun install`.
+**Build.** `bun run build` prerenders all routes; `just build` mirrors the output into `apps/api/static/` so the Go binary picks it up. The Docker build runs locally and ships the prebuilt artifact in the build context — Fly's remote builder doesn't re-run `bun install`.
 
 ## Quick start
+
+Requires [Bun](https://bun.com/), [Go](https://go.dev/) 1.26+, and [just](https://just.systems/).
 
 ```sh
 # clone, then:
 bun install
 cp env.local.example .env.local   # fill in WorkOS + DATABASE_URL
-just dev                          # web :7001, api :8080, proxied
+just dev                          # web :7001, api :8080 (Vite proxies /api and /ws)
 ```
 
 ```sh
