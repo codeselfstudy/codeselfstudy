@@ -1,9 +1,13 @@
 # Routing & Data
 
+> All paths in this section are relative to `apps/web/`.
+
 ## Routing (TanStack Router)
 
 Routes are file-based in `src/routes/`. The layout lives in
-`src/routes/__root.tsx`. Run the dev server and create a new route by adding a new file to `src/routes/`. For example, `src/routes/my-page.tsx`. TanStack Router will automatically generate some boilerplate in the file for you.
+`src/routes/__root.tsx` and wraps the app in `WorkOSProvider` plus the TanStack devtools harness. Run the dev server and create a new route by adding a new file to `src/routes/`. For example, `src/routes/my-page.tsx`. TanStack Router will automatically generate some boilerplate in the file for you.
+
+Server-side data fetching from the Go API uses `useApiFetch` from `src/lib/api.ts`, which attaches the WorkOS access token to `/api/*` requests. Vite proxies those calls to `http://localhost:8080` in dev.
 
 ### Adding Links
 
