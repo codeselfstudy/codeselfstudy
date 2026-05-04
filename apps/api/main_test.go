@@ -35,7 +35,7 @@ func fixtureDir(t *testing.T) string {
 }
 
 func TestHealthzReturns204(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil)
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -49,7 +49,7 @@ func TestHealthzReturns204(t *testing.T) {
 }
 
 func TestStaticFileServed(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil)
 	cases := []struct {
 		name string
 		path string
@@ -78,7 +78,7 @@ func TestStaticFileServed(t *testing.T) {
 // healthcheck probes, and ad-hoc monitoring all use HEAD; without explicit
 // support Echo returns 405 instead of mirroring the GET status.
 func TestHeadMirrorsGet(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil)
 	cases := []struct {
 		name       string
 		path       string
@@ -104,7 +104,7 @@ func TestHeadMirrorsGet(t *testing.T) {
 }
 
 func TestSSGFallbackOnUnknownPageRoute(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil)
 	req := httptest.NewRequest(http.MethodGet, "/nonexistent/", nil)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -121,7 +121,7 @@ func TestSSGFallbackOnUnknownPageRoute(t *testing.T) {
 }
 
 func TestApiAndWsRoutesSkipSSGFallback(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil)
 	cases := []string{"/api/missing", "/ws"}
 	for _, path := range cases {
 		t.Run(path, func(t *testing.T) {
@@ -143,7 +143,7 @@ func TestApiAndWsRoutesSkipSSGFallback(t *testing.T) {
 // connection hijack a WebSocket upgrade needs. The middleware in newServer
 // skips /ws so Phase 4's hub keeps working.
 func TestGzipSkippedOnWebsocketPath(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil)
 	cases := []struct {
 		path     string
 		wantGzip bool
@@ -171,7 +171,7 @@ func TestSSGFallbackHandlesMissing404Html(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "index.html"), []byte("home"), 0o644); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	e := newServer(dir, nil, nil)
+	e := newServer(dir, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/nope/", nil)
 	rec := httptest.NewRecorder()

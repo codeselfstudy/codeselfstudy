@@ -38,7 +38,7 @@ From the repo root:
 - `just build` — prerenders the web app and mirrors `.output/public/` into `apps/api/static/` so the Go binary serves it.
 - `just test` — Go race tests + Vitest.
 - `just deploy` — `just build` then `fly deploy`. The web is built locally and the prebuilt `dist` ships in the Docker build context (Fly's remote builder doesn't re-run `bun install`).
-- `just db_migrate|db_status|db_down|db_create <name>` — goose migration tasks against `DATABASE_URL`. The server runs `db_migrate` automatically on startup; the recipes are for ad-hoc dev runs and scaffolding new migrations.
+- `just db_migrate|db_status|db_down|db_create <name>` — goose migration tasks against `DATABASE_URL`. No production endpoint reads the DB yet, so this is dev-only until the first real schema lands.
 - `just find_licenses` — list embedded `LICENSE.md` files.
 
 Inside `apps/web/`:
@@ -80,10 +80,10 @@ Do NOT add the agent name (e.g. Claude, Generated with Claude Code, Co-Authored-
 - Required vars:
   - `VITE_WORKOS_CLIENT_ID`, `VITE_WORKOS_API_HOSTNAME` — used by the web client and re-used by the Go API as fallbacks.
   - `WORKOS_API_KEY` — server-only WorkOS key, validated by `apps/web/src/env.ts`.
-  - `DATABASE_URL` — SQLite path read by the Go API (e.g. `dev.db` or `:memory:`).
+  - `DATABASE_URL` — SQLite path used by the migrate CLI (e.g. `dev.db` or `:memory:`). Not read by the runtime server yet — wire it up when the first DB-backed endpoint lands.
 - Optional vars: `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` override the `VITE_`-prefixed values for the Go API.
 - Client-side variables must be prefixed with `VITE_` to be exposed to the browser.
 - Env propagation: the root `package.json` scripts and the `justfile` pass `--env-file=.env.local` into `bun run`, since Bun's `--filter` `cd`s into `apps/web/` and would otherwise miss the root file. `just dev-api` and the migration recipes source `.env.local` into the Go process the same way.
-- `/api/me` is disabled if WorkOS env is missing; `/api/todos` is disabled if `DATABASE_URL` is missing. Static serving and `/healthz` always work — useful for barebones smoke tests.
-- DB schema is owned by Go: edit migrations under `apps/api/internal/db/migrations/`. New migrations are scaffolded with `just db_create <name>`. The server applies them on startup, so a fresh checkout just works after `just dev`.
+- `/api/me` is disabled if WorkOS env is missing. Static serving and `/healthz` always work — useful for barebones smoke tests.
+- DB schema is owned by Go: edit migrations under `apps/api/internal/db/migrations/`. New migrations are scaffolded with `just db_create <name>`. There is currently a single placeholder migration; replace or rename it when the first real schema lands, and at that point re-add `db.Open` + `db.Migrate` to `main.go` so the server applies migrations on startup.
 - Don't read files or directories ending in `.bak` or that are blocked by `.gitignore`.

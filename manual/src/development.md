@@ -19,7 +19,7 @@ To run only one side:
 
 ```bash
 just dev-web   # Vite only
-just dev-api   # Go only — sources .env.local so /api/me and /api/todos mount
+just dev-api   # Go only — sources .env.local so /api/me mounts
 ```
 
 ## Updating dependencies

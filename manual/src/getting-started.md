@@ -42,8 +42,9 @@ WORKOS_API_KEY="your_workos_api_key"
 DATABASE_URL="dev.db"
 ```
 
-`DATABASE_URL` is read by the Go API and points to a local SQLite file (or
-`:memory:` in tests).
+`DATABASE_URL` is used by the migrate CLI in `apps/api/cmd/migrate` and by
+tests. Once the first DB-backed endpoint lands it will also be read at
+server startup.
 
 To consume validated variables in TypeScript code:
 
