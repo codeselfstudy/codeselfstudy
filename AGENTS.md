@@ -80,7 +80,7 @@ Do NOT add the agent name (e.g. Claude, Generated with Claude Code, Co-Authored-
   - `VITE_WORKOS_CLIENT_ID`, `VITE_WORKOS_API_HOSTNAME` — used by the web client and re-used by the Go API as fallbacks.
   - `WORKOS_API_KEY` — server-only WorkOS key, validated by `apps/web/src/env.ts`.
   - `DATABASE_URL` — SQLite path or libsql URL.
-- Optional vars: `TURSO_AUTH_TOKEN` (when DATABASE*URL is a remote libsql URL), `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (override the `VITE*`-prefixed values for the Go API).
+- Optional vars: `TURSO_AUTH_TOKEN` (when `DATABASE_URL` is a remote libsql URL), `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (override the `VITE_`-prefixed values for the Go API).
 - Client-side variables must be prefixed with `VITE_` to be exposed to the browser.
 - Env propagation: the root `package.json` scripts and the `justfile` pass `--env-file=.env.local` into `bun run`, since Bun's `--filter` `cd`s into `apps/web/` and would otherwise miss the root file. `just dev-api` sources `.env.local` into the Go process the same way.
 - `/api/me` is disabled if WorkOS env is missing; `/api/todos` is disabled if `DATABASE_URL` is missing. Static serving and `/healthz` always work — useful for barebones smoke tests.
