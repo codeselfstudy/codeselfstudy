@@ -1,25 +1,43 @@
 # Deployment
 
-## Docker
+The deployed app is a single Go binary that serves the prerendered web app, the JSON API at `/api/*`, and (in future) a WebSocket endpoint at `/ws`. There is no JavaScript runtime in production — the bundle is built locally and shipped as static files alongside the binary.
 
-The application is containerized using Docker. The `Dockerfile` is optimized for production builds, utilizing multi-stage builds to minimize image size and speed up build times.
+## Architecture in production
 
-### Build Process
+- `apps/web/.output/public/` — prerendered HTML/CSS/JS produced by `bun run build`. Built locally so Fly's remote builder doesn't re-run `bun install` (~10 min on a cold cache).
+- `apps/api/static/` — copy of `apps/web/.output/public/` mirrored by `just build` so the Go binary serves it.
+- `server` (the Go binary) — Echo + middleware + auth + DB; embeds goose migrations and applies them on startup.
 
-1.  **Base Image**: Uses `oven/bun:alpine` as the base image.
-2.  **Dependencies**: Separates production dependencies (`prod-deps`) from build dependencies to optimize caching.
-3.  **Build**: Compiles the application using `bun run build`.
-4.  **Final Image**: Copies only the necessary artifacts (`.output`, `node_modules`, `public`, `package.json`) to the final image.
+## Docker image
 
-### Deployment on Fly.io
+`Dockerfile` is multi-stage:
 
-The `Dockerfile` is specifically configured for deployment on [Fly.io](https://fly.io).
+1. **Build stage** (`golang:1.26-alpine`): copy `apps/api/`, copy the prebuilt `apps/web/.output/public` into `./static`, then `go build -trimpath -ldflags="-s -w" -o /out/server .` with `CGO_ENABLED=0`.
+2. **Runtime stage** (`gcr.io/distroless/static-debian12:debug-nonroot`): copy `/server` and `/static`. Distroless gives CA certs, a nonroot user, and a BusyBox shell for `fly ssh console` — about 2 MB on disk and zero steady-state RAM beyond the binary itself.
 
-- **Runtime**: Bun
-- **Port**: 8080
+The image runs as `nonroot`, exposes `8080`, and `ENTRYPOINT ["/server"]`.
+
+## Fly.io
+
+- `fly.toml` targets a 256 MB shared-cpu-1x machine with auto-stop enabled.
+- `/healthz` returns 204 — used by Fly's health checks.
 
 To deploy:
 
 ```bash
 just deploy
+```
+
+`just deploy` runs `just build` first (so the prerendered site is up to date), then `fly deploy`. Fly's remote builder pulls the prebuilt `apps/web/.output/public` from the build context — no JS install on the remote side.
+
+## Migrations
+
+Goose migrations live in `apps/api/internal/db/migrations/` and are embedded into the binary via `//go:embed`. The server applies pending migrations on startup, so a deploy that introduces a new migration applies it automatically the first time the new binary boots. There is no separate migration step in the deploy pipeline.
+
+For ad-hoc runs against a local DB:
+
+```bash
+just db_status
+just db_migrate
+just db_create add_some_table   # scaffolds a new .sql file
 ```
