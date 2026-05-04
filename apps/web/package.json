@@ -10,12 +10,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint --fix && stylelint --fix **/*.{css,scss}",
-    "db:generate": "echo 'use the justfile to ensure that it uses bun' && exit 1",
-    "db:migrate": "echo 'use the justfile to ensure that it uses bun' && exit 1",
-    "db:push": "echo 'use the justfile to ensure that it uses bun' && exit 1",
-    "db:pull": "echo 'use the justfile to ensure that it uses bun' && exit 1",
-    "db:studio": "echo 'use the justfile to ensure that it uses bun' && exit 1"
+    "lint": "eslint --fix && stylelint --fix **/*.{css,scss}"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -23,7 +18,6 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/anton": "^5.2.7",
     "@icons-pack/react-simple-icons": "^13.13.0",
-    "@libsql/client": "^0.17.3",
     "@t3-oss/env-core": "^0.13.11",
     "@tailwindcss/vite": "^4.2.4",
     "@tanstack/match-sorter-utils": "^8.19.4",
@@ -42,8 +36,6 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "drizzle-kit": "^0.31.10",
-    "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^1.14.0",

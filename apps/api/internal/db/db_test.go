@@ -14,8 +14,8 @@ func newTestDB(t *testing.T) *Todos {
 		t.Fatalf("open: %v", err)
 	}
 	t.Cleanup(func() { _ = d.Close() })
-	if err := ApplySchema(d); err != nil {
-		t.Fatalf("schema: %v", err)
+	if err := Migrate(t.Context(), d); err != nil {
+		t.Fatalf("migrate: %v", err)
 	}
 	return &Todos{DB: d}
 }
@@ -136,22 +136,24 @@ func TestTodosListRespectsLimit(t *testing.T) {
 	}
 }
 
-func TestApplySchemaIsIdempotent(t *testing.T) {
+func TestMigrateIsIdempotent(t *testing.T) {
 	d, err := Open(":memory:")
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
 	defer d.Close()
-	if err := ApplySchema(d); err != nil {
-		t.Fatalf("first apply: %v", err)
+
+	ctx := context.Background()
+	if err := Migrate(ctx, d); err != nil {
+		t.Fatalf("first migrate: %v", err)
 	}
-	if err := ApplySchema(d); err != nil {
-		t.Fatalf("second apply: %v", err)
+	if err := Migrate(ctx, d); err != nil {
+		t.Fatalf("second migrate: %v", err)
 	}
 
 	// Quick sanity check: insert/select round-trip after re-apply.
 	repo := &Todos{DB: d}
-	if _, err := repo.Create(context.Background(), "ok"); err != nil {
+	if _, err := repo.Create(ctx, "ok"); err != nil {
 		t.Fatalf("create after re-apply: %v", err)
 	}
 }

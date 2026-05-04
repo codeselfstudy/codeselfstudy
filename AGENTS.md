@@ -8,15 +8,16 @@ This is a Bun workspace with two apps:
   - `src/routes/` — TanStack Router file-based routes.
   - `src/components/` — reusable UI components.
   - `src/content/` and `src/data/` — site content and data helpers.
-  - `src/db/` — Drizzle schema and access for the web side. **Drizzle is the source of truth for the schema**; the Go backend reads/writes via plain SQL.
   - `src/lib/` — shared utilities, including `useApiFetch` for authenticated calls into the Go API.
   - `src/integrations/workos/` — WorkOS AuthKit provider; sign-in flow stays client-side.
   - `public/` — static assets passed through to the prerendered output.
   - `test/` — Vitest setup and MSW handlers.
-- `apps/api/` — Go + Echo backend.
+- `apps/api/` — Go + Echo backend. **Source of truth for the database schema.**
   - `main.go` — Echo bootstrap, static serving, route wiring.
+  - `cmd/migrate/` — small CLI around goose (`up`, `down`, `status`, `create`).
   - `internal/auth/` — WorkOS JWKS verifier + Echo middleware (validates bearer tokens against WorkOS-issued JWTs).
-  - `internal/db/` — SQLite access via `modernc.org/sqlite` (pure Go, no CGO). Mirrors the schema from `apps/web/src/db/schema.ts`.
+  - `internal/db/` — SQLite access via `modernc.org/sqlite` (pure Go, no CGO).
+  - `internal/db/migrations/` — goose `.sql` migrations; embedded into the binary via `//go:embed` and applied on startup.
   - `static/` — populated at build time by `just build` from `apps/web/.output/public/`. Gitignored.
 - `manual/` — mdBook documentation. Write documentation for any changed code. Mermaid is available.
 - `mockups/` — HTML mockups, served via `just mockups`.
@@ -37,7 +38,7 @@ From the repo root:
 - `just build` — prerenders the web app and mirrors `.output/public/` into `apps/api/static/` so the Go binary serves it.
 - `just test` — Go race tests + Vitest.
 - `just deploy` — `just build` then `fly deploy`. The web is built locally and the prebuilt `dist` ships in the Docker build context (Fly's remote builder doesn't re-run `bun install`).
-- `just db_generate|db_migrate|db_push|db_pull|db_studio` — Drizzle tasks (run inside `apps/web/`).
+- `just db_migrate|db_status|db_down|db_create <name>` — goose migration tasks against `DATABASE_URL`. The server runs `db_migrate` automatically on startup; the recipes are for ad-hoc dev runs and scaffolding new migrations.
 - `just find_licenses` — list embedded `LICENSE.md` files.
 
 Inside `apps/web/`:
@@ -79,10 +80,10 @@ Do NOT add the agent name (e.g. Claude, Generated with Claude Code, Co-Authored-
 - Required vars:
   - `VITE_WORKOS_CLIENT_ID`, `VITE_WORKOS_API_HOSTNAME` — used by the web client and re-used by the Go API as fallbacks.
   - `WORKOS_API_KEY` — server-only WorkOS key, validated by `apps/web/src/env.ts`.
-  - `DATABASE_URL` — SQLite path or libsql URL.
-- Optional vars: `TURSO_AUTH_TOKEN` (when `DATABASE_URL` is a remote libsql URL), `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (override the `VITE_`-prefixed values for the Go API).
+  - `DATABASE_URL` — SQLite path read by the Go API (e.g. `dev.db` or `:memory:`).
+- Optional vars: `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` override the `VITE_`-prefixed values for the Go API.
 - Client-side variables must be prefixed with `VITE_` to be exposed to the browser.
-- Env propagation: the root `package.json` scripts and the `justfile` pass `--env-file=.env.local` into `bun run`, since Bun's `--filter` `cd`s into `apps/web/` and would otherwise miss the root file. `just dev-api` sources `.env.local` into the Go process the same way.
+- Env propagation: the root `package.json` scripts and the `justfile` pass `--env-file=.env.local` into `bun run`, since Bun's `--filter` `cd`s into `apps/web/` and would otherwise miss the root file. `just dev-api` and the migration recipes source `.env.local` into the Go process the same way.
 - `/api/me` is disabled if WorkOS env is missing; `/api/todos` is disabled if `DATABASE_URL` is missing. Static serving and `/healthz` always work — useful for barebones smoke tests.
-- The schema lives in Drizzle (`apps/web/src/db/schema.ts`). The Go side mirrors it in `apps/api/internal/db/db.go` (`Schema` constant) for tests; production migrations stay JS-side via `just db_*`.
+- DB schema is owned by Go: edit migrations under `apps/api/internal/db/migrations/`. New migrations are scaffolded with `just db_create <name>`. The server applies them on startup, so a fresh checkout just works after `just dev`.
 - Don't read files or directories ending in `.bak` or that are blocked by `.gitignore`.

@@ -23,8 +23,8 @@ func newTestTodos(t *testing.T) *db.Todos {
 		t.Fatalf("db open: %v", err)
 	}
 	t.Cleanup(func() { _ = conn.Close() })
-	if err := db.ApplySchema(conn); err != nil {
-		t.Fatalf("schema: %v", err)
+	if err := db.Migrate(t.Context(), conn); err != nil {
+		t.Fatalf("migrate: %v", err)
 	}
 	return &db.Todos{DB: conn}
 }

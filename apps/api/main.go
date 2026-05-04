@@ -39,6 +39,8 @@ func main() {
 	}
 
 	// Open the database when DATABASE_URL is set. Same opt-in shape as auth.
+	// Goose migrations run on every startup; new versions are applied, already-
+	// applied versions are skipped.
 	var todos *db.Todos
 	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
 		conn, err := db.Open(dbURL)
@@ -46,6 +48,9 @@ func main() {
 			log.Fatalf("db: %v", err)
 		}
 		defer conn.Close()
+		if err := db.Migrate(ctx, conn); err != nil {
+			log.Fatalf("db: %v", err)
+		}
 		todos = &db.Todos{DB: conn}
 	} else {
 		log.Printf("db: DATABASE_URL not set; /api/todos disabled")
