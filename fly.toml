@@ -16,6 +16,9 @@ primary_region = "iad"
   min_machines_running = 0
   processes = ["app"]
 
+[deploy]
+  strategy = "canary"
+
 [[vm]]
   cpus = 1
   memory_mb = 512
