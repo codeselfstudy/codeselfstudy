@@ -1,0 +1,14 @@
+telemetry = false
+
+[install]
+# Minimum publish age (seconds) before a version is installable.
+# 4 days
+minimumReleaseAge = 345600
+# Pin exact versions in package.json (no ^ / ~) to reduce drift.
+exact = true
+# Note: Bun does not run lifecycle scripts by default. Allowlist trusted
+# packages via `"trustedDependencies"` in package.json.
+
+[test]
+coverage = true
+coverageThreshold = 0.9
