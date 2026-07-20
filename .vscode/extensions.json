@@ -6,6 +6,7 @@
     "EditorConfig.EditorConfig",
     "esbenp.prettier-vscode",
     "oven.bun-vscode",
-    "stylelint.vscode-stylelint"
+    "stylelint.vscode-stylelint",
+    "astro-build.astro-vscode"
   ]
 }
