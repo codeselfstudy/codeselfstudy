@@ -1,0 +1,9 @@
+From: Cafe News <deals@cafe.example>
+To: me@example.com
+Subject: Latin1 Charset
+Message-Id: <latin1@cafe.example>
+Date: Mon, 20 Jul 2026 16:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+
+Café résumé workshop 30% off. Details: https://cafe.example/deal
