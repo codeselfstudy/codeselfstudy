@@ -48,9 +48,14 @@ func TestHTTPPosterNon2xx(t *testing.T) {
 }
 
 func TestHTTPPosterNetworkError(t *testing.T) {
-	// Nothing listens on port 1; Post must return an error, not hang.
-	err := NewHTTPPoster("http://127.0.0.1:1").Post(context.Background(), []byte(`{}`))
+	// Nothing listens on port 1; Post must return an error, not hang. The webhook
+	// URL is a secret (a bearer credential), so the error must NOT leak it.
+	const secretURL = "http://127.0.0.1:1/services/T00/B00/SUPERSECRETTOKEN"
+	err := NewHTTPPoster(secretURL).Post(context.Background(), []byte(`{}`))
 	if err == nil {
 		t.Fatal("expected network error")
+	}
+	if strings.Contains(err.Error(), "SUPERSECRETTOKEN") || strings.Contains(err.Error(), "/services/") {
+		t.Errorf("error leaks the webhook URL: %v", err)
 	}
 }

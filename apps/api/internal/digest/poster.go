@@ -3,9 +3,11 @@ package digest
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -37,6 +39,13 @@ func (p *HTTPPoster) Post(ctx context.Context, payload []byte) error {
 
 	resp, err := p.Client.Do(req)
 	if err != nil {
+		// http.Client.Do wraps failures as *url.Error, whose Error() embeds the
+		// full request URL — but the Slack webhook URL is a secret (a bearer
+		// credential). Report only the underlying cause so it never reaches logs.
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return fmt.Errorf("post to slack: %w", urlErr.Err)
+		}
 		return fmt.Errorf("post to slack: %w", err)
 	}
 	defer resp.Body.Close()

@@ -30,6 +30,10 @@ const (
 	// exists, is treated as a "view in browser" stub and the HTML is preferred.
 	stubThreshold = 200
 	truncSentinel = "\n[truncated]"
+	// maxMIMEDepth caps multipart nesting. Email bodies come from untrusted
+	// senders; a maliciously deep multipart tree would otherwise recurse until
+	// the goroutine stack is exhausted. Real mail nests only a few levels.
+	maxMIMEDepth = 20
 )
 
 // Email is the normalized result of parsing a raw message.
@@ -93,7 +97,7 @@ func Parse(raw []byte) (Email, error) {
 	var p parts
 	if err := p.walk(msg.Body, contentType,
 		msg.Header.Get("Content-Transfer-Encoding"),
-		msg.Header.Get("Content-Disposition")); err != nil {
+		msg.Header.Get("Content-Disposition"), 0); err != nil {
 		return Email{}, fmt.Errorf("walk body: %w", err)
 	}
 	// Guarantee valid UTF-8 even when a body mislabels its charset (e.g. declares
@@ -108,7 +112,12 @@ type parts struct {
 	html  string
 }
 
-func (p *parts) walk(r io.Reader, contentType, cte, disposition string) error {
+func (p *parts) walk(r io.Reader, contentType, cte, disposition string, depth int) error {
+	if depth > maxMIMEDepth {
+		// Stop descending into pathologically deep multipart nesting (untrusted
+		// input); parts already collected above this point are still used.
+		return nil
+	}
 	mediaType, params, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		mediaType, params = "text/plain", map[string]string{}
@@ -131,7 +140,7 @@ func (p *parts) walk(r io.Reader, contentType, cte, disposition string) error {
 			perr := p.walk(part,
 				part.Header.Get("Content-Type"),
 				part.Header.Get("Content-Transfer-Encoding"),
-				part.Header.Get("Content-Disposition"))
+				part.Header.Get("Content-Disposition"), depth+1)
 			part.Close()
 			if perr != nil {
 				return perr
