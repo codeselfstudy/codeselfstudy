@@ -5,12 +5,10 @@
 
 set -euo pipefail
 
-# Web build outputs (TanStack Start + Vite + Nitro).
-/bin/rm -rfv apps/web/.output
-/bin/rm -rfv apps/web/.tanstack
+# Web build output (Astro).
 /bin/rm -rfv apps/web/dist
 
-# Go static-asset mirror (populated by `just build` from .output/public).
+# Go static-asset mirror (populated by `just build` from apps/web/dist).
 /bin/rm -rfv apps/api/static
 
 # Local Go binaries from `go build .` if anyone runs them.
