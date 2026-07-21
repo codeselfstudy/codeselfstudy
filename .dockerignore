@@ -49,6 +49,11 @@ apps/web/tsconfig.json
 apps/web/vite.config.ts
 apps/web/vitest.config.ts
 
+# Worker workspace — deploys to Cloudflare, never ships in the Go image
+# (the Dockerfile only copies apps/api + apps/web/dist). Excluding the whole
+# dir keeps its source and large wrangler node_modules out of the build context.
+apps/email_receiver
+
 # Root JS install artifacts
 node_modules
 bun.lock
