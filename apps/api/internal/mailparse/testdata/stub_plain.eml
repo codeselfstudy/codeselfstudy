@@ -1,0 +1,18 @@
+From: Course Platform <deals@courses.example>
+To: me@example.com
+Subject: Stub Plain Part
+Message-Id: <stub@courses.example>
+Date: Mon, 20 Jul 2026 14:00:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="BOUNDARY2"
+
+--BOUNDARY2
+Content-Type: text/plain; charset="utf-8"
+
+View this email in your browser.
+
+--BOUNDARY2
+Content-Type: text/html; charset="utf-8"
+
+<html><body><h1>Python Mega Course Sale</h1><p>Lifetime access for 12 dollars.</p><a href="https://courses.example/python">Enroll now</a></body></html>
+--BOUNDARY2--

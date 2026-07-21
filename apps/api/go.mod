@@ -7,6 +7,7 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.1.6
 	github.com/pressly/goose/v3 v3.27.1
 	golang.org/x/net v0.53.0
+	golang.org/x/text v0.36.0
 	modernc.org/sqlite v1.50.0
 )
 
@@ -34,7 +35,6 @@ require (
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	modernc.org/libc v1.72.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
