@@ -59,21 +59,20 @@ check_status() { # path want-status
   fi
 }
 
-check_redirect() { # path want-status want-location-suffix
-  local out code loc
+check_redirect() { # path want-status want-location-path
+  local out code loc path
   out="$(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" "${BASE}$1")"
   code="${out%% *}"
   loc="${out#* }"
-  case "$loc" in
-  *"$3")
-    if [ "$code" = "$2" ]; then
-      echo "  ok    $1 -> $code $loc"
-      return
-    fi
-    ;;
-  esac
-  echo "  FAIL  $1 -> $code $loc (want $2 ...$3)"
-  FAILURES=$((FAILURES + 1))
+  # Strip scheme://host to compare the Location path (+ query) exactly, so a
+  # redirect to the wrong page can't slip through a loose suffix match.
+  path="/${loc#*://*/}"
+  if [ "$code" = "$2" ] && [ "$path" = "$3" ]; then
+    echo "  ok    $1 -> $code $path"
+  else
+    echo "  FAIL  $1 -> $code $path (want $2 $3)"
+    FAILURES=$((FAILURES + 1))
+  fi
 }
 
 check_body_contains() { # path needle
