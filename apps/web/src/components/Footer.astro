@@ -64,8 +64,10 @@ const currentYear = new Date().getFullYear();
   </div>
 </footer>
 
-<script is:inline>
+<script>
   // Refresh the build-time year on the client so a stale deploy stays correct.
   const el = document.getElementById("footer-year");
-  if (el) el.textContent = String(new Date().getFullYear());
+  if (el) {
+    el.textContent = String(new Date().getFullYear());
+  }
 </script>
