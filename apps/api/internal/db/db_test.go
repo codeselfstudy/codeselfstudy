@@ -6,17 +6,27 @@ import (
 	"testing"
 )
 
-func TestOpenRejectsRemoteSchemes(t *testing.T) {
-	cases := []string{
-		"libsql://example.turso.io",
-		"http://localhost:8080/db",
-		"https://example.com",
-		"wss://example.com",
+func TestDriverFor(t *testing.T) {
+	// The scheme→driver mapping is tested as a pure function: a real libsql
+	// connection needs a live Turso server, so Open() on a libsql:// URL can't be
+	// exercised in a unit test (Ping would fail on the network, not the scheme).
+	cases := map[string]string{
+		"libsql://example.turso.io":        "libsql",
+		"libsql://db.turso.io?authToken=x": "libsql",
+		"http://localhost:8080/db":         "libsql",
+		"https://example.com":              "libsql",
+		"wss://example.com":                "libsql",
+		"ws://example.com":                 "libsql",
+		"dev.db":                           "sqlite",
+		":memory:":                         "sqlite",
+		"file:/tmp/x.db":                   "sqlite",
+		"sqlite:/tmp/x.db":                 "sqlite",
+		"/var/lib/app.db":                  "sqlite",
 	}
-	for _, u := range cases {
-		t.Run(u, func(t *testing.T) {
-			if _, err := Open(u); err == nil {
-				t.Fatalf("expected error for %q, got nil", u)
+	for url, want := range cases {
+		t.Run(url, func(t *testing.T) {
+			if got := driverFor(url); got != want {
+				t.Fatalf("driverFor(%q) = %q, want %q", url, got, want)
 			}
 		})
 	}
