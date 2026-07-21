@@ -37,6 +37,11 @@ jobs:
         run: bunx stylelint "**/*.{css,scss}"
         working-directory: apps/web
 
+      # Type-check (astro check) and produce the static build so page or type
+      # breakage fails the PR. The build script is `astro check && astro build`.
+      - name: Build web
+        run: bun run --filter web build
+
       - name: Test web with coverage
         run: bun run --filter web test:coverage
 
