@@ -1,6 +1,7 @@
 package mailparse
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -201,5 +202,40 @@ func TestParseTruncatesOnRuneBoundary(t *testing.T) {
 	}
 	if !strings.HasSuffix(e.Text, truncSentinel) {
 		t.Error("Text missing truncation sentinel")
+	}
+}
+
+// nestedMultipart builds an email whose body is `levels` nested multipart/mixed
+// wrappers around a single text/plain leaf ("deepest"); the leaf sits at walk
+// depth == levels.
+func nestedMultipart(levels int) []byte {
+	part := "Content-Type: text/plain\r\n\r\ndeepest\r\n"
+	for i := levels - 1; i >= 0; i-- {
+		b := fmt.Sprintf("b%d", i)
+		part = "Content-Type: multipart/mixed; boundary=\"" + b + "\"\r\n\r\n" +
+			"--" + b + "\r\n" + part + "\r\n--" + b + "--\r\n"
+	}
+	return []byte("From: x@example.com\r\nSubject: Nested\r\nMessage-Id: <nest@x>\r\n" +
+		"Date: Mon, 20 Jul 2026 10:00:00 +0000\r\n" + part)
+}
+
+func TestParseMIMEDepthCap(t *testing.T) {
+	// Within the cap: a deep-but-bounded message still reaches its leaf.
+	within, err := Parse(nestedMultipart(maxMIMEDepth / 2))
+	if err != nil {
+		t.Fatalf("within-cap Parse: %v", err)
+	}
+	if !strings.Contains(within.Text, "deepest") {
+		t.Errorf("within-cap: leaf not reached, Text = %q", within.Text)
+	}
+
+	// Beyond the cap: recursion stops before the leaf. It must not panic or
+	// error, and the too-deep leaf is not collected.
+	beyond, err := Parse(nestedMultipart(maxMIMEDepth * 2))
+	if err != nil {
+		t.Fatalf("beyond-cap Parse: %v", err)
+	}
+	if strings.Contains(beyond.Text, "deepest") {
+		t.Errorf("beyond-cap: leaf past the depth cap should not be reached, Text = %q", beyond.Text)
 	}
 }
