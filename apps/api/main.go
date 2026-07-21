@@ -179,7 +179,11 @@ func staticHandler(staticRoot string) echo.HandlerFunc {
 		// asset URLs too.
 		if reqPath != "/" && !strings.HasSuffix(reqPath, "/") && filepath.Ext(reqPath) == "" {
 			if dirIndexExists(staticRoot, rel) {
-				target := reqPath + "/"
+				// Build the target from the normalized `clean`, not the raw
+				// request path: a request for `//about` must redirect to
+				// `/about/`, not the protocol-relative `//about/` (which a
+				// browser reads as the off-origin host `about`).
+				target := clean + "/"
 				if q := c.Request().URL.RawQuery; q != "" {
 					target += "?" + q
 				}
