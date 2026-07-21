@@ -4,15 +4,15 @@ The deployed app is a single Go binary that serves the prerendered web app, the 
 
 ## Architecture in production
 
-- `apps/web/.output/public/` — prerendered HTML/CSS/JS produced by `bun run build`. Built locally so Fly's remote builder doesn't re-run `bun install` (~10 min on a cold cache).
-- `apps/api/static/` — copy of `apps/web/.output/public/` mirrored by `just build` so the Go binary serves it.
+- `apps/web/dist/` — prerendered HTML/CSS/JS produced by `bun run build`. Built locally so Fly's remote builder doesn't re-run `bun install` (~10 min on a cold cache).
+- `apps/api/static/` — copy of `apps/web/dist/` mirrored by `just build` so the Go binary serves it.
 - `server` (the Go binary) — Echo + middleware + auth + DB; embeds goose migrations and applies them on startup.
 
 ## Docker image
 
 `Dockerfile` is multi-stage:
 
-1. **Build stage** (`golang:1.26-alpine`): copy `apps/api/`, copy the prebuilt `apps/web/.output/public` into `./static`, then `go build -trimpath -ldflags="-s -w" -o /out/server .` with `CGO_ENABLED=0`.
+1. **Build stage** (`golang:1.26-alpine`): copy `apps/api/`, copy the prebuilt `apps/web/dist` into `./static`, then `go build -trimpath -ldflags="-s -w" -o /out/server .` with `CGO_ENABLED=0`.
 2. **Runtime stage** (`gcr.io/distroless/static-debian12:debug-nonroot`): copy `/server` and `/static`. Distroless gives CA certs, a nonroot user, and a BusyBox shell for `fly ssh console` — about 2 MB on disk and zero steady-state RAM beyond the binary itself.
 
 The image runs as `nonroot`, exposes `8080`, and `ENTRYPOINT ["/server"]`.
@@ -28,7 +28,7 @@ To deploy:
 just deploy
 ```
 
-`just deploy` runs `just build` first (so the prerendered site is up to date), then `fly deploy`. Fly's remote builder pulls the prebuilt `apps/web/.output/public` from the build context — no JS install on the remote side.
+`just deploy` runs `just build` first (so the prerendered site is up to date), then `fly deploy`. Fly's remote builder pulls the prebuilt `apps/web/dist` from the build context — no JS install on the remote side.
 
 ## Migrations
 

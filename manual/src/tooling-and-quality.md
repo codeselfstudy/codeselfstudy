@@ -23,7 +23,7 @@ bun run check                        # Prettier + ESLint
 
 ## Linting and Formatting
 
-- ESLint uses `@tanstack/eslint-config` (web side).
+- ESLint uses a flat config (`typescript-eslint`, `eslint-plugin-astro`, `react-hooks`) on the web side.
 - Stylelint checks CSS and Tailwind usage.
 - Prettier is the standard formatter.
 - Styling is done with Tailwind CSS.
@@ -31,7 +31,7 @@ bun run check                        # Prettier + ESLint
 
 ## Tests and Coverage
 
-- **Web:** Vitest (`apps/web/vitest.config.ts`). `just test-coverage` produces an HTML report under `apps/web/coverage/`. `apps/web/src/lib/**`, `apps/web/src/data/**`, `apps/web/src/hooks/**`, and `apps/web/src/env.ts` enforce 100% line/function/statement coverage.
+- **Web:** Vitest (`apps/web/vitest.config.ts`). `just test-coverage` produces an HTML report under `apps/web/coverage/`. `apps/web/src/lib/**` enforces 100% line/branch/function/statement coverage.
 - **API:** stdlib `testing` + `httptest`. All Go code requires test coverage — this is a hard rule of the stack experiment. Tests live next to the code as `*_test.go`.
 
 ## Continuous Integration
