@@ -239,6 +239,30 @@ func TestIngestRouteWiredWhenEnabled(t *testing.T) {
 	}
 }
 
+func TestRedactToken(t *testing.T) {
+	url := "libsql://db.turso.io?authToken=SUPERSECRET123"
+	tok := authTokenOf(url)
+	if tok != "SUPERSECRET123" {
+		t.Fatalf("authTokenOf = %q, want SUPERSECRET123", tok)
+	}
+	// A driver error embedding the URL must come out with the token redacted but
+	// the useful cause intact.
+	errStr := `db: ping: dial libsql://db.turso.io?authToken=SUPERSECRET123: connection refused`
+	got := redactToken(errStr, tok)
+	if strings.Contains(got, "SUPERSECRET123") {
+		t.Errorf("redactToken left the token: %q", got)
+	}
+	if !strings.Contains(got, "connection refused") {
+		t.Errorf("redactToken dropped the cause: %q", got)
+	}
+	if authTokenOf("file:./dev.db") != "" {
+		t.Error("authTokenOf should be empty for a local file URL")
+	}
+	if redactToken("plain error", "") != "plain error" {
+		t.Error("redactToken with empty token should be a no-op")
+	}
+}
+
 func TestIngestRouteAbsentWhenDisabled(t *testing.T) {
 	// With no ingest handler, POST /api/ingest falls through to the /api/* JSON
 	// 404 reservation (the pipeline is disabled).

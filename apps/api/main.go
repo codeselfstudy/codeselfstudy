@@ -99,6 +99,32 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
+// authTokenOf extracts the authToken query value from a libsql DATABASE_URL, or
+// "" if absent. Used to redact the token from database errors before logging.
+func authTokenOf(dbURL string) string {
+	const key = "authToken="
+	i := strings.Index(dbURL, key)
+	if i < 0 {
+		return ""
+	}
+	v := dbURL[i+len(key):]
+	if amp := strings.IndexByte(v, '&'); amp >= 0 {
+		v = v[:amp]
+	}
+	return v
+}
+
+// redactToken replaces every occurrence of token in s with "***". A libsql
+// driver error can embed the full connection URL including ?authToken=<token>;
+// redacting the opaque token keeps the useful cause (dial/connect/auth failure)
+// in the log while keeping the secret out of it. A no-op when token is "".
+func redactToken(s, token string) string {
+	if token == "" {
+		return s
+	}
+	return strings.ReplaceAll(s, token, "***")
+}
+
 // newIngestFromEnv builds the email-ingest handlers from the environment. It
 // returns (nil, nil) when the pipeline is not configured (no DATABASE_URL /
 // INGEST_TOKEN), so the server still runs static-only — mirroring the WorkOS
@@ -115,13 +141,14 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 		return nil, nil
 	}
 
+	tok := authTokenOf(cfg.DatabaseURL)
 	database, err := db.Open(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("ingest: db open: %v", err)
+		log.Fatalf("ingest: db open: %s", redactToken(err.Error(), tok))
 	}
 	if err := db.Migrate(ctx, database); err != nil {
 		_ = database.Close()
-		log.Fatalf("ingest: db migrate: %v", err)
+		log.Fatalf("ingest: db migrate: %s", redactToken(err.Error(), tok))
 	}
 
 	var extractor extract.Extractor = extract.Disabled{}
