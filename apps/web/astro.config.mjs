@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 
 import react from "@astrojs/react";
+import sitemap from "@astrojs/sitemap";
 
 import tailwindcss from "@tailwindcss/vite";
 
@@ -18,7 +19,13 @@ export default defineConfig({
     format: "directory",
   },
 
-  integrations: [react()],
+  integrations: [
+    react(),
+    // Exclude /s/ (the Slack invite page, which is noindex) from the sitemap.
+    sitemap({
+      filter: (page) => page !== "https://codeselfstudy.com/s/",
+    }),
+  ],
 
   vite: {
     plugins: [tailwindcss()],
