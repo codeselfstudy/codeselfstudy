@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "codeselfstudy-email-receiver",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  // INGEST_URL is the Go app's /api/ingest endpoint (served by the Fly app at
+  // codeselfstudy.com). Override per-environment if the host differs.
+  "vars": {
+    "INGEST_URL": "https://codeselfstudy.com/api/ingest",
+  },
+  // The only secret is INGEST_TOKEN, which must match the Go app's INGEST_TOKEN;
+  // set it with `wrangler secret put INGEST_TOKEN`. Local dev reads it from
+  // .dev.vars (gitignored). There is no archive mailbox.
+}

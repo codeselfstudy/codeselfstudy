@@ -25,4 +25,14 @@ export default [
       "react-hooks/exhaustive-deps": "warn",
     },
   },
+  {
+    // The repo now has multiple app tsconfigs (apps/web, apps/email_receiver),
+    // so pin this config's TSConfig root explicitly — otherwise typescript-eslint
+    // errors with "multiple candidate TSConfigRootDirs" when a run spans apps.
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
 ];
