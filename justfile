@@ -17,6 +17,10 @@ dev-web:
 dev-api:
   set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run .
 
+# Cloudflare Worker (email_receiver) dev server via wrangler
+dev_worker:
+  bun run --filter email_receiver dev
+
 # Build the prerendered web app, then mirror dist into apps/api/static so the
 # Go binary can serve it locally and so the Dockerfile picks it up directly.
 build: clean
@@ -26,10 +30,15 @@ build: clean
   /bin/cp -R apps/web/dist apps/api/static
   @echo '\nDone with building.\n'
 
-# Run unit tests across the whole repo (Go race tests + Vitest)
+# Run unit tests across the whole repo (Go race tests + Vitest + Worker)
 test:
   cd apps/api && go test -race ./...
   bun run --filter web test
+  bun run --filter email_receiver test
+
+# Worker (email_receiver) tests only: tsc typecheck + bun test
+test_worker:
+  bun run --filter email_receiver test
 
 # Run web tests in watch mode
 test-watch:
@@ -68,6 +77,14 @@ status:
 # SSH into a live Fly machine
 ssh:
   fly ssh console
+
+# Deploy the Cloudflare Worker (email_receiver) via wrangler
+deploy_worker:
+  bun run --filter email_receiver deploy
+
+# Tail the deployed Cloudflare Worker's logs
+tail_worker:
+  cd apps/email_receiver && bunx wrangler tail
 
 # Apply pending migrations against DATABASE_URL. The server also runs this
 # on startup, so this is mainly for ad-hoc dev runs.
