@@ -1,0 +1,35 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import PageWrapper from "@/components/PageWrapper.astro";
+import { buttonVariants } from "@/components/ui/button";
+
+const homeButtonClass = buttonVariants();
+const contactButtonClass = buttonVariants({ variant: "outline" });
+---
+
+<Layout
+  title="Page not found"
+  description="The page you were looking for could not be found."
+  isNoIndex
+>
+  <PageWrapper>
+    <div class="mx-auto max-w-2xl text-center">
+      <p
+        class="text-muted-foreground text-sm font-semibold tracking-widest uppercase"
+      >
+        404
+      </p>
+      <h1 class="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+        Page not found
+      </h1>
+      <p class="text-muted-foreground mt-4 text-base">
+        We couldn't find the page you were looking for. It may have been moved
+        or no longer exists.
+      </p>
+      <div class="mt-8 flex items-center justify-center gap-3">
+        <a href="/" class={homeButtonClass}>Go home</a>
+        <a href="/contact/" class={contactButtonClass}>Contact us</a>
+      </div>
+    </div>
+  </PageWrapper>
+</Layout>
