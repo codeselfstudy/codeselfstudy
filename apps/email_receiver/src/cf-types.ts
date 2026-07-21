@@ -2,14 +2,17 @@
 // via @cloudflare/workers-types or `wrangler types`; we declare only what this
 // tiny worker uses, to avoid a heavyweight dev dependency.
 //
-// Note: ForwardableEmailMessage has a forward() method, but this shim does not
-// use it (there is no archive mailbox) — so it is intentionally omitted here.
+// Note: ForwardableEmailMessage also has forward() and reply() methods; this
+// shim uses neither (there is no archive mailbox), so they are omitted. It does
+// use setReject() to permanently reject a message it will never accept.
 
 export interface ForwardableEmailMessage {
   readonly from: string;
   readonly to: string;
   readonly raw: ReadableStream<Uint8Array>;
   readonly rawSize: number;
+  /** Reject the message with an SMTP error (a permanent, non-retryable bounce). */
+  setReject(reason: string): void;
 }
 
 export interface ExecutionContext {

@@ -149,6 +149,7 @@ function mockMessage(
     to: "deals@y",
     raw: new Response(new Uint8Array([1, 2, 3])).body!,
     rawSize: 3,
+    setReject: (_reason: string) => {},
     ...over,
   } as ForwardableEmailMessage;
 }
@@ -180,15 +181,21 @@ describe("handleEmail", () => {
     ).rejects.toThrow("ingest down");
   });
 
-  test("throws for an oversize message before POSTing", async () => {
+  test("rejects an oversize message via setReject, with no POST", async () => {
     let fetchCalls = 0;
+    let rejectReason = "";
     const fetchFn = (async () => {
       fetchCalls++;
       return new Response("ok");
     }) as unknown as typeof fetch;
-    await expect(
-      handleEmail(mockMessage({ rawSize: MAX_RAW_BYTES + 1 }), env, fetchFn)
-    ).rejects.toThrow(/exceeds/);
+    const msg = mockMessage({
+      rawSize: MAX_RAW_BYTES + 1,
+      setReject: (reason: string) => {
+        rejectReason = reason;
+      },
+    });
+    await handleEmail(msg, env, fetchFn);
+    expect(rejectReason).toContain("exceeds");
     expect(fetchCalls).toBe(0);
   });
 

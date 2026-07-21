@@ -73,16 +73,24 @@ export interface Env {
 
 // Cloudflare Email Routing caps messages at 25 MB; refuse the POST above this to
 // stay well within the Worker's memory. There is no archive copy, so an oversize
-// message is bounced (see handleEmail) rather than silently dropped.
+// message is permanently rejected (see handleEmail) rather than silently dropped.
 export const MAX_RAW_BYTES = 20 * 1024 * 1024;
 
 /**
  * handleEmail POSTs an incoming message to the Go app's /api/ingest.
  *
- * There is no archive mailbox, so a thrown error IS the backstop: Cloudflare
- * bounces the message and the sender re-delivers, and nothing is silently lost.
- * A persistent POST failure therefore propagates out of postWithRetry (not
- * swallowed), and an oversize message is refused with a throw before the POST.
+ * There is no archive mailbox, so delivery failures fall back on the sender, in
+ * two distinct ways:
+ *
+ *   - An oversize message is a permanent, deterministic failure — retrying can
+ *     never help — so it is rejected with the documented message.setReject(),
+ *     which bounces it to the sender immediately.
+ *   - A persistent POST failure (the Go app is down or cold-starting) is treated
+ *     as transient: postWithRetry's error propagates out of the email() handler
+ *     so Cloudflare fails the delivery and the sending MTA retries later. Confirm
+ *     on the first real deploy that a thrown handler yields a retryable delivery
+ *     failure (not a silent accept-and-drop) — this is the only backstop for a
+ *     transient outage now that there is no archive copy.
  */
 export async function handleEmail(
   message: ForwardableEmailMessage,
@@ -91,9 +99,10 @@ export async function handleEmail(
   cfg: RetryConfig = {}
 ): Promise<void> {
   if (message.rawSize > MAX_RAW_BYTES) {
-    throw new Error(
-      `raw size ${message.rawSize} exceeds ${MAX_RAW_BYTES}; refusing to POST`
+    message.setReject(
+      `message size ${message.rawSize} exceeds the ${MAX_RAW_BYTES}-byte limit`
     );
+    return;
   }
 
   const raw = await new Response(message.raw).arrayBuffer();
