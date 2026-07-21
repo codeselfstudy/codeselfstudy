@@ -19,6 +19,10 @@ describe("minify", () => {
     expect(minify("a\n\n   \nb")).toBe("a b");
   });
 
+  test("handles CRLF line endings (trim strips the trailing \\r)", () => {
+    expect(minify("a\r\nb")).toBe("a b");
+  });
+
   test("leaves a single line unchanged (aside from trimming)", () => {
     expect(minify("  one line  ")).toBe("one line");
   });
