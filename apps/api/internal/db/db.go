@@ -37,6 +37,18 @@ func Open(databaseURL string) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("db: open: %w", err)
 	}
+	// SQLite is a single-writer embedded engine: serialize access through one
+	// connection so PRAGMAs stick and concurrent writers never see SQLITE_BUSY
+	// (the digest-claim in internal/store relies on this serialization). It also
+	// keeps :memory: databases alive across queries — a fresh connection would
+	// otherwise get an empty database. Foreign keys are a per-connection PRAGMA,
+	// enabled here as local integrity belt-and-suspenders (the pipeline always
+	// inserts an email before that email's deals); Turso does not enforce them.
+	db.SetMaxOpenConns(1)
+	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		_ = db.Close()
+		return nil, fmt.Errorf("db: enable foreign keys: %w", err)
+	}
 	if err := db.Ping(); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("db: ping: %w", err)
