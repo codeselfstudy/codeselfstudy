@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Navbar from "@/components/Navbar";
 
@@ -34,5 +34,20 @@ describe("Navbar", () => {
     await user.click(screen.getByRole("button", { name: "Open main menu" }));
 
     expect(await screen.findByText("Menu")).toBeInTheDocument();
+  });
+
+  test("closes the drawer when a menu link is clicked", async () => {
+    const user = userEvent.setup();
+    render(<Navbar />);
+
+    await user.click(screen.getByRole("button", { name: "Open main menu" }));
+    const dialog = await screen.findByRole("dialog");
+
+    // The drawer lists the same links; clicking one dismisses the drawer.
+    await user.click(within(dialog).getByRole("link", { name: "About" }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Menu")).not.toBeInTheDocument()
+    );
   });
 });
