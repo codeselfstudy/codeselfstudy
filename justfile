@@ -7,7 +7,7 @@ default:
 dev:
   just dev-api & just dev-web && wait
 
-# Web (TanStack Start) dev server only
+# Web (Astro) dev server only
 dev-web:
   bun run --env-file=.env.local --filter web dev
 
@@ -23,7 +23,7 @@ build: clean
   @echo '\nBuilding the project...\n'
   bun run --env-file=.env.local --filter web build
   /bin/rm -rf apps/api/static
-  /bin/cp -R apps/web/.output/public apps/api/static
+  /bin/cp -R apps/web/dist apps/api/static
   @echo '\nDone with building.\n'
 
 # Run unit tests across the whole repo (Go race tests + Vitest)
@@ -94,7 +94,7 @@ mockups:
 manual:
   cd manual && mdbook serve -p 8001 --open
 
-# Remove build artifacts (web .output/.tanstack, api ./static, root node_modules cache)
+# Remove build artifacts (web dist, api ./static, root node_modules cache)
 clean:
   @echo '\nCleaning project...\n'
   ./scripts/clean.sh

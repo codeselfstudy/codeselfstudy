@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.7
 #
-# The web app is built locally (see `just deploy`) and apps/web/.output/public
-# ships in the build context. That avoids re-running `bun install` on Fly's
-# remote builder, which was ~10min on a cold cache.
+# The web app is built locally (see `just deploy`) and apps/web/dist ships in
+# the build context. That avoids re-running `bun install` on Fly's remote
+# builder, which was ~10min on a cold cache.
 
 # 1. Build the Go binary, copying the prebuilt static site as ./static.
 FROM golang:1.26-alpine AS api
@@ -10,7 +10,7 @@ WORKDIR /src
 COPY apps/api/go.mod apps/api/go.sum ./
 RUN go mod download
 COPY apps/api ./
-COPY apps/web/.output/public ./static
+COPY apps/web/dist ./static
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/server .
 
 # 2. Distroless runtime. CA certs + nonroot user + BusyBox shell (debug
