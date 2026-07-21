@@ -375,6 +375,23 @@ func TestMarkDigestPostedStampsAllDeals(t *testing.T) {
 	}
 }
 
+// TestForeignKeysEnforced locks in the behavioral point of db.Open's
+// PRAGMA foreign_keys = ON: a deal referencing a non-existent email is rejected.
+// Without the PRAGMA (or with a driver that silently ignores it) this insert
+// would succeed, so the assertion guards against a future regression.
+func TestForeignKeysEnforced(t *testing.T) {
+	s := newStore(t)
+	err := s.UpsertDeal(ctx, store.Deal{
+		EmailID:   999999, // no such email row
+		DedupeKey: "orphan|deal",
+		Source:    "H",
+		Title:     "Orphan",
+	}, time.Time{})
+	if err == nil {
+		t.Fatal("expected a foreign-key violation inserting a deal with a non-existent email_id")
+	}
+}
+
 func TestDedupeKey(t *testing.T) {
 	tests := []struct {
 		from, title, want string

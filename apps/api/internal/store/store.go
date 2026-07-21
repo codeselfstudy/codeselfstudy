@@ -7,9 +7,9 @@
 // internal/db.Migrate), so the same handle is shared with the rest of the
 // server. It is a concrete type (no interface): tests run the real store against
 // a temporary SQLite file via the pure-Go modernc.org/sqlite driver, so the real
-// store is its own test double. Production points DATABASE_URL at Turso, which
-// uses the pure-Go libsql driver; internal/db.Open picks the driver by URL
-// scheme.
+// store is its own test double. The Go backend currently supports local SQLite
+// only; remote Turso (libsql://) support is added in a later change, where
+// internal/db.Open picks the driver by URL scheme.
 package store
 
 import (
@@ -80,6 +80,12 @@ type Deal struct {
 }
 
 // Store is a concrete persistence layer over a *sql.DB.
+//
+// internal/db.Open caps the SQLite pool at one connection (SetMaxOpenConns(1)),
+// so a method that has opened a transaction MUST route every further statement
+// through that tx — issuing an s.db call while a tx is open would wait forever
+// for the single connection the tx already holds. MarkDigestPosted is the one
+// tx site today and follows this rule.
 type Store struct {
 	db *sql.DB
 	// Now supplies the current time; overridable in tests for deterministic
