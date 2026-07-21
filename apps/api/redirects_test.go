@@ -74,6 +74,10 @@ func TestLegacyRedirectServedOverHTTP(t *testing.T) {
 		{"query preserved", http.MethodGet, "/book?a=1&b=2", "/learn/?a=1&b=2"},
 		{"wildcard redirect", http.MethodGet, "/blog/anything", "/learn/"},
 		{"head mirrors get", http.MethodHead, "/book", "/learn/"},
+		// The incoming path is slash-normalized before lookup, so a legacy path
+		// that only existed in trailing-slash form must still redirect.
+		{"trailing-slash-only legacy path", http.MethodGet, "/support-us/", "/"},
+		{"trailing-slash-only to learn", http.MethodGet, "/programming-notes-wiki/", "/learn/"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -83,6 +83,12 @@ var exactRedirects = map[string]legacyRedirect{
 	"/b/":             {to: "/learn/", status: http.StatusPermanentRedirect},
 	"/tools/unicode":  {to: "/tools/", status: http.StatusPermanentRedirect},
 	"/tools/unicode/": {to: "/tools/", status: http.StatusPermanentRedirect},
+	// These two legacy paths exist only in trailing-slash form in the source
+	// data. The caller looks up the slash-normalized path (filepath.Clean
+	// strips the trailing slash), and neither is covered by a wildcard, so each
+	// needs a bare-form key to match.
+	"/support-us":             {to: "/", status: http.StatusPermanentRedirect},
+	"/programming-notes-wiki": {to: "/learn/", status: http.StatusPermanentRedirect},
 }
 
 // wildcardRedirects is matched only after exactRedirects. A pattern "/blog/*"
