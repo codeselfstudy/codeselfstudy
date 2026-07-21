@@ -13,22 +13,22 @@ Bun workspace with two apps and a Go binary that fronts the whole thing in produ
 ```
 codeselfstudy/
 ├── apps/
-│   ├── web/                  TanStack Start (Vite + React + TS).
-│   │   └── .output/public/   Prerendered static site (build-time output).
+│   ├── web/                  Astro (SSG, React islands).
+│   │   └── dist/             Prerendered static site (build-time output).
 │   └── api/                  Go + Echo backend.
-│       └── static/           Mirrored from web's .output/public at build time.
+│       └── static/           Mirrored from web's dist/ at build time.
 ├── Dockerfile                Multi-stage: Go build + distroless runtime.
 ├── fly.toml                  256 MB shared-cpu-1x.
 └── justfile                  dev / build / test / deploy.
 ```
 
-The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future WebSocket endpoint at `/ws`. No JS runtime in production. Targets a single 256 MB Fly machine.
+The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future WebSocket endpoint at `/ws`. It also owns the URL layer: legacy redirects and trailing-slash canonicalization (the site is built with `trailingSlash: "always"`) live in the Go server, since a static build can't emit real redirects. No JS runtime in production. Targets a single 256 MB Fly machine.
 
-**Auth.** WorkOS AuthKit on the client; an Echo middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes.
+**Auth.** An Echo middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes. The client-side WorkOS sign-in UI is deferred to the API phase — the current Astro build ships without it.
 
 **Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO). The Go side owns the schema: goose migrations live in `apps/api/internal/db/migrations/`, are embedded into the binary via `//go:embed`, and apply automatically on server startup. Remote Turso (libsql://) is a follow-up.
 
-**Build.** `bun run build` prerenders all routes; `just build` mirrors the output into `apps/api/static/` so the Go binary picks it up. The Docker build runs locally and ships the prebuilt artifact in the build context — Fly's remote builder doesn't re-run `bun install`.
+**Build.** `bun run build` prerenders all routes to `apps/web/dist/`; `just build` mirrors that into `apps/api/static/` so the Go binary picks it up. The Docker build runs locally and ships the prebuilt artifact in the build context — Fly's remote builder doesn't re-run `bun install`.
 
 ## Quick start
 
@@ -38,7 +38,7 @@ Requires [Bun](https://bun.com/), [Go](https://go.dev/) 1.26+, and [just](https:
 # clone, then:
 bun install
 cp env.local.example .env.local   # fill in WorkOS + DATABASE_URL
-just dev                          # web :7001, api :8080 (Vite proxies /api and /ws)
+just dev                          # web :7001 (Astro), api :8080 (Go)
 ```
 
 ```sh

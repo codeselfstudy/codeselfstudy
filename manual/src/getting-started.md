@@ -13,7 +13,7 @@
 bun install
 
 # Run the web (:7001) and Go API (:8080) dev servers together.
-# Vite proxies /api and /ws to the Go server.
+# The two run independently; the static site doesn't call the API yet.
 just dev
 ```
 
@@ -28,16 +28,15 @@ bun run preview
 
 ## Environment Variables
 
-Web-side environment variables are validated in `apps/web/src/env.ts`. Copy
-`env.local.example` to `.env.local` at the repo root and fill in:
+Copy `env.local.example` to `.env.local` at the repo root and fill in:
 
 ```bash
-# client-side variables (browser-exposed)
+# client-side variables (browser-exposed). The Astro app doesn't consume
+# these yet; the Go verifier reads them as fallback names.
 VITE_WORKOS_CLIENT_ID="your_workos_client_id"
 VITE_WORKOS_API_HOSTNAME="your_workos_api_hostname"
 
 # server-only variables
-SERVER_URL="http://localhost:7001"
 WORKOS_API_KEY="your_workos_api_key"
 DATABASE_URL="dev.db"
 ```
@@ -45,14 +44,6 @@ DATABASE_URL="dev.db"
 `DATABASE_URL` is used by the migrate CLI in `apps/api/cmd/migrate` and by
 tests. Once the first DB-backed endpoint lands it will also be read at
 server startup.
-
-To consume validated variables in TypeScript code:
-
-```ts
-import { env } from "@/env";
-
-console.log(env.SERVER_URL);
-```
 
 ## Database Tasks
 

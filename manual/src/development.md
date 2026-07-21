@@ -10,15 +10,15 @@ just dev
 
 Boots two servers in parallel:
 
-- `apps/web/` (TanStack Start dev server) on `http://localhost:7001`.
+- `apps/web/` (Astro dev server) on `http://localhost:7001`.
 - `apps/api/` (Go + Echo) on `http://localhost:8080`.
 
-The Vite dev server proxies `/api` and `/ws` to `:8080`, so you hit the same paths in dev as in production.
+The two servers run independently in this phase — there is no dev proxy, since the static site does not call the API yet. Build the site (`just build`) and run the Go server to exercise the production URL behavior (redirects, trailing-slash canonicalization) end to end.
 
 To run only one side:
 
 ```bash
-just dev-web   # Vite only
+just dev-web   # Astro only
 just dev-api   # Go only — sources .env.local so /api/me mounts
 ```
 
