@@ -162,11 +162,30 @@ func newServer(staticRoot string, v *auth.Verifier) *echo.Echo {
 // handler (which never fires once FileServer writes to the wire).
 func staticHandler(staticRoot string) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		clean := filepath.Clean("/" + c.Request().URL.Path)
+		reqPath := c.Request().URL.Path
+		clean := filepath.Clean("/" + reqPath)
 		if strings.Contains(clean, "..") {
 			return echo.NewHTTPError(http.StatusBadRequest)
 		}
 		rel := strings.TrimPrefix(clean, "/")
+
+		// Canonicalize to the trailing-slash form. An extensionless path with no
+		// trailing slash that resolves to a directory's index.html gets a 301 to
+		// `path + "/"`, so every page has a single canonical URL (the site is
+		// built with trailingSlash "always"). The query string is preserved.
+		// Paths with an extension (assets) and unresolvable paths are left alone
+		// — no redirected assets, and no redirect-then-404 double hop. We avoid
+		// Echo's AddTrailingSlash middleware precisely because it would redirect
+		// asset URLs too.
+		if reqPath != "/" && !strings.HasSuffix(reqPath, "/") && filepath.Ext(reqPath) == "" {
+			if dirIndexExists(staticRoot, rel) {
+				target := reqPath + "/"
+				if q := c.Request().URL.RawQuery; q != "" {
+					target += "?" + q
+				}
+				return c.Redirect(http.StatusMovedPermanently, target)
+			}
+		}
 
 		if path, ok := resolveStatic(staticRoot, rel); ok {
 			return c.File(path)
@@ -177,6 +196,13 @@ func staticHandler(staticRoot string) echo.HandlerFunc {
 		}
 		return echo.NewHTTPError(http.StatusNotFound)
 	}
+}
+
+// dirIndexExists reports whether rel resolves to a directory index.html — the
+// specific candidate that trailing-slash canonicalization applies to.
+func dirIndexExists(staticRoot, rel string) bool {
+	info, err := os.Stat(filepath.Join(staticRoot, rel, "index.html"))
+	return err == nil && !info.IsDir()
 }
 
 // resolveStatic walks the same fallbacks browsers expect from a prerendered

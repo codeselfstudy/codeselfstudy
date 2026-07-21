@@ -21,6 +21,7 @@ func fixtureDir(t *testing.T) string {
 		"index.html":       "<!doctype html><title>Home</title>home",
 		"about/index.html": "<!doctype html><title>About</title>about",
 		"404.html":         "<!doctype html><title>Not Found</title>missing",
+		"favicon.ico":      "icon-bytes",
 	}
 	for rel, body := range files {
 		full := filepath.Join(dir, rel)
@@ -179,5 +180,40 @@ func TestSSGFallbackHandlesMissing404Html(t *testing.T) {
 
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("status: want 404, got %d", rec.Code)
+	}
+}
+
+func TestTrailingSlashCanonicalization(t *testing.T) {
+	e := newServer(fixtureDir(t), nil)
+	cases := []struct {
+		name     string
+		method   string
+		path     string
+		wantCode int
+		wantLoc  string
+	}{
+		{"extensionless page redirects", http.MethodGet, "/about", http.StatusMovedPermanently, "/about/"},
+		{"slashed page served", http.MethodGet, "/about/", http.StatusOK, ""},
+		{"root not redirected", http.MethodGet, "/", http.StatusOK, ""},
+		{"query string preserved", http.MethodGet, "/about?x=1&y=2", http.StatusMovedPermanently, "/about/?x=1&y=2"},
+		{"asset not redirected", http.MethodGet, "/favicon.ico", http.StatusOK, ""},
+		{"unresolvable not redirected", http.MethodGet, "/nope", http.StatusNotFound, ""},
+		{"head mirrors get redirect", http.MethodHead, "/about", http.StatusMovedPermanently, "/about/"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.path, nil)
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			if rec.Code != tc.wantCode {
+				t.Fatalf("status: want %d, got %d", tc.wantCode, rec.Code)
+			}
+			if tc.wantLoc != "" {
+				if got := rec.Header().Get("Location"); got != tc.wantLoc {
+					t.Fatalf("Location: want %q, got %q", tc.wantLoc, got)
+				}
+			}
+		})
 	}
 }
