@@ -6,7 +6,7 @@
 
 Routes are file-based in `src/pages/`. Each `.astro` file becomes a page: `src/pages/about.astro` builds to `dist/about/index.html` and is served at `/about/`. Add a route by adding a file.
 
-The site is statically generated (`output: "static"`) and configured with `trailingSlash: "always"` and `build.format: "directory"` in `astro.config.mjs`, so every page is a directory with an `index.html` and every canonical URL ends in a slash. Because of that, **all internal links must carry a trailing slash** (see AGENTS.md).
+The site is statically generated (static output is Astro's default) and configured with `trailingSlash: "always"` and `build.format: "directory"` in `astro.config.mjs`, so every page is a directory with an `index.html` and every canonical URL ends in a slash. Because of that, **all internal links must carry a trailing slash** (see AGENTS.md).
 
 ```astro
 <a href="/about/">About</a>
