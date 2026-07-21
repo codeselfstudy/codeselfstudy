@@ -1,5 +1,6 @@
-# Only the prebuilt apps/web/.output/public ships in the build context;
-# the Go binary serves it. Source / installs aren't needed at build time.
+# Only the prebuilt apps/web/dist ships in the build context; the Go binary
+# serves it. Source / installs aren't needed at build time. The dist dir is
+# matched by the defensive `**/dist` glob below and re-included at the end.
 
 .git
 .github
@@ -39,7 +40,6 @@ apps/web/public
 apps/web/test
 apps/web/node_modules
 apps/web/.tanstack
-apps/web/dist
 apps/web/.cta.json
 apps/web/components.json
 apps/web/drizzle.config.ts
@@ -185,3 +185,9 @@ package.json
 **/*.class
 **/out
 **/.gradle
+
+# Re-include the one build artifact that must ship: the prerendered Astro
+# output that the Go binary serves. This negation must stay last so it wins
+# over the `**/dist` defensive glob above (last matching pattern wins).
+!apps/web/dist
+!apps/web/dist/**
