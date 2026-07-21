@@ -7,6 +7,8 @@ set -euo pipefail
 
 # Web build output (Astro).
 /bin/rm -rfv apps/web/dist
+/bin/rm -rfv apps/web/.astro
+/bin/rm -rfv apps/web/node_modules/.astro/*
 
 # Go static-asset mirror (populated by `just build` from apps/web/dist).
 /bin/rm -rfv apps/api/static
