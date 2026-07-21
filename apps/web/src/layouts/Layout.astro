@@ -68,14 +68,6 @@ const gaSnippet = `
     }
     <link rel="canonical" href={canonical} />
     {
-      /*
-        Google Analytics — production builds only. This was a TODO in the old
-        app ("double-check that this works, I don't know how TanStack handles
-        page changes"). Moot now: this is a static MPA, so every navigation is
-        a full page load and gtag fires on each page automatically.
-      */
-    }
-    {
       import.meta.env.PROD && (
         <>
           <script
