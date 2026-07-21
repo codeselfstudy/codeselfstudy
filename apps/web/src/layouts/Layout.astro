@@ -43,13 +43,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 // below), flattened to one line by minify() at the injection point. Kept as a
 // string because raw `{}` in an inline <script> inside a JSX expression would
 // be parsed as Astro expressions.
-const gaSnippet = `
+const gaSnippet = minify(`
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-99DC6WSRWL');
-`;
+  gtag("js", new Date());
+  gtag("config", "G-99DC6WSRWL");
+`);
 ---
 
 <html lang={lang}>
@@ -77,7 +76,7 @@ const gaSnippet = `
             async
             src="https://www.googletagmanager.com/gtag/js?id=G-99DC6WSRWL"
           />
-          <script is:inline set:html={minify(gaSnippet)} />
+          <script is:inline set:html={gaSnippet} />
         </>
       )
     }
