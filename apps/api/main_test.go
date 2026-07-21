@@ -18,11 +18,11 @@ func fixtureDir(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
 	files := map[string]string{
-		"index.html":           "<!doctype html><title>Home</title>home",
-		"about/index.html":     "<!doctype html><title>About</title>about",
-		"404.html":             "<!doctype html><title>Not Found</title>missing",
-		"favicon.ico":          "icon-bytes",
-		"blog/post/index.html": "<!doctype html><title>Post</title>post",
+		"index.html":            "<!doctype html><title>Home</title>home",
+		"about/index.html":      "<!doctype html><title>About</title>about",
+		"404.html":              "<!doctype html><title>Not Found</title>missing",
+		"favicon.ico":           "icon-bytes",
+		"team/alice/index.html": "<!doctype html><title>Alice</title>alice",
 	}
 	for rel, body := range files {
 		full := filepath.Join(dir, rel)
@@ -194,7 +194,7 @@ func TestTrailingSlashCanonicalization(t *testing.T) {
 		wantLoc  string
 	}{
 		{"extensionless page redirects", http.MethodGet, "/about", http.StatusMovedPermanently, "/about/"},
-		{"nested page redirects", http.MethodGet, "/blog/post", http.StatusMovedPermanently, "/blog/post/"},
+		{"nested page redirects", http.MethodGet, "/team/alice", http.StatusMovedPermanently, "/team/alice/"},
 		{"slashed page served", http.MethodGet, "/about/", http.StatusOK, ""},
 		{"root not redirected", http.MethodGet, "/", http.StatusOK, ""},
 		{"query string preserved", http.MethodGet, "/about?x=1&y=2", http.StatusMovedPermanently, "/about/?x=1&y=2"},
