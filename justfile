@@ -39,6 +39,11 @@ test-watch:
 test-coverage:
   bun run --filter web test:coverage
 
+# Build the site, then smoke-test it end to end through the Go server
+# (pages, redirects, trailing-slash canonicalization, 404, sitemap).
+smoke_test: build
+  ./scripts/smoke.sh
+
 # Format the whole repo with prettier
 format:
   bun run format
