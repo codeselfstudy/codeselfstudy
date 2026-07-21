@@ -12,6 +12,9 @@ apps/web/src/routeTree.gen.ts
 .envrc
 !.env-example
 
+# Cloudflare Worker local secrets (wrangler); not matched by the .env* rules
+.dev.vars
+
 dist/
 build/
 .astro/
