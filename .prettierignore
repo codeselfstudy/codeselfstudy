@@ -36,3 +36,8 @@ TANK/
 **/*.min.js
 manual/book/
 
+# Go test fixtures / golden files must stay byte-exact. Prettier would reformat
+# the JSON ones (e.g. append a trailing newline) and break exact-match golden
+# tests like internal/digest's TestBuildBlocksGolden.
+apps/api/**/testdata/
+
