@@ -169,6 +169,18 @@ func staticHandler(staticRoot string) echo.HandlerFunc {
 		}
 		rel := strings.TrimPrefix(clean, "/")
 
+		// Legacy redirects run first — before trailing-slash canonicalization
+		// and before static resolution. This ordering matters: `/index.html` is
+		// both a real file in the static root and a legacy redirect to `/`, so
+		// resolving first would serve it 200 instead of redirecting.
+		if r, ok := findRedirect(clean); ok {
+			target := r.to
+			if q := c.Request().URL.RawQuery; q != "" {
+				target += "?" + q
+			}
+			return c.Redirect(r.status, target)
+		}
+
 		// Canonicalize to the trailing-slash form. An extensionless path with no
 		// trailing slash that resolves to a directory's index.html gets a 301 to
 		// `path + "/"`, so every page has a single canonical URL (the site is
