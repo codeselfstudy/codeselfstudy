@@ -13,6 +13,7 @@ primary_region = "iad"
   # the previous version keeps serving instead of crash-looping. Migrations are
   # idempotent, so this is a no-op when the schema is already current.
   release_command = "/server -migrate"
+  strategy = "canary"
 
 [http_service]
   internal_port = 8080
@@ -35,5 +36,3 @@ primary_region = "iad"
 [[vm]]
   cpus = 1
   memory_mb = 256
-
-
