@@ -13,8 +13,8 @@
 bun install
 
 # Run the web (:7001) and Go API (:8080) dev servers together.
-# They run independently (no dev proxy); the navbar's /api/me call only
-# resolves against the Go server, not the standalone Astro server.
+# They run independently (no dev proxy): the navbar's same-origin /api/me
+# hits Astro on :7001 (which has no API); the authed API needs the Go build.
 just dev
 ```
 
