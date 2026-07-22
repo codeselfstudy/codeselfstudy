@@ -15,8 +15,8 @@ func TestLoadDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.GeminiModel != "gemini-2.5-flash-lite" {
-		t.Errorf("GeminiModel = %q, want gemini-2.5-flash-lite", cfg.GeminiModel)
+	if cfg.GeminiModel != "gemini-3.5-flash-lite" {
+		t.Errorf("GeminiModel = %q, want gemini-3.5-flash-lite", cfg.GeminiModel)
 	}
 	if cfg.DigestInterval != 24*time.Hour {
 		t.Errorf("DigestInterval = %v, want 24h", cfg.DigestInterval)
@@ -122,7 +122,7 @@ func TestConfigStringRedactsSecrets(t *testing.T) {
 		}
 	}
 	// Non-secret fields remain visible.
-	if !strings.Contains(s, "gemini-2.5-flash-lite") {
+	if !strings.Contains(s, "gemini-3.5-flash-lite") {
 		t.Errorf("String() dropped GeminiModel: %s", s)
 	}
 }

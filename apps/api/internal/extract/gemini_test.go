@@ -44,7 +44,7 @@ func newTestGemini(t *testing.T, handler http.HandlerFunc) *Gemini {
 	t.Helper()
 	srv := httptest.NewServer(handler)
 	t.Cleanup(srv.Close)
-	g, err := NewGemini(ctx, "test-key", "gemini-2.5-flash-lite", srv.URL)
+	g, err := NewGemini(ctx, "test-key", "gemini-3.5-flash-lite", srv.URL)
 	if err != nil {
 		t.Fatalf("NewGemini: %v", err)
 	}
@@ -214,7 +214,7 @@ func TestExtractLive(t *testing.T) {
 	if os.Getenv("GEMINI_LIVE_TEST") != "1" {
 		t.Skip("set GEMINI_LIVE_TEST=1 and GEMINI_API_KEY to run")
 	}
-	g, err := NewGemini(ctx, os.Getenv("GEMINI_API_KEY"), "gemini-2.5-flash-lite", "")
+	g, err := NewGemini(ctx, os.Getenv("GEMINI_API_KEY"), "gemini-3.5-flash-lite", "")
 	if err != nil {
 		t.Fatalf("NewGemini: %v", err)
 	}

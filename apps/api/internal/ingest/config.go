@@ -31,7 +31,7 @@ type Config struct {
 // configured. The Slack webhook comes from SLACK_WEBHOOK_FOR_DEALS_CHANNEL.
 func Load(getenv func(string) string) (Config, error) {
 	cfg := Config{
-		GeminiModel:    "gemini-2.5-flash-lite",
+		GeminiModel:    "gemini-3.5-flash-lite",
 		DigestInterval: 24 * time.Hour,
 		RepostAfter:    45 * 24 * time.Hour,
 	}
