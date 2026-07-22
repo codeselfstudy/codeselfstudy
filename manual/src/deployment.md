@@ -6,7 +6,7 @@ The deployed app is a single Go binary that serves the prerendered web app, the 
 
 - `apps/web/dist/` — prerendered HTML/CSS/JS produced by `bun run build`. Built locally so Fly's remote builder doesn't re-run `bun install` (~10 min on a cold cache).
 - `apps/api/static/` — copy of `apps/web/dist/` mirrored by `just build` so the Go binary serves it.
-- `server` (the Go binary) — Echo + middleware + auth + DB; embeds goose migrations and applies them on startup.
+- `server` (the Go binary) — Echo + middleware + auth + DB; embeds the goose migrations and applies them via the deploy's release command (see [Migrations](#migrations)).
 
 ## Docker image
 
@@ -32,7 +32,9 @@ just deploy
 
 ## Migrations
 
-Goose migrations live in `apps/api/internal/db/migrations/` and are embedded into the binary via `//go:embed`. The server applies pending migrations on startup, so a deploy that introduces a new migration applies it automatically the first time the new binary boots. There is no separate migration step in the deploy pipeline.
+Goose migrations live in `apps/api/internal/db/migrations/` and are embedded into the binary via `//go:embed`. In production they are applied by a dedicated deploy step, not on server startup: `fly.toml` sets `[deploy] release_command = "/server -migrate"`, so Fly runs `server -migrate` once per deploy in a temporary machine before the new version serves traffic. If it fails, the release command fails — which aborts the deploy and leaves the previous version serving, rather than crash-looping the new one. Migrations are idempotent (goose tracks state in its own table), so the step is a no-op when the schema is already current.
+
+The one exception is a local SQLite database, which the server migrates on boot as a dev convenience; a remote Turso database is always migrated out of band by the release command.
 
 For ad-hoc runs against a local DB:
 

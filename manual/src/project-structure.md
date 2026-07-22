@@ -23,7 +23,7 @@ Inside `apps/api/`:
 - `cmd/migrate/`: small CLI around goose for ad-hoc migration runs.
 - `internal/auth/`: WorkOS JWKS verifier + Echo middleware.
 - `internal/db/`: SQLite / Turso access (driver chosen by `DATABASE_URL` scheme).
-- `internal/db/migrations/`: goose `.sql` migrations, embedded into the binary and applied on startup.
+- `internal/db/migrations/`: goose `.sql` migrations, embedded into the binary and applied by the deploy's release command (on boot for a local SQLite DB).
 - `internal/ingest/`: the `/api/ingest` + `/api/admin/digest` handlers, bearer-token middleware, and pipeline config.
 - `internal/store/`: emails/deals/digests persistence and the once-per-interval digest claim.
 - `internal/mailparse/`, `internal/htmltext/`: raw MIME → normalized text.
