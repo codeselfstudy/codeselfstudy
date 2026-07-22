@@ -36,21 +36,21 @@ import PageWrapper from "@/components/PageWrapper.astro";
 
 ## Interactivity (islands)
 
-Pages are static HTML by default and ship no JavaScript. When a component needs to run in the browser it becomes an **island** — a React component rendered with a `client:*` directive. The navbar is the only island today; its mobile drawer needs client-side state, so `Layout.astro` renders it with `client:load`:
+Pages are static HTML by default and ship no JavaScript. When a component needs to run in the browser it becomes an **island** — a React component rendered with a `client:*` directive. The navbar is the only island today; it owns client-side state (the mobile drawer) and the WorkOS AuthKit sign-in control. Because AuthKit is browser-only and must not be prerendered, `Layout.astro` renders it with `client:only="react"`:
 
 ```astro
 ---
 import Navbar from "@/components/Navbar.tsx";
 ---
 
-<Navbar client:load />
+<Navbar client:only="react" />
 ```
 
 Keep islands small: everything outside them stays zero-JS.
 
 ## Data fetching
 
-The current site fetches no data — every page is prerendered at build time. When the Go API surface is built out, calls to `/api/*` will happen from islands (or future server code), not from the static pages. There are no route loaders.
+Every page is prerendered at build time. The one exception is the navbar island: once a user signs in it calls `/api/*` from the browser — `apiFetch` (`apps/web/src/lib/api.ts`) attaches the WorkOS bearer token and reads `/api/me`. Static pages fetch nothing, and there are no route loaders.
 
 ## Redirects and URL canonicalization
 
