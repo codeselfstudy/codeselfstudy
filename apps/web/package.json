@@ -2,9 +2,6 @@
   "name": "web",
   "type": "module",
   "version": "0.0.1",
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "scripts": {
     "dev": "astro dev --port 7001",
     "build": "astro check && astro build",
