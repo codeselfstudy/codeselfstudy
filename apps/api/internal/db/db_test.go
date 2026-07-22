@@ -126,3 +126,28 @@ func TestMigrateAgainstLibsql(t *testing.T) {
 		t.Fatalf("second migrate (idempotent): %v", err)
 	}
 }
+
+func TestResolveURL(t *testing.T) {
+	const tok = "tok123"
+	cases := []struct {
+		name, rawURL, token, want string
+	}{
+		{"bare libsql gets token", "libsql://db.turso.io", tok, "libsql://db.turso.io?authToken=tok123"},
+		{"https gets token", "https://db.turso.io", tok, "https://db.turso.io?authToken=tok123"},
+		{"embedded authToken wins", "libsql://db.turso.io?authToken=abc", tok, "libsql://db.turso.io?authToken=abc"},
+		{"embedded auth_token wins", "libsql://db.turso.io?auth_token=abc", tok, "libsql://db.turso.io?auth_token=abc"},
+		{"local sqlite path unchanged", "dev.db", tok, "dev.db"},
+		{"memory unchanged", ":memory:", tok, ":memory:"},
+		{"empty url unchanged", "", tok, ""},
+		{"empty token unchanged", "libsql://db.turso.io", "", "libsql://db.turso.io"},
+		{"embedded jwt wins", "libsql://db.turso.io?jwt=abc", tok, "libsql://db.turso.io?jwt=abc"},
+		{"preserves other query params", "libsql://db.turso.io?foo=bar", tok, "libsql://db.turso.io?authToken=tok123&foo=bar"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := ResolveURL(tc.rawURL, tc.token); got != tc.want {
+				t.Fatalf("ResolveURL(%q, %q) = %q, want %q", tc.rawURL, tc.token, got, tc.want)
+			}
+		})
+	}
+}

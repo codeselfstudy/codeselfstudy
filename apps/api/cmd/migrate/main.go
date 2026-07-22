@@ -42,7 +42,7 @@ func main() {
 		return
 	}
 
-	dbURL := os.Getenv("DATABASE_URL")
+	dbURL := db.ResolveURL(os.Getenv("DATABASE_URL"), os.Getenv("TURSO_AUTH_TOKEN"))
 	if dbURL == "" {
 		log.Fatal("DATABASE_URL is empty")
 	}

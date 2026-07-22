@@ -5,14 +5,16 @@
 // the pure-Go Turso client (github.com/tursodatabase/libsql-client-go); anything
 // else — a bare path, dev.db, :memory:, file:… — uses the pure-Go
 // modernc.org/sqlite driver. Both are CGO-free, so the distroless runtime image
-// stays static (CGO_ENABLED=0). The Turso auth token travels inside the URL as
-// ?authToken=…; there is no separate token env var.
+// stays static (CGO_ENABLED=0). The Turso auth token may travel inside the URL
+// as ?authToken=…, or be supplied separately as TURSO_AUTH_TOKEN and merged in by
+// ResolveURL (matching Turso's own TURSO_AUTH_TOKEN convention).
 package db
 
 import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 
 	// Database drivers, registered for their side effects.
@@ -99,4 +101,28 @@ func driverFor(databaseURL string) string {
 // aborts a deploy instead of crash-looping the serving process.
 func IsRemote(databaseURL string) bool {
 	return driverFor(databaseURL) == "libsql"
+}
+
+// ResolveURL returns rawURL with tursoAuthToken applied as an ?authToken= query
+// parameter, but only when rawURL is a remote libsql URL (see IsRemote) that
+// carries no token of its own and tursoAuthToken is non-empty. It returns rawURL
+// unchanged otherwise: a local SQLite path, an empty URL, or a URL that already
+// has an authToken/auth_token/jwt parameter (the embedded token wins). This lets
+// the Turso auth token be supplied either inside DATABASE_URL or as a separate
+// TURSO_AUTH_TOKEN, matching Turso's own convention.
+func ResolveURL(rawURL, tursoAuthToken string) string {
+	if tursoAuthToken == "" || !IsRemote(rawURL) {
+		return rawURL
+	}
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL // leave it for Open to surface the parse error
+	}
+	q := u.Query()
+	if q.Get("authToken") != "" || q.Get("auth_token") != "" || q.Get("jwt") != "" {
+		return rawURL // an explicit token in the URL takes precedence
+	}
+	q.Set("authToken", tursoAuthToken)
+	u.RawQuery = q.Encode()
+	return u.String()
 }
