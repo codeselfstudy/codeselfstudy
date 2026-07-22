@@ -1,13 +1,17 @@
 ---
 interface Props {
   class?: string;
+  /** Opt out of the reading-width cap for full-width (grid/table) pages. */
+  wide?: boolean;
 }
 
-const { class: className = "" } = Astro.props;
+const { class: className = "", wide = false } = Astro.props;
 ---
 
 <div
   class:list={["container mx-auto px-4 pt-24 pb-12 sm:px-6 lg:px-8", className]}
 >
-  <slot />
+  <div class:list={[!wide && "max-w-[68ch]"]}>
+    <slot />
+  </div>
 </div>

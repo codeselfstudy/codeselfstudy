@@ -125,12 +125,12 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Constrain all `container` usages (navbar, footer, page content) to one
-   readable ~72ch column so body text no longer wraps in the middle of a
-   full-width frame. */
+/* Page frame max-width (navbar, footer, page content). Body text is capped
+   to a readable measure separately (see PageWrapper / HomeContent); the extra
+   width here gives multi-column content room and is where a sidebar will go. */
 @utility container {
   width: 100%;
-  max-width: 42rem;
+  max-width: 72rem;
   margin-inline: auto;
 }
 
