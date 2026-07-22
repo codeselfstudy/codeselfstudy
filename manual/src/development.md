@@ -13,7 +13,7 @@ Boots two servers in parallel:
 - `apps/web/` (Astro dev server) on `http://localhost:7001`.
 - `apps/api/` (Go + Echo) on `http://localhost:8080`.
 
-The two servers run independently in this phase — there is no dev proxy, since the static site does not call the API yet. Build the site (`just build`) and run the Go server to exercise the production URL behavior (redirects, trailing-slash canonicalization) end to end.
+The two servers run independently — there is no dev proxy. The navbar island calls `/api/me` at the page origin, so that request only resolves against the Go server, not the standalone Astro dev server on `:7001`. Build the site (`just build`) and run the Go server to exercise the production URL behavior (redirects, trailing-slash canonicalization) and the authenticated API end to end.
 
 To run only one side:
 
