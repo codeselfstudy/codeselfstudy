@@ -8,6 +8,13 @@ import (
 	"strings"
 	"time"
 
+	// tzdata embeds the IANA time-zone database into the binary. The production
+	// runtime is a CGO_ENABLED=0 distroless image with no system zoneinfo, so
+	// without this LoadLocation("America/Los_Angeles") would fail there (it
+	// succeeds on a dev machine with system zoneinfo). Importing it in this
+	// package keeps the digest — and its tests — self-contained.
+	_ "time/tzdata"
+
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
 
@@ -15,6 +22,20 @@ import (
 // queued for the next one. Slack also limits a message to 50 blocks, and each
 // deal uses two (section + divider), so 25 keeps us well under that.
 const MaxDealsPerDigest = 25
+
+// pacific is the location for the digest footer timestamp. The deals are curated
+// for a California audience, so the footer reads Pacific time (PST/PDT) instead
+// of UTC. It is resolved once; if the tz database can't be read it falls back to
+// UTC, so a lookup failure degrades the label rather than breaking the digest.
+var pacific = loadPacific()
+
+func loadPacific() *time.Location {
+	loc, err := time.LoadLocation("America/Los_Angeles")
+	if err != nil {
+		return time.UTC
+	}
+	return loc
+}
 
 // Slack Block Kit payload types (only the subset we emit).
 type payload struct {
@@ -73,7 +94,7 @@ func BuildBlocks(deals []store.Deal, now time.Time) ([]byte, error) {
 	}
 	blocks = append(blocks, contextBlock{
 		Type:     "context",
-		Elements: []textObject{{Type: "mrkdwn", Text: "deal-digest · " + now.UTC().Format("2006-01-02 15:04 MST")}},
+		Elements: []textObject{{Type: "mrkdwn", Text: "deal-digest · " + now.In(pacific).Format("2006-01-02 15:04 MST")}},
 	})
 
 	return json.MarshalIndent(payload{Blocks: blocks}, "", "  ")

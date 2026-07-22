@@ -53,6 +53,35 @@ func TestBuildBlocksGolden(t *testing.T) {
 	}
 }
 
+func TestBuildBlocksFooterPacific(t *testing.T) {
+	// The footer renders Pacific time, not UTC, and picks up the right DST label:
+	// a summer instant is PDT, a winter instant is PST. tzdata is embedded (see
+	// blocks.go) so this resolves the same on a dev machine and in the distroless
+	// runtime.
+	cases := []struct {
+		name string
+		now  time.Time
+		want string
+	}{
+		{"summer PDT", time.Date(2026, 7, 20, 14, 2, 0, 0, time.UTC), "deal-digest · 2026-07-20 07:02 PDT"},
+		{"winter PST", time.Date(2026, 1, 15, 8, 30, 0, 0, time.UTC), "deal-digest · 2026-01-15 00:30 PST"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := BuildBlocks([]store.Deal{{Title: "X"}}, tc.now)
+			if err != nil {
+				t.Fatalf("BuildBlocks: %v", err)
+			}
+			if !strings.Contains(string(got), tc.want) {
+				t.Errorf("footer missing %q in\n%s", tc.want, got)
+			}
+			if strings.Contains(string(got), " UTC") {
+				t.Errorf("footer still renders UTC:\n%s", got)
+			}
+		})
+	}
+}
+
 func TestBuildBlocksOverflow(t *testing.T) {
 	deals := make([]store.Deal, 30)
 	for i := range deals {
