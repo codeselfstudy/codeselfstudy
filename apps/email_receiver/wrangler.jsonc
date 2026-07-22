@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "codeselfstudy-email-receiver",
+  "name": "codeselfstudy",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-01",
   // INGEST_URL is the Go app's /api/ingest endpoint (served by the Fly app at
