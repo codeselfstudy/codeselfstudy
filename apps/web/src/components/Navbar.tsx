@@ -24,9 +24,10 @@ export default function Navbar() {
 
   // The whole navbar is wrapped in AuthProvider so the sign-in control can live
   // inline with the links (desktop) and in the drawer (mobile). AuthKit-react is
-  // SSR-safe — it renders children and defers browser work to an effect — so this
-  // stays a client:load island (no build-time prerender crash), keeping the nav
-  // server-rendered rather than needing a separate client:only overlay.
+  // browser-only, so this island is mounted with client:only="react" (see
+  // Layout.astro) and is never prerendered. Keeping the control inside the navbar
+  // island — rather than a separate overlay — is what lets it sit inline without
+  // overlapping the links.
   return (
     <AuthProvider>
       <nav className="fixed top-0 left-0 z-10 w-full border-b border-gray-100 bg-white shadow-sm">
