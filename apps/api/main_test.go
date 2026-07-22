@@ -25,6 +25,8 @@ func fixtureDir(t *testing.T) string {
 		"404.html":              "<!doctype html><title>Not Found</title>missing",
 		"favicon.ico":           "icon-bytes",
 		"team/alice/index.html": "<!doctype html><title>Alice</title>alice",
+		"sw.js":                 "/* kill switch */",
+		"service-worker.js":     "/* kill switch */",
 	}
 	for rel, body := range files {
 		full := filepath.Join(dir, rel)
@@ -73,6 +75,38 @@ func TestStaticFileServed(t *testing.T) {
 			}
 			if !strings.Contains(rec.Body.String(), tc.body) {
 				t.Fatalf("body: want to contain %q, got %q", tc.body, rec.Body.String())
+			}
+		})
+	}
+}
+
+// Service worker scripts sit at fixed, unhashed URLs; they must be served
+// Cache-Control: no-cache so a returning visitor's browser (and the CDN) always
+// revalidates and the kill switches can be retired cleanly. Ordinary assets
+// must be left untouched.
+func TestServiceWorkerScriptsSentNoCache(t *testing.T) {
+	e := newServer(fixtureDir(t), nil, nil)
+	cases := []struct {
+		name        string
+		path        string
+		wantNoCache bool
+	}{
+		{"sw.js", "/sw.js", true},
+		{"service-worker.js", "/service-worker.js", true},
+		{"ordinary asset", "/favicon.ico", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tc.path, nil)
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusOK {
+				t.Fatalf("status: want 200, got %d", rec.Code)
+			}
+			cc := rec.Header().Get("Cache-Control")
+			if gotNoCache := strings.Contains(cc, "no-cache"); gotNoCache != tc.wantNoCache {
+				t.Fatalf("%s Cache-Control=%q: no-cache want=%v got=%v", tc.path, cc, tc.wantNoCache, gotNoCache)
 			}
 		})
 	}

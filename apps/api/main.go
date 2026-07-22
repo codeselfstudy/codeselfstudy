@@ -312,6 +312,15 @@ func staticHandler(staticRoot string) echo.HandlerFunc {
 		}
 
 		if path, ok := resolveStatic(staticRoot, rel); ok {
+			// Service worker scripts live at fixed, unhashed URLs, so any cached
+			// copy would pin an outdated worker in browsers and at the CDN.
+			// Serve them revalidate-always so the kill switches (apps/web/public)
+			// reach returning visitors immediately and can be removed cleanly
+			// once stale registrations have drained. Hashed /_astro/* assets are
+			// immutable and intentionally left cacheable.
+			if isServiceWorkerScript(clean) {
+				c.Response().Header().Set("Cache-Control", "no-cache")
+			}
 			return c.File(path)
 		}
 
@@ -320,6 +329,15 @@ func staticHandler(staticRoot string) echo.HandlerFunc {
 		}
 		return echo.NewHTTPError(http.StatusNotFound)
 	}
+}
+
+// isServiceWorkerScript reports whether p is one of the root-scope service
+// worker scripts shipped as cache kill switches (apps/web/public/sw.js and
+// service-worker.js). They must be served with Cache-Control: no-cache —
+// unlike the content-hashed assets under /_astro, their URLs never change, so
+// any cached copy would keep an outdated worker alive.
+func isServiceWorkerScript(p string) bool {
+	return p == "/sw.js" || p == "/service-worker.js"
 }
 
 // dirIndexExists reports whether rel resolves to a directory index.html — the
