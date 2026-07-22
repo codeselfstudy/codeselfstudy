@@ -53,6 +53,15 @@ jobs:
         run: go vet ./...
         working-directory: apps/api
 
+      - name: ESLint (worker)
+        run: bunx eslint .
+        working-directory: apps/email_receiver
+
+      # `test` runs `bunx tsc --noEmit && bun test` — typecheck + tests with the
+      # worker's bunfig coverage gate.
+      - name: Test worker (typecheck + coverage)
+        run: bun run --filter email_receiver test
+
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4

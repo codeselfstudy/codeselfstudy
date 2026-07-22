@@ -1,9 +1,10 @@
 # Project Structure
 
-This is a Bun workspace with two apps. Top-level shape:
+This is a Bun workspace with three apps. Top-level shape:
 
 - `apps/web/`: Astro frontend (SSG, React islands). Prerenders to `apps/web/dist/`.
 - `apps/api/`: Go + Echo backend. Owns the database schema and serves the prerendered site at runtime.
+- `apps/email_receiver/`: Cloudflare Worker (TypeScript) that receives forwarded "deals" email and POSTs it to the Go server's `/api/ingest`.
 - `manual/`: this mdBook documentation.
 - `mockups/`: HTML mockups, served via `just mockups`.
 
@@ -21,9 +22,20 @@ Inside `apps/api/`:
 - `main.go`: Echo bootstrap, static serving, route wiring.
 - `cmd/migrate/`: small CLI around goose for ad-hoc migration runs.
 - `internal/auth/`: WorkOS JWKS verifier + Echo middleware.
-- `internal/db/`: SQLite access (`modernc.org/sqlite`).
+- `internal/db/`: SQLite / Turso access (driver chosen by `DATABASE_URL` scheme).
 - `internal/db/migrations/`: goose `.sql` migrations, embedded into the binary and applied on startup.
+- `internal/ingest/`: the `/api/ingest` + `/api/admin/digest` handlers, bearer-token middleware, and pipeline config.
+- `internal/store/`: emails/deals/digests persistence and the once-per-interval digest claim.
+- `internal/mailparse/`, `internal/htmltext/`: raw MIME → normalized text.
+- `internal/extract/`: Gemini deal extraction.
+- `internal/digest/`: Slack Block Kit rendering + HTTP poster.
 - `static/`: populated at build time from `apps/web/dist/`. Gitignored.
+
+Inside `apps/email_receiver/` (Cloudflare Worker):
+
+- `src/index.ts`: the Cloudflare `email()` handler (runtime wiring).
+- `src/lib.ts`: `handleEmail` — POSTs the raw email to `/api/ingest` with retry (no archive forward).
+- `wrangler.jsonc`, `tsconfig.json`, `eslint.config.js`, `bunfig.toml`: per-app config.
 
 Generated files:
 

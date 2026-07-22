@@ -1,0 +1,10 @@
+From: Course Deals <deals@courses.example>
+To: me@example.com
+Subject: Base64 HTML
+Message-Id: <base64@courses.example>
+Date: Mon, 20 Jul 2026 15:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+PGgzPkNvdXJzZSBCb290Y2FtcCBTYWxlPC9oMz48cD5IYWxmIHByaWNlIGJvb3RjYW1wIHRoaXMgd2Vlay48L3A+PGEgaHJlZj0iaHR0cHM6Ly9jb3Vyc2VzLmV4YW1wbGUvZGVhbCI+RW5yb2xsIG5vdzwvYT48L2JvZHk+PC9odG1sPg==

@@ -1,0 +1,20 @@
+From: Humble Bundle <deals@humblebundle.com>
+To: me@example.com
+Subject: =?utf-8?q?This_Week=27s_Deals?=
+Message-Id: <week1@humblebundle.com>
+Date: Mon, 20 Jul 2026 10:00:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="BOUNDARY1"
+
+--BOUNDARY1
+Content-Type: text/plain; charset="utf-8"
+
+Humble Programming Bundle
+Pay what you want for 15 programming ebooks.
+https://humblebundle.com/books/programming
+
+--BOUNDARY1
+Content-Type: text/html; charset="utf-8"
+
+<html><body><h1>Humble Programming Bundle</h1><p>Pay what you want for 15 programming ebooks.</p><a href="https://humblebundle.com/books/programming">Get the bundle</a></body></html>
+--BOUNDARY1--

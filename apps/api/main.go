@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"io/fs"
 	"log"
@@ -17,6 +18,11 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/auth"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/db"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/extract"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/ingest"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
 
 const staticDir = "static"
@@ -24,6 +30,15 @@ const staticDir = "static"
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	// `server -migrate` (the Fly release_command) applies database migrations
+	// and exits, so schema changes run once per deploy in a temporary machine
+	// before the new version serves traffic — a migration failure aborts the
+	// deploy instead of crash-looping the app.
+	if migrateRequested(os.Args[1:]) {
+		runMigrate(ctx)
+		return
+	}
 
 	// Wire WorkOS auth when the env is set. In barebones dev (no env) the
 	// static-serve + /healthz path still works — useful for smoke testing
@@ -37,7 +52,12 @@ func main() {
 		log.Printf("auth: WORKOS_CLIENT_ID / WORKOS_API_HOSTNAME not set; /api/me disabled")
 	}
 
-	e := newServer(staticDir, v)
+	ing, database := newIngestFromEnv(ctx)
+	if database != nil {
+		defer database.Close()
+	}
+
+	e := newServer(staticDir, v, ing)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -88,6 +108,87 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
+// newIngestFromEnv builds the email-ingest handlers from the environment. It
+// returns (nil, nil) when the pipeline is not configured (no DATABASE_URL /
+// INGEST_TOKEN), so the server still runs static-only — mirroring the WorkOS
+// graceful-degrade above. The returned *sql.DB (when non-nil) is owned by the
+// caller, which must Close it on shutdown. Fatal only on a genuinely broken
+// setup (bad duration, unreachable DB, bad Gemini client).
+func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
+	cfg, err := ingest.Load(os.Getenv)
+	if err != nil {
+		log.Fatalf("ingest: %v", err)
+	}
+	if !cfg.Enabled() {
+		log.Printf("ingest: DATABASE_URL / INGEST_TOKEN not set; /api/ingest disabled")
+		return nil, nil
+	}
+
+	dbURL := db.ResolveURL(cfg.DatabaseURL, os.Getenv("TURSO_AUTH_TOKEN"))
+	database, err := db.Open(dbURL)
+	if err != nil {
+		log.Fatalf("ingest: db open: %s", db.RedactToken(err.Error(), dbURL))
+	}
+	// Migrate on boot only for a local SQLite database (dev ergonomics). A
+	// remote libsql/Turso database is migrated out of band by `server -migrate`
+	// (the Fly release_command), so a migration failure aborts the deploy rather
+	// than crash-looping the serving process.
+	if !db.IsRemote(dbURL) {
+		if err := db.Migrate(ctx, database); err != nil {
+			_ = database.Close()
+			log.Fatalf("ingest: db migrate: %s", db.RedactToken(err.Error(), dbURL))
+		}
+	}
+
+	var extractor extract.Extractor = extract.Disabled{}
+	if cfg.GeminiAPIKey != "" {
+		g, err := extract.NewGemini(ctx, cfg.GeminiAPIKey, cfg.GeminiModel, "")
+		if err != nil {
+			_ = database.Close()
+			log.Fatalf("ingest: gemini: %v", err)
+		}
+		extractor = g
+	} else {
+		log.Printf("ingest: GEMINI_API_KEY not set; extraction disabled (/api/ingest will 500)")
+	}
+
+	poster := digest.NewHTTPPoster(cfg.SlackWebhookURL)
+	return ingest.New(cfg, store.New(database), extractor, poster), database
+}
+
+// migrateRequested reports whether the process was asked to apply migrations and
+// exit (server -migrate), used by the Fly release_command. It scans args rather
+// than using the flag package so it stays correct however the container
+// ENTRYPOINT composes with the release command.
+func migrateRequested(args []string) bool {
+	for _, a := range args {
+		if a == "-migrate" || a == "--migrate" {
+			return true
+		}
+	}
+	return false
+}
+
+// runMigrate opens DATABASE_URL, applies the embedded migrations, and returns.
+// Invoked via `server -migrate` from the Fly release_command; it needs only
+// DATABASE_URL (not the rest of the ingest config). Any failure is fatal, which
+// makes the release step — and therefore the deploy — fail loudly.
+func runMigrate(ctx context.Context) {
+	dbURL := db.ResolveURL(os.Getenv("DATABASE_URL"), os.Getenv("TURSO_AUTH_TOKEN"))
+	if dbURL == "" {
+		log.Fatalf("migrate: DATABASE_URL is empty")
+	}
+	database, err := db.Open(dbURL)
+	if err != nil {
+		log.Fatalf("migrate: db open: %s", db.RedactToken(err.Error(), dbURL))
+	}
+	defer func() { _ = database.Close() }()
+	if err := db.Migrate(ctx, database); err != nil {
+		log.Fatalf("migrate: %s", db.RedactToken(err.Error(), dbURL))
+	}
+	log.Printf("migrate: schema up to date")
+}
+
 // handleMe returns the validated claims for the authenticated user. Light
 // shape on purpose — tighten the response to whatever the frontend ends up
 // needing.
@@ -111,7 +212,7 @@ func handleMe(c echo.Context) error {
 // staticRoot. When v is non-nil, /api/me is mounted under WorkOS-validated
 // auth; otherwise the route falls through to the /api/* JSON 404. Split out
 // from main so tests can build a server against fixtures.
-func newServer(staticRoot string, v *auth.Verifier) *echo.Echo {
+func newServer(staticRoot string, v *auth.Verifier, ing *ingest.Handlers) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
@@ -139,6 +240,13 @@ func newServer(staticRoot string, v *auth.Verifier) *echo.Echo {
 	if v != nil {
 		api := e.Group("/api", auth.Middleware(v))
 		api.Match(getOrHead, "/me", handleMe)
+	}
+
+	// Mount the email-ingest routes (POST /api/ingest, /api/admin/digest) when
+	// the pipeline is configured — before the /api/* reservation so the concrete
+	// POST paths win over the JSON-404 wildcard.
+	if ing != nil {
+		ing.Register(e)
 	}
 
 	// Reserve /api/* and /ws so unrecognized requests there reach Echo's

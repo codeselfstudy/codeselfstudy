@@ -8,15 +8,16 @@ See the documentation in [manual](./manual/src/SUMMARY.md). If [just](https://ju
 
 ## Architecture
 
-Bun workspace with two apps and a Go binary that fronts the whole thing in production.
+Bun workspace with three apps: an Astro frontend, a Go + Echo backend that fronts the whole thing in production, and a Cloudflare Worker that receives forwarded email.
 
 ```
 codeselfstudy/
 ├── apps/
 │   ├── web/                  Astro (SSG, React islands).
 │   │   └── dist/             Prerendered static site (build-time output).
-│   └── api/                  Go + Echo backend.
-│       └── static/           Mirrored from web's dist/ at build time.
+│   ├── api/                  Go + Echo backend (serves the site + JSON API).
+│   │   └── static/           Mirrored from web's dist/ at build time.
+│   └── email_receiver/       Cloudflare Worker: forwards "deals" email to /api/ingest.
 ├── Dockerfile                Multi-stage: Go build + distroless runtime.
 ├── fly.toml                  256 MB shared-cpu-1x.
 └── justfile                  dev / build / test / deploy.
@@ -26,7 +27,9 @@ The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future
 
 **Auth.** An Echo middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes. The client-side WorkOS sign-in UI is deferred to the API phase — the current Astro build ships without it.
 
-**Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO). The Go side owns the schema: goose migrations live in `apps/api/internal/db/migrations/`, are embedded into the binary via `//go:embed`, and apply automatically on server startup. Remote Turso (libsql://) is a follow-up.
+**Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO) locally; Turso (`libsql://`) in production via the pure-Go `tursodatabase/libsql-client-go` driver — `internal/db.Open` selects the driver by URL scheme, so the distroless image stays static. The Go side owns the schema: goose migrations live in `apps/api/internal/db/migrations/`, are embedded into the binary via `//go:embed`, and apply automatically on server startup.
+
+**Email → deals → Slack.** The `apps/email_receiver` Cloudflare Worker receives forwarded newsletters via Cloudflare Email Routing and POSTs the raw RFC822 to the Go server's `POST /api/ingest` (bearer `INGEST_TOKEN`). The server parses the email, stores it in Turso, extracts deals with the Gemini API, and posts a Block Kit digest to a Slack channel (at most once per `DIGEST_INTERVAL`); `POST /api/admin/digest` forces one. The pipeline is opt-in — it runs only when `DATABASE_URL` and `INGEST_TOKEN` are set, so the server otherwise stays a pure static host.
 
 **Build.** `bun run build` prerenders all routes to `apps/web/dist/`; `just build` mirrors that into `apps/api/static/` so the Go binary picks it up. The Docker build runs locally and ships the prebuilt artifact in the build context — Fly's remote builder doesn't re-run `bun install`.
 

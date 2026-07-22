@@ -1,0 +1,50 @@
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "3 new deals"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*\u003chttps://humblebundle.com/books/prog|Humble Programming Bundle\u003e*\n$25 (96% off) · ends 2026-07-27 · Humble Bundle\n_15 ebooks, pay what you want._"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*GameDev Assets*\nIndie Deals"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*\u003chttps://x.example/deal|Books \u0026amp; \u0026lt;Widgets\u0026gt;\u003e*\n_Save now_"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "deal-digest · 2026-07-20 14:02 UTC"
+        }
+      ]
+    }
+  ]
+}

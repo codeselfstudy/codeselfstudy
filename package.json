@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "apps/web"
+    "apps/web",
+    "apps/email_receiver"
   ],
   "scripts": {
     "dev": "bun run --env-file=.env.local --filter web dev",

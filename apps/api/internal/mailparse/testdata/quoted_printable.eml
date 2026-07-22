@@ -1,0 +1,11 @@
+From: Book Store <deals@bookstore.example>
+To: me@example.com
+Subject: QP Encoded
+Message-Id: <qp@bookstore.example>
+Date: Mon, 20 Jul 2026 12:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Big Sale =E2=80=94 50=25 off all programming titles.
+Visit https://bookstore.example/sale for the=20full list.

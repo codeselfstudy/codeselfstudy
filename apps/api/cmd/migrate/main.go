@@ -42,20 +42,23 @@ func main() {
 		return
 	}
 
-	dbURL := os.Getenv("DATABASE_URL")
+	dbURL := db.ResolveURL(os.Getenv("DATABASE_URL"), os.Getenv("TURSO_AUTH_TOKEN"))
 	if dbURL == "" {
 		log.Fatal("DATABASE_URL is empty")
 	}
+	// dbURL may carry a Turso ?authToken=… (merged in by ResolveURL), so every
+	// fatal that logs a DB error runs it through db.RedactToken first — the same
+	// redaction the server's own db-open/migrate paths use (see main.go).
 	conn, err := db.Open(dbURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(db.RedactToken(err.Error(), dbURL))
 	}
 	defer conn.Close()
 
 	switch cmd {
 	case "up":
 		if err := db.Migrate(context.Background(), conn); err != nil {
-			log.Fatal(err)
+			log.Fatal(db.RedactToken(err.Error(), dbURL))
 		}
 	case "down":
 		// Drop one migration. Useful for dev only — never run against a
@@ -64,14 +67,14 @@ func main() {
 			log.Fatal(err)
 		}
 		if err := goose.Down(conn, migrationsDir()); err != nil {
-			log.Fatal(err)
+			log.Fatal(db.RedactToken(err.Error(), dbURL))
 		}
 	case "status":
 		if err := goose.SetDialect("sqlite3"); err != nil {
 			log.Fatal(err)
 		}
 		if err := goose.Status(conn, migrationsDir()); err != nil {
-			log.Fatal(err)
+			log.Fatal(db.RedactToken(err.Error(), dbURL))
 		}
 	default:
 		usage()

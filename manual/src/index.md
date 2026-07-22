@@ -14,6 +14,6 @@ Current ideas include authentication, daily puzzles, marking completed puzzles, 
 ## Start Here
 
 - Read "Getting Started" to set up your environment and run the app.
-- Skim "Architecture" for the high-level shape of the two apps and how they fit together.
+- Skim "Architecture" for the high-level shape of the apps and how they fit together.
 - Use "Project Structure" to find features and data quickly.
 - Check "Routing & Data" for Astro routing conventions.

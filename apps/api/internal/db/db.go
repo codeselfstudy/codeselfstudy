@@ -1,42 +1,73 @@
-// Package db opens a SQLite database for the API and applies the embedded
+// Package db opens the API's SQLite/libSQL database and applies the embedded
 // goose migrations under migrations/. The Go side owns the schema.
 //
-// Driver choice: modernc.org/sqlite is pure Go (no CGO) so the distroless
-// runtime image stays static. Remote Turso (libsql://) is not handled here
-// — it would need github.com/tursodatabase/libsql-client-go added behind a
-// scheme switch. The current setup matches DATABASE_URL=dev.db (and similar
-// local files) plus :memory: for tests.
+// Driver choice by URL scheme: a libsql:// (or http(s)/ws(s)) DATABASE_URL uses
+// the pure-Go Turso client (github.com/tursodatabase/libsql-client-go); anything
+// else — a bare path, dev.db, :memory:, file:… — uses the pure-Go
+// modernc.org/sqlite driver. Both are CGO-free, so the distroless runtime image
+// stays static (CGO_ENABLED=0). The Turso auth token may travel inside the URL
+// as ?authToken=…, or be supplied separately as TURSO_AUTH_TOKEN and merged in by
+// ResolveURL (matching Turso's own TURSO_AUTH_TOKEN convention).
 package db
 
 import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 
+	// Database drivers, registered for their side effects.
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 )
 
-// Open returns a *sql.DB pointing at databaseURL. The URL forms supported:
+// Open returns a *sql.DB pointing at databaseURL, with the driver chosen by
+// scheme (see driverFor). The URL forms supported:
 //
-//   - "" / "dev.db" / any non-scheme value → opened as a local file.
-//   - ":memory:" → in-memory database.
-//   - "sqlite:..." / "file:..." → passed through to the driver verbatim.
+//   - "" is rejected (a database URL is required).
+//   - "libsql://…", "http(s)://…", "ws(s)://…" → remote Turso (libsql driver).
+//   - ":memory:", "dev.db", any bare path, "sqlite:…", "file:…" → local SQLite.
 //
-// Returns an error for libsql:// or http(s):// URLs so the caller fails
-// fast instead of silently degrading.
+// For the local SQLite backend the pool is capped at one connection so PRAGMAs
+// stick and the atomic digest claim in internal/store stays serialized, and
+// foreign keys are enabled. Turso serializes writes server-side and does not
+// enforce foreign keys, so neither is applied to the libsql backend.
 func Open(databaseURL string) (*sql.DB, error) {
 	if databaseURL == "" {
 		return nil, errors.New("db: DATABASE_URL is empty")
 	}
-	if rejected := unsupportedScheme(databaseURL); rejected != "" {
-		return nil, fmt.Errorf("db: %s URLs are not supported by the Go backend yet; use a local sqlite file or :memory:", rejected)
-	}
 
-	db, err := sql.Open("sqlite", databaseURL)
+	driver := driverFor(databaseURL)
+	db, err := sql.Open(driver, databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("db: open: %w", err)
 	}
+
+	if driver == "sqlite" {
+		// SQLite is a single-writer embedded engine: serialize access through one
+		// connection so PRAGMAs stick and concurrent writers never see SQLITE_BUSY
+		// (the digest-claim in internal/store relies on this serialization). It
+		// also keeps :memory: databases alive across queries — a fresh connection
+		// would otherwise get an empty database. Foreign keys are a per-connection
+		// PRAGMA, enabled here as local integrity belt-and-suspenders (the pipeline
+		// always inserts an email before that email's deals).
+		db.SetMaxOpenConns(1)
+		if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+			_ = db.Close()
+			return nil, fmt.Errorf("db: enable foreign keys: %w", err)
+		}
+	} else {
+		// libsql/Turso over the HTTP (hranaV2) transport: each database/sql
+		// connection is a server-side stream Turso may close when idle. Cap the
+		// pool at one so this low-traffic pipeline reuses a single stream instead
+		// of churning several; Turso serializes writes server-side, so a single
+		// connection costs nothing here. Schema migration tolerates a closed stream
+		// on its own — see Migrate, which uses goose's pooled, retryable legacy API
+		// rather than the dedicated-connection Provider.
+		db.SetMaxOpenConns(1)
+	}
+
 	if err := db.Ping(); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("db: ping: %w", err)
@@ -44,11 +75,85 @@ func Open(databaseURL string) (*sql.DB, error) {
 	return db, nil
 }
 
-func unsupportedScheme(u string) string {
-	for _, s := range []string{"libsql://", "http://", "https://", "wss://", "ws://"} {
-		if strings.HasPrefix(u, s) {
-			return strings.TrimSuffix(s, "://")
-		}
+// driverFor selects the database/sql driver by URL scheme: the libsql client for
+// remote Turso URLs (libsql/http(s)/ws(s)), the pure-Go modernc sqlite driver for
+// everything else (bare paths, :memory:, file:/sqlite: URIs). Kept as a pure
+// function so the scheme mapping is unit-testable without opening a connection —
+// a real libsql connection needs a live Turso server, which CI does not have.
+func driverFor(databaseURL string) string {
+	switch {
+	case strings.HasPrefix(databaseURL, "libsql://"),
+		strings.HasPrefix(databaseURL, "http://"),
+		strings.HasPrefix(databaseURL, "https://"),
+		strings.HasPrefix(databaseURL, "wss://"),
+		strings.HasPrefix(databaseURL, "ws://"):
+		return "libsql"
+	default:
+		return "sqlite"
 	}
-	return ""
+}
+
+// IsRemote reports whether databaseURL points at a remote libsql/Turso server
+// rather than a local SQLite file or :memory:. It uses the same scheme test as
+// driverFor. Callers use it to decide where migrations run: on startup for a
+// local database (dev ergonomics), or out of band via the migrate CLI /
+// `server -migrate` release step for a remote one, so a migration failure
+// aborts a deploy instead of crash-looping the serving process.
+func IsRemote(databaseURL string) bool {
+	return driverFor(databaseURL) == "libsql"
+}
+
+// ResolveURL returns rawURL with tursoAuthToken applied as an ?authToken= query
+// parameter, but only when rawURL is a remote libsql URL (see IsRemote) that
+// carries no token of its own and tursoAuthToken is non-empty. It returns rawURL
+// unchanged otherwise: a local SQLite path, an empty URL, or a URL that already
+// has an authToken/auth_token/jwt parameter (the embedded token wins). This lets
+// the Turso auth token be supplied either inside DATABASE_URL or as a separate
+// TURSO_AUTH_TOKEN, matching Turso's own convention.
+func ResolveURL(rawURL, tursoAuthToken string) string {
+	if tursoAuthToken == "" || !IsRemote(rawURL) {
+		return rawURL
+	}
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL // leave it for Open to surface the parse error
+	}
+	q := u.Query()
+	if q.Get("authToken") != "" || q.Get("auth_token") != "" || q.Get("jwt") != "" {
+		return rawURL // an explicit token in the URL takes precedence
+	}
+	q.Set("authToken", tursoAuthToken)
+	u.RawQuery = q.Encode()
+	return u.String()
+}
+
+// authTokenOf extracts the authToken query value from a libsql DATABASE_URL, or
+// "" if absent. ResolveURL always injects the token as authToken=…, so matching
+// that single key covers every URL this package hands to Open — the token that
+// RedactToken needs to keep out of a logged error.
+func authTokenOf(dbURL string) string {
+	const key = "authToken="
+	i := strings.Index(dbURL, key)
+	if i < 0 {
+		return ""
+	}
+	v := dbURL[i+len(key):]
+	if amp := strings.IndexByte(v, '&'); amp >= 0 {
+		v = v[:amp]
+	}
+	return v
+}
+
+// RedactToken returns s with the Turso authToken carried in dbURL replaced by
+// "***". A libsql driver error can embed the full connection URL including
+// ?authToken=<token>; redacting the opaque token keeps the useful cause
+// (dial/connect/auth failure) in the log while keeping the secret out of it.
+// Pass the same (already ResolveURL-merged) dbURL that was handed to Open so the
+// injected token is caught. A no-op when dbURL carries no authToken.
+func RedactToken(s, dbURL string) string {
+	tok := authTokenOf(dbURL)
+	if tok == "" {
+		return s
+	}
+	return strings.ReplaceAll(s, tok, "***")
 }
