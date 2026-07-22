@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 type User = {
+  id?: string;
   firstName?: string | null;
   lastName?: string | null;
   profilePictureUrl?: string | null;
@@ -31,6 +32,10 @@ vi.mock("@/lib/api", () => ({ apiFetch: apiFetchMock }));
 
 import SignInButton from "@/components/auth/SignInButton";
 
+function meResolving(email: string) {
+  return { ok: true, json: async () => ({ email }) };
+}
+
 describe("SignInButton", () => {
   beforeEach(() => {
     auth.value = {
@@ -41,10 +46,7 @@ describe("SignInButton", () => {
       getAccessToken: vi.fn(async () => "tok_test"),
     };
     apiFetchMock.mockReset();
-    apiFetchMock.mockResolvedValue({
-      ok: true,
-      json: async () => ({ email: "ada@example.com" }),
-    });
+    apiFetchMock.mockResolvedValue(meResolving("ada@example.com"));
   });
 
   test("signed out: shows a Sign In button and does not call the API", () => {
@@ -58,7 +60,7 @@ describe("SignInButton", () => {
   });
 
   test("signed in: shows the email from /api/me and a Sign Out button", async () => {
-    auth.value.user = { firstName: "Ada", lastName: "Lovelace" };
+    auth.value.user = { id: "u_ada", firstName: "Ada", lastName: "Lovelace" };
     render(<SignInButton />);
 
     expect(await screen.findByText("ada@example.com")).toBeInTheDocument();
@@ -69,6 +71,24 @@ describe("SignInButton", () => {
       "/api/me",
       auth.value.getAccessToken
     );
+  });
+
+  test("does not show the previous account's email after switching users", async () => {
+    apiFetchMock
+      .mockResolvedValueOnce(meResolving("ada@example.com"))
+      .mockResolvedValueOnce(meResolving("grace@example.com"));
+
+    auth.value.user = { id: "u_ada", firstName: "Ada" };
+    const { rerender } = render(<SignInButton />);
+    expect(await screen.findByText("ada@example.com")).toBeInTheDocument();
+
+    auth.value.user = { id: "u_grace", firstName: "Grace" };
+    rerender(<SignInButton />);
+
+    // Bound to the identity: the instant we switch, the old email is gone even
+    // before grace's /api/me resolves.
+    expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
+    expect(await screen.findByText("grace@example.com")).toBeInTheDocument();
   });
 
   test("clicking Sign In launches the WorkOS flow with the current path as returnTo", async () => {
