@@ -1,6 +1,20 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
+
+// Navbar wraps its content in the WorkOS AuthProvider and renders SignInButton;
+// stub AuthKit so the nav tests don't spin up a real browser session.
+vi.mock("@workos-inc/authkit-react", () => ({
+  AuthKitProvider: ({ children }: { children: ReactNode }) => children,
+  useAuth: () => ({
+    user: null,
+    isLoading: false,
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
 import Navbar from "@/components/Navbar";
 
 describe("Navbar", () => {
