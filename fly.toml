@@ -6,6 +6,14 @@
 app = "codeselfstudy"
 primary_region = "iad"
 
+[deploy]
+  # Apply database migrations once per deploy, in a temporary machine, before the
+  # new version serves traffic. `server -migrate` opens DATABASE_URL, runs the
+  # embedded goose migrations, and exits; if it fails the deploy is aborted and
+  # the previous version keeps serving instead of crash-looping. Migrations are
+  # idempotent, so this is a no-op when the schema is already current.
+  release_command = "/server -migrate"
+
 [http_service]
   internal_port = 8080
   force_https = true

@@ -31,6 +31,15 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// `server -migrate` (the Fly release_command) applies database migrations
+	// and exits, so schema changes run once per deploy in a temporary machine
+	// before the new version serves traffic — a migration failure aborts the
+	// deploy instead of crash-looping the app.
+	if migrateRequested(os.Args[1:]) {
+		runMigrate(ctx)
+		return
+	}
+
 	// Wire WorkOS auth when the env is set. In barebones dev (no env) the
 	// static-serve + /healthz path still works — useful for smoke testing
 	// the binary without a real WorkOS tenant.
@@ -146,9 +155,15 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 	if err != nil {
 		log.Fatalf("ingest: db open: %s", redactToken(err.Error(), tok))
 	}
-	if err := db.Migrate(ctx, database); err != nil {
-		_ = database.Close()
-		log.Fatalf("ingest: db migrate: %s", redactToken(err.Error(), tok))
+	// Migrate on boot only for a local SQLite database (dev ergonomics). A
+	// remote libsql/Turso database is migrated out of band by `server -migrate`
+	// (the Fly release_command), so a migration failure aborts the deploy rather
+	// than crash-looping the serving process.
+	if !db.IsRemote(cfg.DatabaseURL) {
+		if err := db.Migrate(ctx, database); err != nil {
+			_ = database.Close()
+			log.Fatalf("ingest: db migrate: %s", redactToken(err.Error(), tok))
+		}
 	}
 
 	var extractor extract.Extractor = extract.Disabled{}
@@ -165,6 +180,40 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 
 	poster := digest.NewHTTPPoster(cfg.SlackWebhookURL)
 	return ingest.New(cfg, store.New(database), extractor, poster), database
+}
+
+// migrateRequested reports whether the process was asked to apply migrations and
+// exit (server -migrate), used by the Fly release_command. It scans args rather
+// than using the flag package so it stays correct however the container
+// ENTRYPOINT composes with the release command.
+func migrateRequested(args []string) bool {
+	for _, a := range args {
+		if a == "-migrate" || a == "--migrate" {
+			return true
+		}
+	}
+	return false
+}
+
+// runMigrate opens DATABASE_URL, applies the embedded migrations, and returns.
+// Invoked via `server -migrate` from the Fly release_command; it needs only
+// DATABASE_URL (not the rest of the ingest config). Any failure is fatal, which
+// makes the release step — and therefore the deploy — fail loudly.
+func runMigrate(ctx context.Context) {
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatalf("migrate: DATABASE_URL is empty")
+	}
+	tok := authTokenOf(dbURL)
+	database, err := db.Open(dbURL)
+	if err != nil {
+		log.Fatalf("migrate: db open: %s", redactToken(err.Error(), tok))
+	}
+	defer func() { _ = database.Close() }()
+	if err := db.Migrate(ctx, database); err != nil {
+		log.Fatalf("migrate: %s", redactToken(err.Error(), tok))
+	}
+	log.Printf("migrate: schema up to date")
 }
 
 // handleMe returns the validated claims for the authenticated user. Light

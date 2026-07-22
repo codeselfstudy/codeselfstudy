@@ -55,6 +55,15 @@ func Open(databaseURL string) (*sql.DB, error) {
 			_ = db.Close()
 			return nil, fmt.Errorf("db: enable foreign keys: %w", err)
 		}
+	} else {
+		// libsql/Turso over the HTTP (hranaV2) transport: each database/sql
+		// connection is a server-side stream Turso may close when idle. Cap the
+		// pool at one so this low-traffic pipeline reuses a single stream instead
+		// of churning several; Turso serializes writes server-side, so a single
+		// connection costs nothing here. Schema migration tolerates a closed stream
+		// on its own — see Migrate, which uses goose's pooled, retryable legacy API
+		// rather than the dedicated-connection Provider.
+		db.SetMaxOpenConns(1)
 	}
 
 	if err := db.Ping(); err != nil {
@@ -80,4 +89,14 @@ func driverFor(databaseURL string) string {
 	default:
 		return "sqlite"
 	}
+}
+
+// IsRemote reports whether databaseURL points at a remote libsql/Turso server
+// rather than a local SQLite file or :memory:. It uses the same scheme test as
+// driverFor. Callers use it to decide where migrations run: on startup for a
+// local database (dev ergonomics), or out of band via the migrate CLI /
+// `server -migrate` release step for a remote one, so a migration failure
+// aborts a deploy instead of crash-looping the serving process.
+func IsRemote(databaseURL string) bool {
+	return driverFor(databaseURL) == "libsql"
 }
