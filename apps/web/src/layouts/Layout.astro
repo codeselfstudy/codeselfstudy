@@ -1,0 +1,89 @@
+---
+import "@/styles/global.css";
+import Navbar from "@/components/Navbar.tsx";
+import Footer from "@/components/Footer.astro";
+import { createMetadata } from "@/lib/metadata";
+import { minify } from "@/lib/minify";
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  isHome?: boolean;
+  isNoIndex?: boolean;
+  lang?: string;
+}
+
+const {
+  title,
+  description,
+  image,
+  isHome,
+  isNoIndex,
+  lang = "en",
+} = Astro.props;
+
+const metadata = createMetadata({
+  title,
+  description,
+  image,
+  isHome,
+  isNoIndex,
+});
+const titleEntry = metadata.find(
+  (entry): entry is { title: string } => "title" in entry
+);
+const pageTitle = titleEntry?.title ?? title;
+
+// Canonical URL for the current page. With trailingSlash "always" this yields
+// e.g. https://codeselfstudy.com/about/ — a single stable form per page.
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Google Analytics config snippet, injected in production only (see the head
+// below), flattened to one line by minify() at the injection point. Kept as a
+// string because raw `{}` in an inline <script> inside a JSX expression would
+// be parsed as Astro expressions.
+const gaSnippet = minify(`
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "G-99DC6WSRWL");
+`);
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{pageTitle}</title>
+    {
+      metadata.map((entry) =>
+        "name" in entry ? (
+          <meta name={entry.name} content={entry.content} />
+        ) : "property" in entry ? (
+          <meta property={entry.property} content={entry.content} />
+        ) : null
+      )
+    }
+    <link rel="canonical" href={canonical} />
+    {
+      import.meta.env.PROD && (
+        <>
+          <script
+            is:inline
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-99DC6WSRWL"
+          />
+          <script is:inline set:html={gaSnippet} />
+        </>
+      )
+    }
+  </head>
+  <body>
+    <Navbar client:load />
+    <slot />
+    <Footer />
+  </body>
+</html>

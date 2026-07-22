@@ -1,8 +1,8 @@
 # Scripts
 
 Prefer `just` for top-level developer workflows (dev, build, clean, deploy,
-database tasks). It wraps the underlying `bun run` and `drizzle-kit` commands
-so you don't have to remember which tool runs what.
+database tasks). It wraps the underlying `bun run` and `go run` commands so
+you don't have to remember which tool runs what.
 
 ## Just
 
@@ -21,7 +21,7 @@ just
 ```
 
 Common recipes: `just dev`, `just build`, `just clean`, `just deploy`,
-`just ssh`, `just db_generate`, `just db_migrate`, `just db_studio`.
+`just ssh`, `just db_migrate`, `just db_status`, `just db_create <name>`.
 
 ## Bun
 

@@ -9,6 +9,6 @@ exact = true
 # Note: Bun does not run lifecycle scripts by default. Allowlist trusted
 # packages via `"trustedDependencies"` in package.json.
 
-# [test]
-# coverage = true
-# coverageThreshold = 0.9
+[test]
+coverage = true
+coverageThreshold = 0.9

@@ -1,62 +1,111 @@
-# List scripts
+# List available recipes
 default:
   @just --list
 
-# Cleans out build files and things like .DS_Store files
-clean:
-  ./scripts/clean.sh
-
-# Run tests
-test:
-  bun run test
-
-# Run tests in watch mode
-test_watch:
-  bun run test:watch
-
-# Run tests with coverage report
-test_coverage:
-  bun run test:coverage
-
-# Run the dev server
+# Run the web (port 7001) and api (port 8080) dev servers together. The Vite
+# dev server proxies /api and /ws to the Go server.
 dev:
-  bun run dev
+  just dev-api & just dev-web && wait
 
-# Run the build process
+# Web (Astro) dev server only
+dev-web:
+  bun run --env-file=.env.local --filter web dev
+
+# Go API dev server only. Loads .env.local into the shell so /api/me and
+# /api/todos can wire themselves up — Go has no built-in .env support.
+# Skipped silently when the file is absent (smoke-test mode).
+dev-api:
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run .
+
+# Cloudflare Worker (email_receiver) dev server via wrangler
+dev_worker:
+  bun run --filter email_receiver dev
+
+# Build the prerendered web app, then mirror dist into apps/api/static so the
+# Go binary can serve it locally and so the Dockerfile picks it up directly.
 build: clean
-  bun run build
+  @echo '\nBuilding the project...\n'
+  bun run --env-file=.env.local --filter web build
+  /bin/rm -rf apps/api/static
+  /bin/cp -R apps/web/dist apps/api/static
+  @echo '\nDone with building.\n'
 
-# Find all the license files
-find_licenses:
-  find . -name "LICENSE.md" -not -path "*/node_modules/*"
+# Run unit tests across the whole repo (Go race tests + Vitest + Worker)
+test:
+  cd apps/api && go test -race ./...
+  bun run --filter web test
+  bun run --filter email_receiver test
 
-# Deploy to Fly.io using the local .bun-version
-deploy:
-  if [ -f .bun-version ]; then time fly deploy --build-arg BUN_VERSION="$(cat .bun-version)"; else echo "Error: .bun-version file not found in repository root. Please create it or specify BUN_VERSION another way." >&2; exit 1; fi
+# Worker (email_receiver) tests only: tsc typecheck + bun test
+test_worker:
+  bun run --filter email_receiver test
+
+# Run web tests in watch mode
+test-watch:
+  bun run --filter web test:watch
+
+# Run web tests with coverage
+test-coverage:
+  bun run --filter web test:coverage
+
+# Build the site, then smoke-test it end to end through the Go server
+# (pages, redirects, trailing-slash canonicalization, 404, sitemap).
+smoke_test: build
+  ./scripts/smoke.sh
+
+# Format the whole repo with prettier
+format:
+  bun run format
+
+# Lint web (eslint + stylelint)
+lint:
+  bun run --filter web lint
+
+# Build and deploy to Fly. We build locally so the remote builder doesn't
+# re-run `bun install` (~10min on a cold cache).
+deploy: build
+  fly deploy
+
+# Tail Fly logs for the deployed app
+logs:
+  fly logs
+
+# Show Fly machine status (memory, region, state)
+status:
+  fly status
 
 # SSH into a live Fly machine
 ssh:
   fly ssh console
 
-# Generate a database migration
-db_generate:
-  bun run --bun drizzle-kit generate
+# Deploy the Cloudflare Worker (email_receiver) via wrangler
+deploy_worker:
+  bun run --filter email_receiver deploy
 
-# Migrate the database
+# Tail the deployed Cloudflare Worker's logs
+tail_worker:
+  cd apps/email_receiver && bunx wrangler tail
+
+# Apply pending migrations against DATABASE_URL. The server also runs this
+# on startup, so this is mainly for ad-hoc dev runs.
 db_migrate:
-  bun run --bun drizzle-kit migrate
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run ./cmd/migrate up
 
-# Open the database studio
-db_studio:
-  bun run --bun drizzle-kit studio
+# Show migration status (which versions have/haven't been applied)
+db_status:
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run ./cmd/migrate status
 
-# Push schema changes directly to the database (prototyping)
-db_push:
-  bun run --bun drizzle-kit push
+# Roll back the most recent migration. Dev only — never against shared data.
+db_down:
+  set -a; [ -f .env.local ] && . ./.env.local; set +a; cd apps/api && go run ./cmd/migrate down
 
-# Introspect the database to generate schema files
-db_pull:
-  bun run --bun drizzle-kit pull
+# Scaffold a new migration in apps/api/internal/db/migrations/. Pass a snake_case name.
+db_create name:
+  cd apps/api && go run ./cmd/migrate create {{name}}
+
+# Find all the license files
+find_licenses:
+  find . -name "LICENSE.md" -not -path "*/node_modules/*"
 
 # View HTML mockups
 mockups:
@@ -66,3 +115,9 @@ mockups:
 # View the manual in the browser
 manual:
   cd manual && mdbook serve -p 8001 --open
+
+# Remove build artifacts (web dist, api ./static, root node_modules cache)
+clean:
+  @echo '\nCleaning project...\n'
+  ./scripts/clean.sh
+  @echo '\nDone with cleaning.\n'

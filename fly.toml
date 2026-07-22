@@ -6,6 +6,15 @@
 app = "codeselfstudy"
 primary_region = "iad"
 
+[deploy]
+  # Apply database migrations once per deploy, in a temporary machine, before the
+  # new version serves traffic. `server -migrate` opens DATABASE_URL, runs the
+  # embedded goose migrations, and exits; if it fails the deploy is aborted and
+  # the previous version keeps serving instead of crash-looping. Migrations are
+  # idempotent, so this is a no-op when the schema is already current.
+  release_command = "/server -migrate"
+  strategy = "canary"
+
 [http_service]
   internal_port = 8080
   force_https = true
@@ -13,14 +22,17 @@ primary_region = "iad"
   # https://fly.io/docs/reference/suspend-resume/#billing
   auto_stop_machines = "suspend"
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ["app"]
 
-[deploy]
-  strategy = "canary"
+[env]
+  # Non-secret email-ingest config. Secrets (DATABASE_URL with its authToken,
+  # INGEST_TOKEN, GEMINI_API_KEY, SLACK_WEBHOOK_FOR_DEALS_CHANNEL) are set with
+  # `fly secrets set`, never in this file.
+  GEMINI_MODEL = "gemini-3.5-flash-lite"
+  DIGEST_INTERVAL = "24h"
+  REPOST_AFTER = "1080h"
 
 [[vm]]
   cpus = 1
-  memory_mb = 512
-
-
+  memory_mb = 256

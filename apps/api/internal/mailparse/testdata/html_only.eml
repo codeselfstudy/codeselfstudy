@@ -1,0 +1,9 @@
+From: Indie Deals <news@indiedeals.io>
+To: me@example.com
+Subject: HTML Only Newsletter
+Message-Id: <html-only@indiedeals.io>
+Date: Mon, 20 Jul 2026 11:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset="utf-8"
+
+<html><head><style>.promo{color:red}</style><title>ignore me</title></head><body><h2>GameDev Asset Sale</h2><p>50% off this week only.</p><a href="https://indiedeals.io/gamedev">Browse assets</a><script>trackOpen()</script></body></html>

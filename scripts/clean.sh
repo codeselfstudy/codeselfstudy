@@ -1,69 +1,35 @@
 #!/usr/bin/env bash
 
-# This script deletes unnecessary files.
-# Edit the arrays to customize it.
+# Deletes build artifacts and stray junk files. Edit the lists at the top to
+# customize. Kept simple so it runs under bash 3.2 (macOS default).
 
 set -euo pipefail
 
-# Common directories to delete
-/bin/rm -rfv tmp-*
-/bin/rm -rfv dist/
-/bin/rm -rfv .output/
-/bin/rm -rfv .tanstack/
+# Web build output (Astro).
+/bin/rm -rfv apps/web/dist
+/bin/rm -rfv apps/web/.astro
+/bin/rm -rfv apps/web/node_modules/.astro/*
 
-# node_modules cache
+# Go static-asset mirror (populated by `just build` from apps/web/dist).
+/bin/rm -rfv apps/api/static
+
+# Local Go binaries from `go build .` if anyone runs them.
+/bin/rm -fv apps/api/api apps/api/server
+
+# Stray top-level dirs that older configs sometimes left behind.
+/bin/rm -rfv tmp-*
+
+# Prettier cache inside hoisted node_modules.
 /bin/rm -rfv ./node_modules/.cache/prettier/.prettier-cache
 
-# Directories to exclude from traversal
-excluded_dirs=(
-  '.claude'
-  '.worktrees'
-)
-
-# Files deleted by find
-find_files=(
-  '.DS_Store'
-  'Thumbs.db'
-  '*.pyc'
-  '*.pyo'
-  '*~'
-)
-
-# Directories deleted by find
-find_dirs=(
-  '__pycache__'
-)
-
-# ======= You don't need to edit below this line =======
-
-build_name_expr() {
-  local -n arr=$1
-  local out=()
-
-  for pattern in "${arr[@]}"; do
-    out+=( -name "$pattern" -o )
-  done
-
-  unset 'out[-1]'
-  printf '%q ' "${out[@]}"
-}
-
-build_excluded_expr() {
-  local out=()
-
-  for dir in "${excluded_dirs[@]}"; do
-    out+=( -path "./$dir" -o -path "./$dir/*" -o )
-  done
-
-  unset 'out[-1]'
-  printf '%q ' "${out[@]}"
-}
-
-excluded_expr=$(build_excluded_expr)
-file_expr=$(build_name_expr find_files)
-dir_expr=$(build_name_expr find_dirs)
-
-eval "find . \
-  \( $excluded_expr \) -prune -o \
-  \( -type f \( $file_expr \) -print -exec /bin/rm -fv {} + \) -o \
-  \( -type d \( $dir_expr \) -print -exec /bin/rm -rfv {} + \)"
+# OS / editor junk anywhere in the tree, except inside the listed dirs.
+find . \
+  \( -path './.claude' -o -path './.claude/*' \
+  -o -path './.worktrees' -o -path './.worktrees/*' \
+  -o -path './node_modules' -o -path './node_modules/*' \
+  -o -path './apps/*/node_modules' -o -path './apps/*/node_modules/*' \
+  -o -path './.git' -o -path './.git/*' \) -prune -o \
+  \( -type f \( -name '.DS_Store' -o -name 'Thumbs.db' \
+  -o -name '*.pyc' -o -name '*.pyo' -o -name '*~' \) \
+  -print -exec /bin/rm -fv {} + \) -o \
+  \( -type d -name '__pycache__' -print -exec /bin/rm -rfv {} + \)

@@ -19,26 +19,53 @@ jobs:
         with:
           bun-version: latest
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-go@v5
         with:
-          node-version: 22
+          go-version: "1.26"
+          cache-dependency-path: apps/api/go.sum
 
-      - name: Install dependencies
+      - name: Install JS dependencies
         run: bun install --frozen-lockfile
 
-      - name: ESLint
-        run: bun run eslint .
+      # Run linters without --fix in CI; the package.json `lint` script auto-
+      # fixes for local dev convenience and would silently rewrite files here.
+      - name: ESLint (web)
+        run: bunx eslint .
+        working-directory: apps/web
 
-      - name: Stylelint
-        run: bun run stylelint "**/*.{css,scss}"
+      - name: Stylelint (web)
+        run: bunx stylelint "**/*.{css,scss}"
+        working-directory: apps/web
 
-      - name: Run tests with coverage
-        run: bun run test:coverage
+      # Type-check (astro check) and produce the static build so page or type
+      # breakage fails the PR. The build script is `astro check && astro build`.
+      - name: Build web
+        run: bun run --filter web build
+
+      - name: Test web with coverage
+        run: bun run --filter web test:coverage
+
+      - name: Test api (race detector on)
+        run: go test -race ./...
+        working-directory: apps/api
+
+      - name: Vet api
+        run: go vet ./...
+        working-directory: apps/api
+
+      - name: ESLint (worker)
+        run: bunx eslint .
+        working-directory: apps/email_receiver
+
+      # `test` runs `bunx tsc --noEmit && bun test` — typecheck + tests with the
+      # worker's bunfig coverage gate.
+      - name: Test worker (typecheck + coverage)
+        run: bun run --filter email_receiver test
 
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-html
-          path: coverage/
+          path: apps/web/coverage/
           retention-days: 14

@@ -5,11 +5,15 @@
 .worktrees/
 *.db
 TANK/
-src/routeTree.gen.ts
+apps/web/src/routeTree.gen.ts
 .env
 .env*
 .env.local
 .envrc
+!.env-example
+
+# Cloudflare Worker local secrets (wrangler); not matched by the .env* rules
+.dev.vars
 
 dist/
 build/
@@ -105,3 +109,8 @@ todos.json
 
 # Test coverage
 coverage/
+
+# Workspace build outputs
+apps/web/.output/
+apps/web/dist/
+apps/api/static/

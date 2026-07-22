@@ -1,0 +1,21 @@
+{
+  "name": "email_receiver",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "bunx tsc --noEmit && bun test",
+    "typecheck": "bunx tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/bun": "1.3.14",
+    "eslint": "10.7.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.64.0",
+    "wrangler": "4.112.0"
+  }
+}

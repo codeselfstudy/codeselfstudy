@@ -1,0 +1,4 @@
+# Generated output — not authored CSS.
+dist/
+coverage/
+.astro/

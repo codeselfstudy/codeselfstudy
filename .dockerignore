@@ -1,32 +1,84 @@
-fly.toml
-mockups/
-.claude/
-.gemini/
-.output/
-.tanstack/
-manual/
-tmp/
+# Only the prebuilt apps/web/dist ships in the build context; the Go binary
+# serves it. Source / installs aren't needed at build time. The dist dir is
+# matched by the defensive `**/dist` glob below and re-included at the end.
+
+.git
+.github
+.claude
+.gemini
+.vscode
+.worktrees
+
+# Repo-level docs and dev tooling — not needed inside the image.
+README.md
 AGENTS.md
 CLAUDE.md
 CONTRIBUTING.md
+LICENSE.md
 justfile
-README.md
-dev.db
+lefthook.yml
+.editorconfig
+.prettierrc.mjs
+.prettierignore
+.stylelintignore
+stylelint.config.mjs
+.bun-version
+.dockerignore
+.gitignore
+fly.toml
+
+# Side projects / fixtures
+manual/
+mockups/
 scripts/
+dotfiles/
+tmp/
 
-**/*.db
+# Web workspace source — only the prerendered output ships.
+apps/web/src
+apps/web/public
+apps/web/test
+apps/web/node_modules
+apps/web/.tanstack
+apps/web/.cta.json
+apps/web/components.json
+apps/web/drizzle.config.ts
+apps/web/eslint.config.js
+apps/web/package.json
+apps/web/tsconfig.json
+apps/web/vite.config.ts
+apps/web/vitest.config.ts
+
+# Worker workspace — deploys to Cloudflare, never ships in the Go image
+# (the Dockerfile only copies apps/api + apps/web/dist). Excluding the whole
+# dir keeps its source and large wrangler node_modules out of the build context.
+apps/email_receiver
+
+# Root JS install artifacts
+node_modules
+bun.lock
+package.json
+
+# Personal scratchpad / private dirs that must never reach the image.
 **/TANK
-**/.env
-**/.env*
-**/.env.local
-**/.envrc
 
+# Defensive globs for caches and build outputs that might appear anywhere
+# in the tree. Prevents leakage if a workspace adds an unexpected one.
 **/dist
+**/dist-ssr
 **/build
+**/_site
+**/coverage
+**/.nyc_output
 **/.astro
-
-**/.output/
-**/.tanstack/
+**/.output
+**/.tanstack
+**/.nitro
+**/.vinxi
+**/.next
+**/.nuxt
+**/.svelte-kit
+**/.vercel
 **/.cache
 **/.mypy_cache
 **/.parcel-cache
@@ -34,60 +86,113 @@ scripts/
 **/.swc
 **/.gradle
 **/.wrangler
+**/.turbo
+**/.bun
+**/.yarn
+**/.pnp.*
+**/target
 
-**/*.bak
-**/*.orig
-**/*PENDING_DELETION*
+# Test / coverage artifacts (HTML reports, lcov, etc).
+**/coverage-final.json
+**/lcov.info
+**/lcov-report
 
+# Lockfiles from other package managers — bun.lock is already excluded
+# in the explicit list above; these are pure noise if they ever sneak in.
+**/package-lock.json
+**/pnpm-lock.yaml
+**/yarn.lock
+
+# Editor / OS junk
 **/*~
 **/tags
 **/tags.*
 **/.idea
-**/.vscode
 **/.vim
+**/.vs
 **/*.sw[op]
+**/*.swn
+**/*.swm
+**/.history
+**/.ionide
+**/*.code-workspace
+**/Thumbs.db
+**/Desktop.ini
+**/ehthumbs.db
 
-# Haskell
-**/.stack-work
-**/dist-newstyle
-
-# Python
-**/*.py[cod]
-**/__pycache__
-**/.venv
-
-# Ruby
-.bundle
-
-# Node
-**/node_modules
-
-# Elixir
-**/.elixir_ls
-_build
-cover
-deps
-doc
-.fetch
-**/erl_crash.dump
-**/*.ez
-**/my_app-*.tar
-priv/static
-
-# logs
+# Logs
 **/npm-debug.log*
 **/yarn-debug.log*
 **/yarn-error.log*
 **/pnpm-debug.log*
 
-# environment variables
-**/.env.production
-**/.DS_Store
-**/dist-ssr
-**/*.local
+# Stray artifacts that have shown up in history
 **/count.txt
-**/.nitro
-**/.vinxi
 **/todos.json
+**/*.local
 
-.git
+# Env & local files
+**/.env
+**/.env*
+**/.env.local
+**/.env.production
+**/.env.development
+**/.envrc
+**/*.bak
+**/*.orig
+**/*.rej
+**/*PENDING_DELETION*
+**/*.db
+**/*.db-journal
+**/*.db-shm
+**/*.db-wal
+**/*.sqlite
+**/*.sqlite3
+**/.DS_Store
+
+# Language ecosystem build artifacts. Defensive — most aren't used here,
+# but the cost of listing them is zero and the cost of one slipping
+# through is leaking source / secrets / large binaries into the image.
+
+# Python
+**/*.py[cod]
+**/__pycache__
+**/.venv
+**/.tox
+**/.pytest_cache
+**/.ruff_cache
+
+# Ruby
+**/.bundle
+**/vendor/bundle
+**/.rspec_status
+
+# Rust / Go (Go build cache lives under GOCACHE, not in tree)
+**/target
+
+# Haskell
+**/.stack-work
+**/dist-newstyle
+
+# Elixir / Erlang
+**/.elixir_ls
+**/_build
+**/cover
+**/deps
+**/doc
+**/.fetch
+**/erl_crash.dump
+**/*.ez
+**/my_app-*.tar
+**/priv/static
+
+# Java / Kotlin
+**/*.class
+**/out
+**/.gradle
+
+# Re-include the one build artifact that must ship: the prerendered Astro
+# output that the Go binary serves. This negation must stay last so it wins
+# over the `**/dist` defensive glob above (last matching pattern wins).
+!apps/web/dist
+!apps/web/dist/**
