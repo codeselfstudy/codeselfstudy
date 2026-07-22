@@ -63,12 +63,12 @@ const gaSnippet = minify(`
       // the "theme" key by the navbar toggle).
       (function () {
         try {
-          var stored = localStorage.getItem("theme");
-          var dark = stored
+          const stored = localStorage.getItem("theme");
+          const dark = stored
             ? stored === "dark"
             : window.matchMedia("(prefers-color-scheme: dark)").matches;
           document.documentElement.classList.toggle("dark", dark);
-        } catch (e) {
+        } catch {
           /* localStorage/matchMedia unavailable */
         }
       })();
