@@ -126,3 +126,34 @@ func ResolveURL(rawURL, tursoAuthToken string) string {
 	u.RawQuery = q.Encode()
 	return u.String()
 }
+
+// authTokenOf extracts the authToken query value from a libsql DATABASE_URL, or
+// "" if absent. ResolveURL always injects the token as authToken=…, so matching
+// that single key covers every URL this package hands to Open — the token that
+// RedactToken needs to keep out of a logged error.
+func authTokenOf(dbURL string) string {
+	const key = "authToken="
+	i := strings.Index(dbURL, key)
+	if i < 0 {
+		return ""
+	}
+	v := dbURL[i+len(key):]
+	if amp := strings.IndexByte(v, '&'); amp >= 0 {
+		v = v[:amp]
+	}
+	return v
+}
+
+// RedactToken returns s with the Turso authToken carried in dbURL replaced by
+// "***". A libsql driver error can embed the full connection URL including
+// ?authToken=<token>; redacting the opaque token keeps the useful cause
+// (dial/connect/auth failure) in the log while keeping the secret out of it.
+// Pass the same (already ResolveURL-merged) dbURL that was handed to Open so the
+// injected token is caught. A no-op when dbURL carries no authToken.
+func RedactToken(s, dbURL string) string {
+	tok := authTokenOf(dbURL)
+	if tok == "" {
+		return s
+	}
+	return strings.ReplaceAll(s, tok, "***")
+}

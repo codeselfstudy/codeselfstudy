@@ -108,32 +108,6 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
-// authTokenOf extracts the authToken query value from a libsql DATABASE_URL, or
-// "" if absent. Used to redact the token from database errors before logging.
-func authTokenOf(dbURL string) string {
-	const key = "authToken="
-	i := strings.Index(dbURL, key)
-	if i < 0 {
-		return ""
-	}
-	v := dbURL[i+len(key):]
-	if amp := strings.IndexByte(v, '&'); amp >= 0 {
-		v = v[:amp]
-	}
-	return v
-}
-
-// redactToken replaces every occurrence of token in s with "***". A libsql
-// driver error can embed the full connection URL including ?authToken=<token>;
-// redacting the opaque token keeps the useful cause (dial/connect/auth failure)
-// in the log while keeping the secret out of it. A no-op when token is "".
-func redactToken(s, token string) string {
-	if token == "" {
-		return s
-	}
-	return strings.ReplaceAll(s, token, "***")
-}
-
 // newIngestFromEnv builds the email-ingest handlers from the environment. It
 // returns (nil, nil) when the pipeline is not configured (no DATABASE_URL /
 // INGEST_TOKEN), so the server still runs static-only — mirroring the WorkOS
@@ -151,10 +125,9 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 	}
 
 	dbURL := db.ResolveURL(cfg.DatabaseURL, os.Getenv("TURSO_AUTH_TOKEN"))
-	tok := authTokenOf(dbURL)
 	database, err := db.Open(dbURL)
 	if err != nil {
-		log.Fatalf("ingest: db open: %s", redactToken(err.Error(), tok))
+		log.Fatalf("ingest: db open: %s", db.RedactToken(err.Error(), dbURL))
 	}
 	// Migrate on boot only for a local SQLite database (dev ergonomics). A
 	// remote libsql/Turso database is migrated out of band by `server -migrate`
@@ -163,7 +136,7 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 	if !db.IsRemote(dbURL) {
 		if err := db.Migrate(ctx, database); err != nil {
 			_ = database.Close()
-			log.Fatalf("ingest: db migrate: %s", redactToken(err.Error(), tok))
+			log.Fatalf("ingest: db migrate: %s", db.RedactToken(err.Error(), dbURL))
 		}
 	}
 
@@ -205,14 +178,13 @@ func runMigrate(ctx context.Context) {
 	if dbURL == "" {
 		log.Fatalf("migrate: DATABASE_URL is empty")
 	}
-	tok := authTokenOf(dbURL)
 	database, err := db.Open(dbURL)
 	if err != nil {
-		log.Fatalf("migrate: db open: %s", redactToken(err.Error(), tok))
+		log.Fatalf("migrate: db open: %s", db.RedactToken(err.Error(), dbURL))
 	}
 	defer func() { _ = database.Close() }()
 	if err := db.Migrate(ctx, database); err != nil {
-		log.Fatalf("migrate: %s", redactToken(err.Error(), tok))
+		log.Fatalf("migrate: %s", db.RedactToken(err.Error(), dbURL))
 	}
 	log.Printf("migrate: schema up to date")
 }
