@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -21,56 +22,59 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 z-10 w-full border-b border-gray-100 bg-white shadow-sm">
+    <nav className="bg-background border-border fixed top-0 left-0 z-10 w-full border-b shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-[58px] items-center justify-between">
           <div className="flex shrink-0 items-center">
             <a
               href="/"
-              className="text-lg font-bold text-[#4a4a4a] hover:text-[#363636]"
+              className="text-foreground text-lg font-bold hover:opacity-80"
               id="siteLogoText"
             >
               Code Self Study
             </a>
           </div>
-          <div className="hidden sm:flex sm:items-center sm:space-x-4">
-            {LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className={cn(
-                  buttonVariants({ variant: "ghost" }),
-                  "text-[1rem] font-medium text-[#4a4a4a]"
-                )}
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-          <div className="sm:hidden">
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger
-                className={buttonVariants({ variant: "ghost", size: "icon" })}
-              >
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Open main menu</span>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <SheetTitle>Menu</SheetTitle>
-                <div className="mt-6 flex flex-col space-y-4">
-                  {LINKS.map((link) => (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      className="text-lg font-medium text-[#4a4a4a] hover:text-[#363636]"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <div className="hidden sm:flex sm:items-center sm:space-x-4">
+              {LINKS.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className={cn(
+                    buttonVariants({ variant: "ghost" }),
+                    "text-foreground text-[1rem] font-medium"
+                  )}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+            <div className="sm:hidden">
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger
+                  className={buttonVariants({ variant: "ghost", size: "icon" })}
+                >
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Open main menu</span>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetTitle>Menu</SheetTitle>
+                  <div className="mt-6 flex flex-col space-y-4">
+                    {LINKS.map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        className="text-foreground text-lg font-medium hover:opacity-80"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>

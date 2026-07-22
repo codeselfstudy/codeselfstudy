@@ -57,6 +57,22 @@ const gaSnippet = minify(`
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
+    <script is:inline>
+      // Set the theme before first paint to avoid a flash. The device setting
+      // is the default until the user makes an explicit choice (stored under
+      // the "theme" key by the navbar toggle).
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var dark = stored
+            ? stored === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.classList.toggle("dark", dark);
+        } catch (e) {
+          /* localStorage/matchMedia unavailable */
+        }
+      })();
+    </script>
     <title>{pageTitle}</title>
     {
       metadata.map((entry) =>
