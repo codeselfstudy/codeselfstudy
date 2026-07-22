@@ -28,7 +28,7 @@ export default function Navbar() {
           <div className="flex shrink-0 items-center">
             <a
               href="/"
-              className="text-foreground text-lg font-bold hover:opacity-80"
+              className="text-foreground text-lg font-bold hover:no-underline hover:opacity-80"
               id="siteLogoText"
             >
               Code Self Study
@@ -65,7 +65,7 @@ export default function Navbar() {
                       <a
                         key={link.label}
                         href={link.href}
-                        className="text-foreground text-lg font-medium hover:opacity-80"
+                        className="text-foreground text-lg font-medium hover:no-underline hover:opacity-80"
                         onClick={() => setIsOpen(false)}
                       >
                         {link.label}
