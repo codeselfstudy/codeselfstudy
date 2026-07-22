@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -149,5 +150,40 @@ func TestResolveURL(t *testing.T) {
 				t.Fatalf("ResolveURL(%q, %q) = %q, want %q", tc.rawURL, tc.token, got, tc.want)
 			}
 		})
+	}
+}
+
+func TestRedactToken(t *testing.T) {
+	const url = "libsql://db.turso.io?authToken=SUPERSECRET123"
+
+	// authTokenOf pulls the injected token back out of a resolved URL, and is
+	// empty for a URL that carries none.
+	if tok := authTokenOf(url); tok != "SUPERSECRET123" {
+		t.Fatalf("authTokenOf = %q, want SUPERSECRET123", tok)
+	}
+	if tok := authTokenOf("libsql://db.turso.io?authToken=SUPERSECRET123&mode=ro"); tok != "SUPERSECRET123" {
+		t.Fatalf("authTokenOf with trailing param = %q, want SUPERSECRET123", tok)
+	}
+	if authTokenOf("file:./dev.db") != "" {
+		t.Error("authTokenOf should be empty for a local file URL")
+	}
+
+	// A driver error embedding the URL must come out with the token redacted but
+	// the useful cause intact.
+	errStr := `db: ping: dial ` + url + `: connection refused`
+	got := RedactToken(errStr, url)
+	if strings.Contains(got, "SUPERSECRET123") {
+		t.Errorf("RedactToken left the token: %q", got)
+	}
+	if !strings.Contains(got, "connection refused") {
+		t.Errorf("RedactToken dropped the cause: %q", got)
+	}
+
+	// No token in the URL → nothing to redact (local sqlite path, empty URL).
+	if RedactToken("plain error", "file:./dev.db") != "plain error" {
+		t.Error("RedactToken with a tokenless URL should be a no-op")
+	}
+	if RedactToken("plain error", "") != "plain error" {
+		t.Error("RedactToken with an empty URL should be a no-op")
 	}
 }
