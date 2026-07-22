@@ -52,9 +52,7 @@ The email-ingest pipeline (the `apps/email_receiver` Worker â†’ `/api/ingest` â†
 
 ## Database Tasks
 
-The Go side owns the schema. Migrations live under
-`apps/api/internal/db/migrations/` and are applied on server startup, so most
-of the time you don't need to run anything.
+The Go side owns the schema. Migrations live under `apps/api/internal/db/migrations/`. A local database is migrated automatically on server startup, so most of the time you don't need to run anything; in production a remote Turso database is migrated by the deploy's release command instead (see [Deployment](./deployment.md#migrations)).
 
 ```bash
 just db_status               # show which migrations have been applied

@@ -52,7 +52,7 @@ The Go-side auth is opt-in: if `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (or th
 ## Database
 
 - Pure-Go drivers only, so the distroless image stays static: `modernc.org/sqlite` for local files and `:memory:`, and `tursodatabase/libsql-client-go` for remote Turso. `internal/db.Open` selects the driver by `DATABASE_URL` scheme (`libsql://` / `http(s)` / `ws(s)` → Turso; anything else → SQLite). The Turso auth token rides in the URL as `?authToken=…`.
-- **Schema is owned by Go.** Migrations live in `apps/api/internal/db/migrations/` as goose `.sql` files, are embedded into the binary via `//go:embed`, and apply on every startup. Goose tracks state in its own table, so re-running is a no-op.
+- **Schema is owned by Go.** Migrations live in `apps/api/internal/db/migrations/` as goose `.sql` files and are embedded into the binary via `//go:embed`. A local SQLite database is migrated on boot; a remote Turso database is migrated out of band by `server -migrate`, which Fly runs as the `[deploy] release_command` once per deploy before the new version serves traffic (see [Deployment](./deployment.md#migrations)). Goose tracks state in its own table, so re-running is a no-op.
 - For dev: `just db_migrate`, `just db_status`, `just db_down`, `just db_create <name>` wrap a small CLI in `apps/api/cmd/migrate`.
 
 ## Email → deals → Slack
