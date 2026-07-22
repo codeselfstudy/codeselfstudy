@@ -150,8 +150,9 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 		return nil, nil
 	}
 
-	tok := authTokenOf(cfg.DatabaseURL)
-	database, err := db.Open(cfg.DatabaseURL)
+	dbURL := db.ResolveURL(cfg.DatabaseURL, os.Getenv("TURSO_AUTH_TOKEN"))
+	tok := authTokenOf(dbURL)
+	database, err := db.Open(dbURL)
 	if err != nil {
 		log.Fatalf("ingest: db open: %s", redactToken(err.Error(), tok))
 	}
@@ -159,7 +160,7 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 	// remote libsql/Turso database is migrated out of band by `server -migrate`
 	// (the Fly release_command), so a migration failure aborts the deploy rather
 	// than crash-looping the serving process.
-	if !db.IsRemote(cfg.DatabaseURL) {
+	if !db.IsRemote(dbURL) {
 		if err := db.Migrate(ctx, database); err != nil {
 			_ = database.Close()
 			log.Fatalf("ingest: db migrate: %s", redactToken(err.Error(), tok))
@@ -200,7 +201,7 @@ func migrateRequested(args []string) bool {
 // DATABASE_URL (not the rest of the ingest config). Any failure is fatal, which
 // makes the release step — and therefore the deploy — fail loudly.
 func runMigrate(ctx context.Context) {
-	dbURL := os.Getenv("DATABASE_URL")
+	dbURL := db.ResolveURL(os.Getenv("DATABASE_URL"), os.Getenv("TURSO_AUTH_TOKEN"))
 	if dbURL == "" {
 		log.Fatalf("migrate: DATABASE_URL is empty")
 	}

@@ -46,7 +46,7 @@ GEMINI_API_KEY=""
 SLACK_WEBHOOK_FOR_DEALS_CHANNEL=""
 ```
 
-`DATABASE_URL` is used by the migrate CLI in `apps/api/cmd/migrate`, by tests, and — when the email-ingest pipeline is enabled — by the runtime server. In production it is a Turso URL (`libsql://<db>.turso.io?authToken=<token>`).
+`DATABASE_URL` is used by the migrate CLI in `apps/api/cmd/migrate`, by tests, and — when the email-ingest pipeline is enabled — by the runtime server. In production it is a Turso URL (`libsql://<db>.turso.io?authToken=<token>`). The auth token may instead be supplied separately as `TURSO_AUTH_TOKEN` (Turso's own convention), in which case `DATABASE_URL` can be a bare `libsql://<db>.turso.io`.
 
 The email-ingest pipeline (the `apps/email_receiver` Worker → `/api/ingest` → Turso → Slack) is opt-in: it runs only when `DATABASE_URL` and `INGEST_TOKEN` are both set, and extraction additionally needs `GEMINI_API_KEY`. See [Architecture](./architecture.md#email--deals--slack) for the full flow.
 
