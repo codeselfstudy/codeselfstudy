@@ -138,13 +138,47 @@ func TestDealTextOmitsEmptyFields(t *testing.T) {
 }
 
 func TestDealTextEscapesURLDelimiters(t *testing.T) {
-	// A tracking URL with |, <, > must not break Slack's <url|text> syntax.
-	got := dealText(store.Deal{Title: "T", URL: "https://x.example/d?a=1|2&b=<3>"})
-	if strings.Contains(got, "1|2") || strings.Contains(got, "<3>") {
+	// Any |, <, > that survives param-stripping (e.g. in the path) must not break
+	// Slack's <url|text> syntax.
+	got := dealText(store.Deal{Title: "T", URL: "https://x.example/d|e<f>"})
+	if strings.Contains(got, "|e") || strings.Contains(got, "<f>") {
 		t.Errorf("URL delimiters not escaped: %q", got)
 	}
-	want := "*<https://x.example/d?a=1%7C2&b=%3C3%3E|T>*"
+	want := "*<https://x.example/d%7Ce%3Cf%3E|T>*"
 	if got != want {
 		t.Errorf("dealText = %q, want %q", got, want)
+	}
+}
+
+func TestDealTextStripsQueryParams(t *testing.T) {
+	// The tracking query attached by newsletters must be gone from the Slack link.
+	got := dealText(store.Deal{Title: "T", URL: "https://x.example/deal?utm_source=news&id=9"})
+	want := "*<https://x.example/deal|T>*"
+	if got != want {
+		t.Errorf("dealText = %q, want %q", got, want)
+	}
+}
+
+func TestStripQueryParams(t *testing.T) {
+	cases := []struct{ name, in, want string }{
+		{
+			"humble bundle newsletter",
+			"https://www.humblebundle.com/books/red-team-blue-team-hackers-complete-playbook-packt-books?mcID=102:6a5f9e600af1ea383606e189:ot:6a6064f6d273259125eb7a94:1&linkID={$linkID}&utm_source=Humble+Bundle+Newsletter&utm_content=cta_button&utm_medium=email&utm_campaign=teenagemutantninjaturtlesreturntonewyorkidw_bookbundle",
+			"https://www.humblebundle.com/books/red-team-blue-team-hackers-complete-playbook-packt-books",
+		},
+		{"no query unchanged", "https://x.example/deal", "https://x.example/deal"},
+		{"trailing question mark", "https://x.example/deal?", "https://x.example/deal"},
+		{"fragment kept when no query", "https://x.example/deal#section", "https://x.example/deal#section"},
+		{"query dropped, fragment kept", "https://x.example/deal?utm=1#anchor", "https://x.example/deal#anchor"},
+		{"question mark inside fragment is not a query", "https://x.example/deal#section?foo", "https://x.example/deal#section?foo"},
+		{"hash route with params kept", "https://x.example/#/deals?id=9", "https://x.example/#/deals?id=9"},
+		{"empty", "", ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := stripQueryParams(tc.in); got != tc.want {
+				t.Errorf("stripQueryParams(%q) = %q, want %q", tc.in, got, tc.want)
+			}
+		})
 	}
 }
