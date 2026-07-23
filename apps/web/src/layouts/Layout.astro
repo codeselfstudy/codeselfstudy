@@ -98,7 +98,7 @@ const gaSnippet = minify(`
     }
   </head>
   <body>
-    <Navbar client:load />
+    <Navbar client:only="react" />
     <slot />
     <Footer />
   </body>

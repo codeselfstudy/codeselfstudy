@@ -13,7 +13,8 @@
 bun install
 
 # Run the web (:7001) and Go API (:8080) dev servers together.
-# The two run independently; the static site doesn't call the API yet.
+# They run independently (no dev proxy): the navbar's same-origin /api/me
+# hits Astro on :7001 (which has no API); the authed API needs the Go build.
 just dev
 ```
 
@@ -31,8 +32,8 @@ bun run preview
 Copy `env.local.example` to `.env.local` at the repo root and fill in:
 
 ```bash
-# client-side variables (browser-exposed). The Astro app doesn't consume
-# these yet; the Go verifier reads them as fallback names.
+# client-side variables (browser-exposed). The Astro app consumes these for the
+# WorkOS AuthKit sign-in control; the Go verifier reads them as fallback names.
 VITE_WORKOS_CLIENT_ID="your_workos_client_id"
 VITE_WORKOS_API_HOSTNAME="your_workos_api_hostname"
 

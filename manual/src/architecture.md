@@ -44,7 +44,7 @@ codeselfstudy/
 
 ## Auth
 
-- **Client:** deferred to the API phase. The Astro build currently ships no sign-in UI; the client-side WorkOS integration (and the bearer-token fetch wrapper) will return when the API surface is built out.
+- **Client:** the Astro navbar mounts a WorkOS AuthKit sign-in control (`@workos-inc/authkit-react`) as a browser-only island, so `Layout.astro` renders `Navbar` with `client:only="react"`. Signing in yields a WorkOS access token that `apiFetch` (`apps/web/src/lib/api.ts`) attaches as a Bearer credential to the gated API — the navbar reads `/api/me` to show the signed-in user.
 - **Server:** `apps/api/internal/auth/jwks.go` fetches the WorkOS JWKS on startup and refreshes periodically. `apps/api/internal/auth/middleware.go` validates signature, issuer, and expiry on every protected request. Validated claims are stashed in the Echo context for handlers to read.
 
 The Go-side auth is opt-in: if `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (or their `VITE_`-prefixed fallbacks) are missing, `/api/me` is not mounted. Static serving and `/healthz` keep working — useful for barebones smoke tests.

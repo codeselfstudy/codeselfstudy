@@ -1,6 +1,20 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
+
+// Navbar wraps its content in the WorkOS AuthProvider and renders SignInButton;
+// stub AuthKit so the nav tests don't spin up a real browser session.
+vi.mock("@workos-inc/authkit-react", () => ({
+  AuthKitProvider: ({ children }: { children: ReactNode }) => children,
+  useAuth: () => ({
+    user: null,
+    isLoading: false,
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
 import Navbar from "@/components/Navbar";
 
 describe("Navbar", () => {
@@ -10,10 +24,6 @@ describe("Navbar", () => {
     expect(
       screen.getByRole("link", { name: "Code Self Study" })
     ).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
-      "href",
-      "/"
-    );
     expect(screen.getByRole("link", { name: "About" })).toHaveAttribute(
       "href",
       "/about/"
@@ -49,5 +59,20 @@ describe("Navbar", () => {
     await waitFor(() =>
       expect(screen.queryByText("Menu")).not.toBeInTheDocument()
     );
+  });
+
+  test("does not duplicate the sign-in control inside the drawer", async () => {
+    const user = userEvent.setup();
+    render(<Navbar />);
+
+    // Sign-in lives once in the top bar at every breakpoint; the drawer holds only
+    // the nav links, so opening it must not mount a second SignInButton (a
+    // duplicate would fire its own /api/me).
+    await user.click(screen.getByRole("button", { name: "Open main menu" }));
+    const dialog = await screen.findByRole("dialog");
+
+    expect(
+      within(dialog).queryByRole("button", { name: "Sign In" })
+    ).not.toBeInTheDocument();
   });
 });
