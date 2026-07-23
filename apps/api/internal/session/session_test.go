@@ -158,15 +158,23 @@ func cookieFrom(rec *httptest.ResponseRecorder) string {
 	return ""
 }
 
-func flipLast(s string) string {
+// flipFirst mutates the FIRST character of a base64 string, not the last.
+// Everything here is RawURLEncoding (unpadded), so when the encoded length is
+// 2 or 3 mod 4 the final character's low bits map to no output byte and Go's
+// non-strict decoder silently drops them: flipping a trailing 'A' to 'B' (values
+// 0 and 1, differing only in bit 0) decodes to the IDENTICAL bytes, the tamper
+// is a no-op, and the "rejects tampered input" assertions fail at random. The
+// first character is always fully significant, so this always changes the
+// decoded bytes.
+func flipFirst(s string) string {
 	if s == "" {
 		return "A"
 	}
 	repl := byte('A')
-	if s[len(s)-1] == 'A' {
+	if s[0] == 'A' {
 		repl = 'B'
 	}
-	return s[:len(s)-1] + string(repl)
+	return string(repl) + s[1:]
 }
 
 // --- tests -----------------------------------------------------------------
@@ -233,7 +241,7 @@ func TestUnsealRejectsTamperAndWrongKey(t *testing.T) {
 	m := newTestManager(t, f)
 	sealed := mustSeal(t, m, sessionData{AccessToken: "at"})
 
-	if _, err := m.unseal(flipLast(sealed)); err == nil {
+	if _, err := m.unseal(flipFirst(sealed)); err == nil {
 		t.Error("expected unseal to reject tampered ciphertext")
 	}
 
@@ -251,7 +259,7 @@ func TestStateSignVerify(t *testing.T) {
 	if !ok || got != "/events/" || nonce != "nonce123" {
 		t.Fatalf("verifyState round-trip: got %q nonce %q ok=%v", got, nonce, ok)
 	}
-	if _, _, ok := m.verifyState(flipLast(state)); ok {
+	if _, _, ok := m.verifyState(flipFirst(state)); ok {
 		t.Error("tampered state should not verify")
 	}
 	if _, _, ok := m.verifyState("not-base64!!"); ok {
@@ -342,7 +350,7 @@ func TestMiddlewareRejectsMissingAndTampered(t *testing.T) {
 		}
 	})
 	t.Run("tampered", func(t *testing.T) {
-		if rec := serveMe(m, cookie(flipLast(good))); rec.Code != http.StatusUnauthorized {
+		if rec := serveMe(m, cookie(flipFirst(good))); rec.Code != http.StatusUnauthorized {
 			t.Fatalf("want 401 got %d", rec.Code)
 		}
 	})
