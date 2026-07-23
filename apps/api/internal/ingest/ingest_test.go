@@ -77,6 +77,13 @@ type env struct {
 
 func setup(t *testing.T) *env {
 	t.Helper()
+	return setupApproved(t, nil)
+}
+
+// setupApproved is setup with an APPROVED_FORWARDING_EMAILS allowlist, whose
+// senders bypass the DigestInterval wait.
+func setupApproved(t *testing.T, approved map[string]bool) *env {
+	t.Helper()
 	d, err := db.Open("file:" + filepath.Join(t.TempDir(), "s.db"))
 	if err != nil {
 		t.Fatalf("db.Open: %v", err)
@@ -92,7 +99,12 @@ func setup(t *testing.T) *env {
 		{Source: "Humble", Title: "Bundle B"},
 	}}
 	poster := &fakePoster{}
-	cfg := ingest.Config{IngestToken: token, DigestInterval: 24 * time.Hour, RepostAfter: 45 * 24 * time.Hour}
+	cfg := ingest.Config{
+		IngestToken:     token,
+		DigestInterval:  24 * time.Hour,
+		RepostAfter:     45 * 24 * time.Hour,
+		ApprovedSenders: approved,
+	}
 	h := ingest.New(cfg, st, ex, poster)
 
 	e := echo.New()
@@ -102,16 +114,30 @@ func setup(t *testing.T) *env {
 }
 
 func rawEmail(messageID, subject, body string) []byte {
-	return []byte("From: Humble Bundle <deals@humblebundle.com>\r\n" +
+	return rawEmailFrom("Humble Bundle <deals@humblebundle.com>", messageID, subject, body)
+}
+
+func rawEmailFrom(from, messageID, subject, body string) []byte {
+	return []byte("From: " + from + "\r\n" +
 		"To: me@example.com\r\nSubject: " + subject + "\r\nMessage-Id: " + messageID + "\r\n" +
 		"Date: Mon, 20 Jul 2026 10:00:00 +0000\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n" + body)
 }
 
 func (e *env) post(t *testing.T, path, authToken string, body []byte) *httptest.ResponseRecorder {
 	t.Helper()
+	return e.postEnvelope(t, path, authToken, "", body)
+}
+
+// postEnvelope is post plus the X-Envelope-From header the Cloudflare Worker sets
+// on every /api/ingest POST (empty means the header is omitted).
+func (e *env) postEnvelope(t *testing.T, path, authToken, envelopeFrom string, body []byte) *httptest.ResponseRecorder {
+	t.Helper()
 	req := httptest.NewRequest(http.MethodPost, path, bytes.NewReader(body))
 	if authToken != "" {
 		req.Header.Set("Authorization", "Bearer "+authToken)
+	}
+	if envelopeFrom != "" {
+		req.Header.Set("X-Envelope-From", envelopeFrom)
 	}
 	req.Header.Set("Content-Type", "message/rfc822")
 	rec := httptest.NewRecorder()
@@ -276,6 +302,87 @@ func TestIngestDigestSuppressedWithinInterval(t *testing.T) {
 	}
 	if res := decodeResult(t, rec); res["digest_posted"] != false {
 		t.Errorf("digest_posted = %v, want false (suppressed)", res["digest_posted"])
+	}
+	if e.poster.count() != 1 {
+		t.Errorf("poster count = %d, want 1 (no double post)", e.poster.count())
+	}
+}
+
+// approvedSenders is the allowlist used by the bypass tests below.
+func approvedSenders() map[string]bool { return map[string]bool{"alice@example.com": true} }
+
+// primeInterval ingests one email (which posts a digest and so opens the
+// once-per-interval suppression window) and queues a fresh deal behind it.
+func primeInterval(t *testing.T, e *env) {
+	t.Helper()
+	if rec := e.post(t, "/api/ingest", token, rawEmail("<a@x>", "s", "b")); rec.Code != http.StatusOK {
+		t.Fatalf("priming ingest: %d", rec.Code)
+	}
+	if e.poster.count() != 1 {
+		t.Fatalf("poster count = %d, want 1 after priming", e.poster.count())
+	}
+	e.ex.set([]extract.Deal{{Source: "H", Title: "Latecomer", URL: "https://h/late"}}, nil)
+}
+
+func TestIngestApprovedSenderForcesDigest(t *testing.T) {
+	e := setupApproved(t, approvedSenders())
+	primeInterval(t, e)
+
+	// Same window as TestIngestDigestSuppressedWithinInterval, but the From:
+	// header is on the allowlist, so the queued deal posts now.
+	rec := e.post(t, "/api/ingest", token, rawEmailFrom("Alice <ALICE@Example.com>", "<b@x>", "s", "b"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	res := decodeResult(t, rec)
+	if res["digest_posted"] != true {
+		t.Errorf("digest_posted = %v, want true (forced)", res["digest_posted"])
+	}
+	if res["forced"] != true {
+		t.Errorf("forced = %v, want true", res["forced"])
+	}
+	if e.poster.count() != 2 {
+		t.Errorf("poster count = %d, want 2", e.poster.count())
+	}
+}
+
+func TestIngestApprovedEnvelopeFromForcesDigest(t *testing.T) {
+	e := setupApproved(t, approvedSenders())
+	primeInterval(t, e)
+
+	// An auto-forward rule keeps the newsletter's From: and only the envelope
+	// sender identifies the forwarder, so X-Envelope-From must be honored too.
+	rec := e.postEnvelope(t, "/api/ingest", token, "alice@example.com", rawEmail("<b@x>", "s", "b"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	res := decodeResult(t, rec)
+	if res["digest_posted"] != true {
+		t.Errorf("digest_posted = %v, want true (forced)", res["digest_posted"])
+	}
+	if res["forced"] != true {
+		t.Errorf("forced = %v, want true", res["forced"])
+	}
+	if e.poster.count() != 2 {
+		t.Errorf("poster count = %d, want 2", e.poster.count())
+	}
+}
+
+func TestIngestUnapprovedSenderStillSuppressed(t *testing.T) {
+	e := setupApproved(t, approvedSenders())
+	primeInterval(t, e)
+
+	rec := e.postEnvelope(t, "/api/ingest", token, "mallory@example.com",
+		rawEmailFrom("Mallory <mallory@example.com>", "<b@x>", "s", "b"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	res := decodeResult(t, rec)
+	if res["digest_posted"] != false {
+		t.Errorf("digest_posted = %v, want false (suppressed)", res["digest_posted"])
+	}
+	if res["forced"] == true {
+		t.Errorf("forced = %v, want absent", res["forced"])
 	}
 	if e.poster.count() != 1 {
 		t.Errorf("poster count = %d, want 1 (no double post)", e.poster.count())

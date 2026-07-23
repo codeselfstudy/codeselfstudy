@@ -76,11 +76,15 @@ type ingestResult struct {
 	DealsExtracted int   `json:"deals_extracted"`
 	DigestPosted   bool  `json:"digest_posted"`
 	Duplicate      bool  `json:"duplicate,omitempty"`
+	// Forced reports that the sender was on the APPROVED_FORWARDING_EMAILS
+	// allowlist, so the digest skipped the interval wait.
+	Forced bool `json:"forced,omitempty"`
 }
 
 // Ingest parses a raw email, stores it, extracts deals, and (best-effort) posts
 // a digest. It is idempotent: a re-POST of an already-extracted email does
-// nothing.
+// nothing. Mail from an approved sender forces the digest, posting queued deals
+// immediately instead of waiting out DigestInterval.
 func (h *Handlers) Ingest(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -142,9 +146,14 @@ func (h *Handlers) Ingest(c echo.Context) error {
 		return err
 	}
 
+	// An approved sender skips the once-per-interval wait. Forcing only bypasses
+	// the interval check — the stale-claim check still runs, so this stays
+	// race-safe (see digest.Run).
+	force := h.cfg.IsApprovedSender(email.From, c.Request().Header.Get("X-Envelope-From"))
+
 	// The email is safely ingested; a digest failure must not fail the request
 	// (the deals are queued and a later ingest retries).
-	posted, derr := digest.Run(ctx, h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, false)
+	posted, derr := digest.Run(ctx, h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, force)
 	if derr != nil {
 		c.Logger().Errorf("digest run: %v", derr)
 	}
@@ -153,6 +162,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 		EmailID:        stored.ID,
 		DealsExtracted: len(deals),
 		DigestPosted:   posted,
+		Forced:         force,
 	})
 }
 

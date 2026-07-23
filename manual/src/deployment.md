@@ -46,7 +46,17 @@ just db_create add_some_table   # scaffolds a new .sql file
 
 ## Forcing a Slack digest
 
-The deals pipeline posts to Slack at most once per `DIGEST_INTERVAL` (default 24h), and a digest is only attempted when an email is ingested — there is no scheduler. So deals from a newsletter that lands inside the interval sit queued (`posted_in_digest_id IS NULL`) until the next email is forwarded after the window opens. To flush the queue immediately — or to recover a digest whose Slack post failed — force one:
+The deals pipeline posts to Slack at most once per `DIGEST_INTERVAL` (default 24h), and a digest is only attempted when an email is ingested — there is no scheduler. So deals from a newsletter that lands inside the interval sit queued (`posted_in_digest_id IS NULL`) until the next email is forwarded after the window opens.
+
+The standing way around that wait is the approved-sender allowlist: mail from an address in `APPROVED_FORWARDING_EMAILS` posts its digest immediately, flushing the whole queue, so no shell is needed. Set it as a Fly secret, comma-separated:
+
+```bash
+fly secrets set APPROVED_FORWARDING_EMAILS="alice@example.com,bob@example.com"
+```
+
+Matching is case-insensitive, ignores display names, and accepts either the `From:` header or the Worker's `X-Envelope-From` — so a hand-composed forward and a mail-client auto-forward rule both work. Unset or empty ⇒ every email waits out the interval. Note that both headers are spoofable by anyone who learns the ingest address; the only thing an allowlisted sender gains is _timing_, so treat this as convenience, not authorization.
+
+To flush the queue as a one-off — or to recover a digest whose Slack post failed — force one:
 
 ```bash
 curl -sS -X POST https://codeselfstudy.com/api/admin/digest \
