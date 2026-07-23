@@ -210,6 +210,8 @@ func TestBuildUserPromptTruncates(t *testing.T) {
 }
 
 // TestExtractLive hits the real Gemini API; run with GEMINI_LIVE_TEST=1 and a key.
+// It exercises the software-only filter: a programming bundle yields deals, a game
+// bundle yields none.
 func TestExtractLive(t *testing.T) {
 	if os.Getenv("GEMINI_LIVE_TEST") != "1" {
 		t.Skip("set GEMINI_LIVE_TEST=1 and GEMINI_API_KEY to run")
@@ -218,13 +220,57 @@ func TestExtractLive(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewGemini: %v", err)
 	}
-	deals, err := g.Extract(ctx, mailparse.Email{
-		From:    "Humble Bundle <deals@humblebundle.com>",
-		Subject: "New bundle",
-		Text:    "Humble Python Bundle: 12 ebooks, pay what you want, ends July 30. https://humblebundle.com/books/python",
-	})
-	if err != nil {
-		t.Fatalf("Extract: %v", err)
+
+	tests := []struct {
+		name     string
+		email    mailparse.Email
+		wantDeal bool // true: expect >=1 deal; false: expect 0
+	}{
+		{
+			name: "software book bundle kept",
+			email: mailparse.Email{
+				From:    "Humble Bundle <deals@humblebundle.com>",
+				Subject: "New bundle",
+				Text:    "Humble Python Bundle: 12 ebooks, pay what you want, ends July 30. https://humblebundle.com/books/python",
+			},
+			wantDeal: true,
+		},
+		{
+			name: "game/comic bundle dropped",
+			email: mailparse.Email{
+				From:    "Humble Bundle <deals@humblebundle.com>",
+				Subject: "New bundle",
+				Text:    "Teenage Mutant Ninja Turtles Humble Bundle: 20 games and comics, pay what you want, ends July 30. https://humblebundle.com/games/tmnt",
+			},
+			wantDeal: false,
+		},
 	}
-	t.Logf("got %d deals: %+v", len(deals), deals)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			deals, err := g.Extract(ctx, tt.email)
+			if err != nil {
+				t.Fatalf("Extract: %v", err)
+			}
+			t.Logf("got %d deals: %+v", len(deals), deals)
+			if tt.wantDeal && len(deals) == 0 {
+				t.Errorf("expected at least one software deal, got none")
+			}
+			if !tt.wantDeal && len(deals) != 0 {
+				t.Errorf("expected no deals, got %d: %+v", len(deals), deals)
+			}
+		})
+	}
+}
+
+// TestSystemInstructionScopesToSoftware locks the filter's intent — software in,
+// games out — so the prompt can't silently regress. The model-based behaviour
+// itself is verified by TestExtractLive.
+func TestSystemInstructionScopesToSoftware(t *testing.T) {
+	lower := strings.ToLower(systemInstruction)
+	for _, want := range []string{"software", "game"} {
+		if !strings.Contains(lower, want) {
+			t.Errorf("systemInstruction missing %q", want)
+		}
+	}
 }

@@ -19,11 +19,13 @@ import (
 // newsletters; the rest is unsubscribe/footer sludge that only costs tokens.
 const maxPromptChars = 16000
 
-const systemInstruction = `You extract deals from newsletter emails for a software developer.
-A deal is a discounted or time-limited offer: software, ebooks, online courses, or game/asset bundles.
+const systemInstruction = `You extract software deals from newsletter emails for a software developer.
+A deal is a discounted or time-limited offer whose subject is software or software development: developer tools and software/app licenses, programming and technical books or ebooks, and online courses on software or programming.
+Include an offer only when it is about software or software development. Exclude everything else, even when discounted: video games and game bundles, comics, art or asset bundles, tabletop/RPG material, and books or courses on non-technical topics.
+For a bundle that mixes software titles with unrelated ones, include it only if it is primarily about software.
 Return one entry per bundle or offer — never one entry per item inside a bundle.
 Set url to the link printed next to that offer if one is present.
-If the email contains no deals (receipts, shipping notices, account or security alerts, or plain content newsletters), return an empty array.
+If the email has no software deals (receipts, shipping notices, account or security alerts, plain content newsletters, or only non-software offers), return an empty array.
 Respond only with the JSON array described by the schema.`
 
 // defaultRetryDelays is the backoff schedule between attempts (jitter is added).
