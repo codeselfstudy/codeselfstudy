@@ -9,3 +9,18 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    # Mirror bunfig.toml `minimumReleaseAge = 345600` (4 days): Bun refuses to
+    # install versions newer than that, so don't open PRs for them until they
+    # age past the threshold and become installable.
+    cooldown:
+      default-days: 4
+
+  - package-ecosystem: "gomod"
+    directory: "/apps/api" # The Go module lives here, not at the repo root
+    schedule:
+      interval: "weekly"
+    groups:
+      # Bundle the golang.org/x/* modules into a single PR; they version together.
+      golang-x:
+        patterns:
+          - "golang.org/x/*"
