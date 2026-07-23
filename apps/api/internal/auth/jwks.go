@@ -20,10 +20,10 @@ import (
 // validation. Construct one per process via NewVerifier; the cache refreshes
 // itself on a goroutine in the background.
 type Verifier struct {
-	jwksURL  string
-	issuer   string
-	keys     *jwk.Cache
-	refresh  time.Duration
+	jwksURL string
+	issuer  string
+	keys    *jwk.Cache
+	refresh time.Duration
 }
 
 // NewVerifier builds a Verifier that pulls keys from the WorkOS JWKS endpoint

@@ -191,7 +191,7 @@ func TestMiddlewareRejects(t *testing.T) {
 			header: "Basic abc",
 		},
 		{
-			name:   "expired token",
+			name: "expired token",
 			header: "Bearer " + f.signToken(t, func(tok jwt.Token) {
 				_ = tok.Set(jwt.IssuedAtKey, time.Now().Add(-1*time.Hour))
 				_ = tok.Set(jwt.ExpirationKey, time.Now().Add(-30*time.Minute))
