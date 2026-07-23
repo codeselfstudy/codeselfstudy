@@ -43,3 +43,31 @@ just db_status
 just db_migrate
 just db_create add_some_table   # scaffolds a new .sql file
 ```
+
+## Forcing a Slack digest
+
+The deals pipeline posts to Slack at most once per `DIGEST_INTERVAL` (default 24h), and a digest is only attempted when an email is ingested — there is no scheduler. So deals from a newsletter that lands inside the interval sit queued (`posted_in_digest_id IS NULL`) until the next email is forwarded after the window opens. To flush the queue immediately — or to recover a digest whose Slack post failed — force one:
+
+```bash
+curl -sS -X POST https://codeselfstudy.com/api/admin/digest \
+  -H "Authorization: Bearer $INGEST_TOKEN"
+```
+
+`POST /api/admin/digest` runs the same digest as an ingest but skips the interval check; the stale-claim guard still holds, so concurrent calls can't double-post. The bearer `INGEST_TOKEN` is a Fly secret (shared with the Worker): supply it from wherever you keep secrets, and never commit, paste, or forward it. To force a digest against a local dev server instead, use that checkout's own `.env.local` `INGEST_TOKEN` and point the URL at `http://localhost:8080`.
+
+Responses:
+
+- `{"posted":true}` — a digest with the queued deals was posted to `SLACK_WEBHOOK_FOR_DEALS_CHANNEL`.
+- `{"posted":false}` — nothing to post (no queued deals, or a digest is mid-flight). Safe to repeat.
+- `500 {"message":"digest failed"}` — the Slack post itself failed; the deals stay queued for a later attempt. Check `just logs`.
+
+Force-posting only flushes deals that `/api/ingest` already persisted — it can't recover a newsletter that never reached the server. A failed forward, a bounce, or a Worker/ingest error leaves nothing queued, so forcing a digest then posts nothing (`{"posted":false}`). If the deals are missing entirely, treat it as a delivery problem: tail the Worker (`just tail_worker`), confirm an `emails` row exists for the message, and resend or replay it before forcing a digest.
+
+To confirm what happened, query the deployed database read-only:
+
+```bash
+turso db shell codeselfstudy "SELECT count(*) FROM deals WHERE posted_in_digest_id IS NULL;"
+turso db shell codeselfstudy "SELECT id, posted_at, status, deal_count FROM digests ORDER BY id DESC LIMIT 1;"
+```
+
+Read the HTTP response as the authoritative signal — only `{"posted":true}` means _this_ call posted a digest. Corroborate in the DB: a successful force-post drops the unposted count and writes a **new** `digests` row whose `posted_at` is within the last minute (note the newest `id` before you force if you want to be certain). `{"posted":false}` writes nothing, so the newest `posted` row will be pre-existing — re-check the queued count rather than reading that row as success.
