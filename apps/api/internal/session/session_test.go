@@ -176,6 +176,9 @@ func TestConfigEnabled(t *testing.T) {
 	if !base.Enabled() {
 		t.Fatal("complete config should be enabled")
 	}
+	if got := base.Missing(); len(got) != 0 {
+		t.Fatalf("complete config Missing() = %v, want none", got)
+	}
 	cases := map[string]Config{
 		"no client":      {APIKey: "k", CookiePassword: testCookiePassword, BaseURL: "https://x"},
 		"no key":         {ClientID: "c", CookiePassword: testCookiePassword, BaseURL: "https://x"},
@@ -188,6 +191,86 @@ func TestConfigEnabled(t *testing.T) {
 				t.Errorf("expected disabled for %q", name)
 			}
 		})
+	}
+}
+
+// TestConfigMissingNamesTheCulprit locks in the diagnostic that a generic
+// "not fully set" log lacked: the exact var, and short-vs-absent for the cookie
+// password. A half-configured deploy that silently 404s /auth/* cost a full
+// debugging cycle in production.
+func TestConfigMissingNamesTheCulprit(t *testing.T) {
+	full := Config{ClientID: "c", APIKey: "k", CookiePassword: testCookiePassword, BaseURL: "https://x"}
+	cases := []struct {
+		name    string
+		mutate  func(*Config)
+		want    string
+		wantSub string
+	}{
+		{name: "client id", mutate: func(c *Config) { c.ClientID = "" }, want: "WORKOS_CLIENT_ID"},
+		{name: "api key", mutate: func(c *Config) { c.APIKey = "" }, want: "WORKOS_API_KEY"},
+		{name: "base url", mutate: func(c *Config) { c.BaseURL = "" }, want: "APP_BASE_URL"},
+		{name: "password absent", mutate: func(c *Config) { c.CookiePassword = "" }, want: "WORKOS_COOKIE_PASSWORD"},
+		{
+			name:    "password too short",
+			mutate:  func(c *Config) { c.CookiePassword = testCookiePassword[:minCookiePassword-1] },
+			wantSub: "WORKOS_COOKIE_PASSWORD (needs >= 32 chars, got 31)",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := full
+			tc.mutate(&cfg)
+			got := cfg.Missing()
+			if len(got) != 1 {
+				t.Fatalf("Missing() = %v, want exactly one entry", got)
+			}
+			if tc.want != "" && got[0] != tc.want {
+				t.Errorf("Missing() = %q, want %q", got[0], tc.want)
+			}
+			if tc.wantSub != "" && got[0] != tc.wantSub {
+				t.Errorf("Missing() = %q, want %q", got[0], tc.wantSub)
+			}
+			if cfg.Enabled() {
+				t.Error("Enabled() = true with a missing value")
+			}
+		})
+	}
+}
+
+// TestLoadConfigCanonicalNamesOnly keeps the PUBLIC_/VITE_ aliases out. Honouring
+// them here while main.go's verifier honoured a different set is what let a
+// deploy come up with a working /api/me and a 404ing /auth/login.
+func TestLoadConfigCanonicalNamesOnly(t *testing.T) {
+	canonical := map[string]string{
+		"WORKOS_CLIENT_ID":       "client_canonical",
+		"WORKOS_API_KEY":         "sk_test",
+		"WORKOS_COOKIE_PASSWORD": testCookiePassword,
+		"APP_BASE_URL":           "https://codeselfstudy.com",
+	}
+	cfg := LoadConfig(func(k string) string { return canonical[k] })
+	if !cfg.Enabled() {
+		t.Fatalf("canonical env should load a complete config, missing: %v", cfg.Missing())
+	}
+	if cfg.ClientID != "client_canonical" {
+		t.Errorf("ClientID = %q, want client_canonical", cfg.ClientID)
+	}
+
+	aliases := map[string]string{
+		"PUBLIC_WORKOS_CLIENT_ID": "client_public",
+		"VITE_WORKOS_CLIENT_ID":   "client_vite",
+		"WORKOS_API_KEY":          "sk_test",
+		"WORKOS_COOKIE_PASSWORD":  testCookiePassword,
+		"APP_BASE_URL":            "https://codeselfstudy.com",
+	}
+	cfg = LoadConfig(func(k string) string { return aliases[k] })
+	if cfg.ClientID != "" {
+		t.Errorf("ClientID = %q, want empty (aliases must not be honoured)", cfg.ClientID)
+	}
+	if cfg.Enabled() {
+		t.Error("Enabled() = true from alias-only env, want false")
+	}
+	if got := cfg.Missing(); len(got) != 1 || got[0] != "WORKOS_CLIENT_ID" {
+		t.Errorf("Missing() = %v, want [WORKOS_CLIENT_ID]", got)
 	}
 }
 

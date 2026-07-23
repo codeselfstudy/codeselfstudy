@@ -64,21 +64,55 @@ type Config struct {
 }
 
 // LoadConfig reads the session config from the environment. getenv is injected
-// so tests and main share one code path.
+// so tests and main share one code path. Only the canonical WORKOS_* names are
+// read: the verifier in main.go once accepted PUBLIC_/VITE_-prefixed aliases
+// that this function did not, and that asymmetry silently disabled /auth/* in
+// production while /api/me kept working.
 func LoadConfig(getenv func(string) string) Config {
 	return Config{
-		ClientID:       firstNonEmpty(getenv("WORKOS_CLIENT_ID"), getenv("PUBLIC_WORKOS_CLIENT_ID")),
+		ClientID:       getenv("WORKOS_CLIENT_ID"),
 		APIKey:         getenv("WORKOS_API_KEY"),
 		CookiePassword: getenv("WORKOS_COOKIE_PASSWORD"),
 		BaseURL:        getenv("APP_BASE_URL"),
 	}
 }
 
+// minCookiePassword is the shortest seal secret WorkOS considers safe: 32
+// characters of entropy.
+const minCookiePassword = 32
+
+// Missing returns a human-readable description of every value the session flow
+// needs but does not have, in a stable order, so a half-configured deploy can
+// name the exact culprit instead of listing every var it might be. An empty
+// slice means the config is complete. A too-short cookie password is reported
+// as its own case — silently treating it as absent is the trap that makes
+// /auth/* 404 with no clue why.
+func (c Config) Missing() []string {
+	var missing []string
+	if c.ClientID == "" {
+		missing = append(missing, "WORKOS_CLIENT_ID")
+	}
+	if c.APIKey == "" {
+		missing = append(missing, "WORKOS_API_KEY")
+	}
+	switch {
+	case c.CookiePassword == "":
+		missing = append(missing, "WORKOS_COOKIE_PASSWORD")
+	case len(c.CookiePassword) < minCookiePassword:
+		missing = append(missing, fmt.Sprintf(
+			"WORKOS_COOKIE_PASSWORD (needs >= %d chars, got %d)",
+			minCookiePassword, len(c.CookiePassword)))
+	}
+	if c.BaseURL == "" {
+		missing = append(missing, "APP_BASE_URL")
+	}
+	return missing
+}
+
 // Enabled reports whether every value required to run the server-side session
-// flow is present. A short cookie password is treated as absent: WorkOS requires
-// at least 32 characters of entropy to seal a session safely.
+// flow is present.
 func (c Config) Enabled() bool {
-	return c.ClientID != "" && c.APIKey != "" && len(c.CookiePassword) >= 32 && c.BaseURL != ""
+	return len(c.Missing()) == 0
 }
 
 // Manager owns the sealed-cookie session flow: the /auth/* routes, the gate
@@ -107,8 +141,8 @@ type refreshFunc func(ctx context.Context, refreshToken string) (accessToken, ne
 // Verifier (used to validate access tokens). It configures the WorkOS SDK's
 // default client with the API key.
 func New(cfg Config, verifier *auth.Verifier) (*Manager, error) {
-	if !cfg.Enabled() {
-		return nil, errors.New("session: incomplete config (need WORKOS_CLIENT_ID, WORKOS_API_KEY, WORKOS_COOKIE_PASSWORD>=32, APP_BASE_URL)")
+	if missing := cfg.Missing(); len(missing) > 0 {
+		return nil, fmt.Errorf("session: incomplete config, missing: %s", strings.Join(missing, ", "))
 	}
 	if verifier == nil {
 		return nil, errors.New("session: verifier is required")
@@ -587,13 +621,4 @@ func safeReturnTo(raw string) string {
 // to service-worker scripts.
 func noStore(c echo.Context) {
 	c.Response().Header().Set("Cache-Control", "no-store")
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, v := range values {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
 }

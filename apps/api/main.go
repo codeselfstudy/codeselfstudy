@@ -50,7 +50,7 @@ func main() {
 			log.Fatalf("auth: %v", err)
 		}
 	} else {
-		log.Printf("auth: WORKOS_CLIENT_ID / WORKOS_API_HOSTNAME not set; /api/me disabled")
+		log.Printf("auth: WORKOS_CLIENT_ID / WORKOS_API_HOSTNAME not set; auth disabled (/api/me and /auth/* off)")
 	}
 
 	// The server-side session (sealed first-party cookie) needs the extra
@@ -87,15 +87,17 @@ func main() {
 	}
 }
 
-// newVerifierFromEnv reads WorkOS client config from the environment. The
-// web app validates the same pair as PUBLIC_WORKOS_CLIENT_ID /
-// PUBLIC_WORKOS_API_HOSTNAME (Astro's client-var prefix; VITE_WORKOS_* is
-// kept as a legacy fallback; the OS-level vars are the same values), so
-// production deploys reuse them. Returns nil if either is missing — the
+// newVerifierFromEnv reads WorkOS client config from the environment. Only the
+// canonical server names are accepted. Earlier revisions also honoured the
+// PUBLIC_/VITE_-prefixed aliases the browser bundle once used, but
+// session.LoadConfig never did — so a deploy carrying only the aliases brought
+// the verifier up while leaving the session off, and /auth/* 404'd while
+// /api/me answered. The web app no longer reads any WorkOS var, so the aliases
+// have no remaining purpose. Returns nil if either value is missing — the
 // caller falls back to running without auth.
 func newVerifierFromEnv() *auth.Verifier {
-	clientID := firstNonEmpty(os.Getenv("WORKOS_CLIENT_ID"), os.Getenv("PUBLIC_WORKOS_CLIENT_ID"), os.Getenv("VITE_WORKOS_CLIENT_ID"))
-	hostname := firstNonEmpty(os.Getenv("WORKOS_API_HOSTNAME"), os.Getenv("PUBLIC_WORKOS_API_HOSTNAME"), os.Getenv("VITE_WORKOS_API_HOSTNAME"))
+	clientID := os.Getenv("WORKOS_CLIENT_ID")
+	hostname := os.Getenv("WORKOS_API_HOSTNAME")
 	if clientID == "" || hostname == "" {
 		return nil
 	}
@@ -104,15 +106,6 @@ func newVerifierFromEnv() *auth.Verifier {
 		log.Fatalf("auth: %v", err)
 	}
 	return v
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, v := range values {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
 }
 
 // newSessionFromEnv builds the server-side session Manager when the extra
@@ -125,8 +118,14 @@ func newSessionFromEnv(v *auth.Verifier) *session.Manager {
 		return nil
 	}
 	cfg := session.LoadConfig(os.Getenv)
-	if !cfg.Enabled() {
-		log.Printf("auth: WORKOS_API_KEY / WORKOS_COOKIE_PASSWORD / APP_BASE_URL not fully set; server-side session disabled (/auth/* off)")
+	if missing := cfg.Missing(); len(missing) > 0 {
+		// The verifier came up, so auth is clearly intended — but sign-in is
+		// about to be silently unavailable. Name the exact culprits and say
+		// what breaks, loudly: a bare "not fully set" listing every candidate
+		// var (all of which were in fact set) once cost a full debugging cycle
+		// on a production 404.
+		log.Printf("auth: WARNING: WorkOS verifier is configured but the server-side session is NOT; missing: %s", strings.Join(missing, ", "))
+		log.Printf("auth: WARNING: /auth/login, /auth/callback and /auth/logout will return 404 and nobody can sign in")
 		return nil
 	}
 	m, err := session.New(cfg, v)
