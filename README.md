@@ -40,7 +40,7 @@ Requires [Bun](https://bun.com/), [Go](https://go.dev/) 1.26+, and [just](https:
 ```sh
 # clone, then:
 bun install
-cp env.local.example .env.local   # fill in WorkOS + DATABASE_URL
+cp .env.local.example .env.local   # fill in WorkOS + DATABASE_URL
 just dev                          # web :7001 (Astro), api :8080 (Go)
 ```
 
