@@ -60,4 +60,19 @@ describe("Navbar", () => {
       expect(screen.queryByText("Menu")).not.toBeInTheDocument()
     );
   });
+
+  test("does not duplicate the sign-in control inside the drawer", async () => {
+    const user = userEvent.setup();
+    render(<Navbar />);
+
+    // Sign-in lives once in the top bar at every breakpoint; the drawer holds only
+    // the nav links, so opening it must not mount a second SignInButton (a
+    // duplicate would fire its own /api/me).
+    await user.click(screen.getByRole("button", { name: "Open main menu" }));
+    const dialog = await screen.findByRole("dialog");
+
+    expect(
+      within(dialog).queryByRole("button", { name: "Sign In" })
+    ).not.toBeInTheDocument();
+  });
 });

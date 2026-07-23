@@ -23,12 +23,14 @@ const LINKS = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
 
-  // The whole navbar is wrapped in AuthProvider so the sign-in control can live
-  // inline with the links (desktop) and in the drawer (mobile). AuthKit-react is
-  // browser-only, so this island is mounted with client:only="react" (see
-  // Layout.astro) and is never prerendered. The theme toggle sits alongside it;
-  // the theme itself is set before paint by the inline script in Layout.astro, so
-  // dark mode still works even though the nav (including the toggle) hydrates late.
+  // The whole navbar is wrapped in AuthProvider so the sign-in control can sit in
+  // the top bar at every breakpoint. AuthKit-react is browser-only, so this island
+  // is mounted with client:only="react" (see Layout.astro) and is never
+  // prerendered. The theme toggle and sign-in control are single, always-visible
+  // instances — the mobile drawer holds only the nav links — so exactly one
+  // SignInButton is mounted (no duplicate /api/me). The theme itself is set before
+  // paint by the inline script in Layout.astro, so dark mode still works even
+  // though the nav hydrates late.
   return (
     <AuthProvider>
       <nav className="bg-background border-border fixed top-0 left-0 z-10 w-full border-b shadow-sm">
@@ -57,9 +59,9 @@ export default function Navbar() {
                     {link.label}
                   </a>
                 ))}
-                <ThemeToggle />
-                <SignInButton />
               </div>
+              <ThemeToggle />
+              <SignInButton />
               <div className="sm:hidden">
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                   <SheetTrigger
@@ -84,9 +86,6 @@ export default function Navbar() {
                           {link.label}
                         </a>
                       ))}
-                      <div className="border-border mt-2 border-t pt-4">
-                        <SignInButton />
-                      </div>
                     </div>
                   </SheetContent>
                 </Sheet>
