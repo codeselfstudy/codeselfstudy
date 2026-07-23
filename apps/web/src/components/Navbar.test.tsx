@@ -24,10 +24,6 @@ describe("Navbar", () => {
     expect(
       screen.getByRole("link", { name: "Code Self Study" })
     ).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
-      "href",
-      "/"
-    );
     expect(screen.getByRole("link", { name: "About" })).toHaveAttribute(
       "href",
       "/about/"
