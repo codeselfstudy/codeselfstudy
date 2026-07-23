@@ -31,9 +31,12 @@ self.addEventListener("activate", (event) => {
         type: "window",
         includeUncontrolled: true,
       });
-      for (const client of clients) {
-        client.navigate(client.url);
-      }
+      // navigate() rejects if this worker doesn't control the client or the URL
+      // is unusable; the reload is best-effort while the stale worker is torn
+      // down, so await all attempts and swallow per-client failures.
+      await Promise.all(
+        clients.map((client) => client.navigate(client.url).catch(() => {}))
+      );
     })()
   );
 });

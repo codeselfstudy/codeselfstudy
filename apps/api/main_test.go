@@ -112,6 +112,28 @@ func TestServiceWorkerScriptsSentNoCache(t *testing.T) {
 	}
 }
 
+// Service worker scripts must carry no-cache even when the file is missing:
+// caches can store 404s, and a negatively cached /sw.js would hide a later
+// kill-switch deploy.
+func TestMissingServiceWorkerStillNoCache(t *testing.T) {
+	dir := t.TempDir()
+	for name, body := range map[string]string{"index.html": "home", "404.html": "missing"} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
+			t.Fatalf("seed %s: %v", name, err)
+		}
+	}
+	e := newServer(dir, nil, nil)
+	req := httptest.NewRequest(http.MethodGet, "/sw.js", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status: want 404, got %d", rec.Code)
+	}
+	if cc := rec.Header().Get("Cache-Control"); !strings.Contains(cc, "no-cache") {
+		t.Fatalf("missing /sw.js: want Cache-Control no-cache, got %q", cc)
+	}
+}
+
 // HEAD must work everywhere GET works (RFC 9110 §9.3.2). Curl -I, fly's
 // healthcheck probes, and ad-hoc monitoring all use HEAD; without explicit
 // support Echo returns 405 instead of mirroring the GET status.

@@ -311,16 +311,16 @@ func staticHandler(staticRoot string) echo.HandlerFunc {
 			}
 		}
 
+		// Service worker scripts live at fixed, unhashed URLs, so any cached
+		// copy would pin an outdated worker in browsers and at the CDN — and a
+		// 404 can be negatively cached too, hiding a later kill-switch deploy.
+		// Set the header by request path, before resolution, so both the file
+		// and its 404 fallback are always revalidated. Hashed /_astro/* assets
+		// are immutable and intentionally left cacheable.
+		if isServiceWorkerScript(clean) {
+			c.Response().Header().Set("Cache-Control", "no-cache")
+		}
 		if path, ok := resolveStatic(staticRoot, rel); ok {
-			// Service worker scripts live at fixed, unhashed URLs, so any cached
-			// copy would pin an outdated worker in browsers and at the CDN.
-			// Serve them revalidate-always so the kill switches (apps/web/public)
-			// reach returning visitors immediately and can be removed cleanly
-			// once stale registrations have drained. Hashed /_astro/* assets are
-			// immutable and intentionally left cacheable.
-			if isServiceWorkerScript(clean) {
-				c.Response().Header().Set("Cache-Control", "no-cache")
-			}
 			return c.File(path)
 		}
 
