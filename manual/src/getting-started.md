@@ -29,7 +29,7 @@ bun run preview
 
 ## Environment Variables
 
-Copy `env.local.example` to `.env.local` at the repo root and fill in:
+Copy `.env.local.example` to `.env.local` at the repo root and fill in:
 
 ```bash
 # client-side variables (browser-exposed). The Astro app consumes these for the

@@ -44,7 +44,7 @@ export function requireWorkosEnv(): AstroIntegration {
             `Refusing to build: ${missing.join(", ")} ` +
               `${missing.length > 1 ? "are" : "is"} empty. Set ` +
               `${missing.length > 1 ? "them" : "it"} in .env.local ` +
-              "(see .env-example) before `just build` / `just deploy`. Building " +
+              "(see .env.local.example) before `just build` / `just deploy`. Building " +
               "without it inlines `undefined`, shipping a navbar that throws " +
               "NoClientIdProvidedException at runtime."
           );

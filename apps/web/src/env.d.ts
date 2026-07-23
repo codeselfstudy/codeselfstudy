@@ -1,6 +1,6 @@
 /// <reference types="astro/client" />
 
-// Client-exposed WorkOS config (see .env-example). Astro inlines PUBLIC_-prefixed
+// Client-exposed WorkOS config (see .env.local.example). Astro inlines PUBLIC_-prefixed
 // variables into the browser bundle; declaring them here gives
 // `import.meta.env.PUBLIC_*` autocomplete and type-checking. The Go server reads
 // the same pair as its WORKOS_CLIENT_ID / WORKOS_API_HOSTNAME fallbacks to
