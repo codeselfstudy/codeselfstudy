@@ -151,22 +151,28 @@ func escapeMrkdwn(s string) string {
 
 // stripQueryParams drops the query string from a deal URL so the digest posts a
 // clean canonical link instead of the long tracking URL newsletters attach
-// (utm_*, mcID, linkID, …). Everything up to the first "?" is kept; a URL with
-// no query is returned unchanged. This is a Slack-display transform only — the
-// raw URL is left intact on the stored deal. A plain string split (rather than
-// net/url) is deliberate: the query we're discarding often holds unescaped junk
-// like "linkID={$linkID}" that url.Parse would reject.
+// (utm_*, mcID, linkID, …). Any fragment is preserved: per RFC 3986 the query
+// only exists when a "?" precedes the "#", so a "?" that sits inside the
+// fragment is left alone and a URL with no query is returned unchanged. This is
+// a Slack-display transform only — the raw URL is left intact on the stored
+// deal. A plain string split (rather than net/url) is deliberate: the query
+// we're discarding often holds unescaped junk like "linkID={$linkID}" that
+// url.Parse would reject.
 func stripQueryParams(u string) string {
-	if i := strings.IndexByte(u, '?'); i >= 0 {
-		return u[:i]
+	end := len(u)
+	if h := strings.IndexByte(u, '#'); h >= 0 {
+		end = h // only the part before the fragment can hold a query
+	}
+	if i := strings.IndexByte(u[:end], '?'); i >= 0 {
+		return u[:i] + u[end:] // drop the query, keep any fragment
 	}
 	return u
 }
 
 // escapeLinkURL percent-encodes the characters that would break Slack's
 // <url|text> link syntax. The entity-escaping used for display text is wrong for
-// a URL (it would corrupt query strings), so only these three delimiters are
-// encoded; everything else in the tracking URL is left intact.
+// a URL (it would corrupt the path/fragment), so only these three delimiters are
+// encoded; everything else in the link is left intact.
 var linkURLEscaper = strings.NewReplacer("<", "%3C", ">", "%3E", "|", "%7C")
 
 func escapeLinkURL(u string) string {

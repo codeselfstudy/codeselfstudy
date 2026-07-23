@@ -169,6 +169,9 @@ func TestStripQueryParams(t *testing.T) {
 		{"no query unchanged", "https://x.example/deal", "https://x.example/deal"},
 		{"trailing question mark", "https://x.example/deal?", "https://x.example/deal"},
 		{"fragment kept when no query", "https://x.example/deal#section", "https://x.example/deal#section"},
+		{"query dropped, fragment kept", "https://x.example/deal?utm=1#anchor", "https://x.example/deal#anchor"},
+		{"question mark inside fragment is not a query", "https://x.example/deal#section?foo", "https://x.example/deal#section?foo"},
+		{"hash route with params kept", "https://x.example/#/deals?id=9", "https://x.example/#/deals?id=9"},
 		{"empty", "", ""},
 	}
 	for _, tc := range cases {
