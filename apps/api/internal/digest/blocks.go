@@ -115,7 +115,7 @@ func dealText(d store.Deal) string {
 
 	title := escapeMrkdwn(d.Title)
 	if d.URL != "" {
-		lines = append(lines, fmt.Sprintf("*<%s|%s>*", escapeLinkURL(d.URL), title))
+		lines = append(lines, fmt.Sprintf("*<%s|%s>*", escapeLinkURL(stripQueryParams(d.URL)), title))
 	} else {
 		lines = append(lines, "*"+title+"*")
 	}
@@ -147,6 +147,20 @@ func escapeMrkdwn(s string) string {
 	s = strings.ReplaceAll(s, "<", "&lt;")
 	s = strings.ReplaceAll(s, ">", "&gt;")
 	return s
+}
+
+// stripQueryParams drops the query string from a deal URL so the digest posts a
+// clean canonical link instead of the long tracking URL newsletters attach
+// (utm_*, mcID, linkID, …). Everything up to the first "?" is kept; a URL with
+// no query is returned unchanged. This is a Slack-display transform only — the
+// raw URL is left intact on the stored deal. A plain string split (rather than
+// net/url) is deliberate: the query we're discarding often holds unescaped junk
+// like "linkID={$linkID}" that url.Parse would reject.
+func stripQueryParams(u string) string {
+	if i := strings.IndexByte(u, '?'); i >= 0 {
+		return u[:i]
+	}
+	return u
 }
 
 // escapeLinkURL percent-encodes the characters that would break Slack's
