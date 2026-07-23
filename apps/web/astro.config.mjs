@@ -34,13 +34,6 @@ export default defineConfig({
   ],
 
   vite: {
-    // Astro defaults Vite's envPrefix to `PUBLIC_`, so only PUBLIC_-prefixed
-    // vars are inlined into client bundles. Our WorkOS client config is exposed
-    // under the `VITE_` prefix (ported from the old Vite/TanStack app, and
-    // shared with the Go API's VITE_WORKOS_* fallback in apps/api/main.go), so
-    // `VITE_` must be added here — otherwise import.meta.env.VITE_WORKOS_CLIENT_ID
-    // is `undefined` in the browser and AuthKit throws NoClientIdProvidedException.
-    envPrefix: ["PUBLIC_", "VITE_"],
     plugins: [tailwindcss()],
   },
 });

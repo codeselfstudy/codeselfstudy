@@ -18,41 +18,41 @@ describe("requireWorkosEnv", () => {
 
   describe("on build", () => {
     test("passes when both WorkOS vars are set", () => {
-      vi.stubEnv("VITE_WORKOS_CLIENT_ID", "client_live");
-      vi.stubEnv("VITE_WORKOS_API_HOSTNAME", "auth.example.com");
+      vi.stubEnv("PUBLIC_WORKOS_CLIENT_ID", "client_live");
+      vi.stubEnv("PUBLIC_WORKOS_API_HOSTNAME", "auth.example.com");
       expect(() => runSetup("build")).not.toThrow();
     });
 
     test("throws when the client id is empty", () => {
-      vi.stubEnv("VITE_WORKOS_CLIENT_ID", "");
-      vi.stubEnv("VITE_WORKOS_API_HOSTNAME", "auth.example.com");
-      expect(() => runSetup("build")).toThrow(/VITE_WORKOS_CLIENT_ID/);
+      vi.stubEnv("PUBLIC_WORKOS_CLIENT_ID", "");
+      vi.stubEnv("PUBLIC_WORKOS_API_HOSTNAME", "auth.example.com");
+      expect(() => runSetup("build")).toThrow(/PUBLIC_WORKOS_CLIENT_ID/);
     });
 
     test("treats a whitespace-only value as empty", () => {
-      vi.stubEnv("VITE_WORKOS_CLIENT_ID", "   ");
-      vi.stubEnv("VITE_WORKOS_API_HOSTNAME", "auth.example.com");
-      expect(() => runSetup("build")).toThrow(/VITE_WORKOS_CLIENT_ID/);
+      vi.stubEnv("PUBLIC_WORKOS_CLIENT_ID", "   ");
+      vi.stubEnv("PUBLIC_WORKOS_API_HOSTNAME", "auth.example.com");
+      expect(() => runSetup("build")).toThrow(/PUBLIC_WORKOS_CLIENT_ID/);
     });
 
     test("throws when the api hostname is empty", () => {
-      vi.stubEnv("VITE_WORKOS_CLIENT_ID", "client_live");
-      vi.stubEnv("VITE_WORKOS_API_HOSTNAME", "");
-      expect(() => runSetup("build")).toThrow(/VITE_WORKOS_API_HOSTNAME/);
+      vi.stubEnv("PUBLIC_WORKOS_CLIENT_ID", "client_live");
+      vi.stubEnv("PUBLIC_WORKOS_API_HOSTNAME", "");
+      expect(() => runSetup("build")).toThrow(/PUBLIC_WORKOS_API_HOSTNAME/);
     });
 
     test("names every missing var in one message", () => {
-      vi.stubEnv("VITE_WORKOS_CLIENT_ID", "");
-      vi.stubEnv("VITE_WORKOS_API_HOSTNAME", "");
+      vi.stubEnv("PUBLIC_WORKOS_CLIENT_ID", "");
+      vi.stubEnv("PUBLIC_WORKOS_API_HOSTNAME", "");
       expect(() => runSetup("build")).toThrow(
-        /VITE_WORKOS_CLIENT_ID, VITE_WORKOS_API_HOSTNAME/
+        /PUBLIC_WORKOS_CLIENT_ID, PUBLIC_WORKOS_API_HOSTNAME/
       );
     });
   });
 
   test("leaves the dev server alone even when vars are missing", () => {
-    vi.stubEnv("VITE_WORKOS_CLIENT_ID", "");
-    vi.stubEnv("VITE_WORKOS_API_HOSTNAME", "");
+    vi.stubEnv("PUBLIC_WORKOS_CLIENT_ID", "");
+    vi.stubEnv("PUBLIC_WORKOS_API_HOSTNAME", "");
     expect(() => runSetup("dev")).not.toThrow();
   });
 });

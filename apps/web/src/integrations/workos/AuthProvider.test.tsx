@@ -46,8 +46,8 @@ describe("safeReturnTo", () => {
 describe("AuthProvider", () => {
   beforeEach(() => {
     captured.props = {};
-    vi.stubEnv("VITE_WORKOS_CLIENT_ID", "client_test");
-    vi.stubEnv("VITE_WORKOS_API_HOSTNAME", "auth.example.com");
+    vi.stubEnv("PUBLIC_WORKOS_CLIENT_ID", "client_test");
+    vi.stubEnv("PUBLIC_WORKOS_API_HOSTNAME", "auth.example.com");
   });
 
   afterEach(() => {

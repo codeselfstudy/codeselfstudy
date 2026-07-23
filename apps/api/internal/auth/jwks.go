@@ -28,8 +28,8 @@ type Verifier struct {
 // NewVerifier builds a Verifier that pulls keys from the WorkOS JWKS endpoint
 // for clientID and accepts tokens whose `iss` claim equals
 // `https://<apiHostname>`. apiHostname is the same value the web app reads
-// from VITE_WORKOS_API_HOSTNAME (e.g. "api.workos.com"); clientID is
-// VITE_WORKOS_CLIENT_ID. The cache refreshes every 15 minutes by default —
+// from PUBLIC_WORKOS_API_HOSTNAME (e.g. "api.workos.com"); clientID is
+// PUBLIC_WORKOS_CLIENT_ID. The cache refreshes every 15 minutes by default —
 // override with WithRefreshInterval before calling Start.
 func NewVerifier(clientID, apiHostname string) (*Verifier, error) {
 	if clientID == "" {
