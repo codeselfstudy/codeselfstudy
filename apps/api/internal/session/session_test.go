@@ -209,6 +209,14 @@ func TestConfigMissingNamesTheCulprit(t *testing.T) {
 		{name: "client id", mutate: func(c *Config) { c.ClientID = "" }, want: "WORKOS_CLIENT_ID"},
 		{name: "api key", mutate: func(c *Config) { c.APIKey = "" }, want: "WORKOS_API_KEY"},
 		{name: "base url", mutate: func(c *Config) { c.BaseURL = "" }, want: "APP_BASE_URL"},
+		{
+			// A malformed value must be caught here, not in New(): main.go
+			// log.Fatalf's on a New() error, so a typo would crash-loop the
+			// server rather than disable sign-in and leave the site up.
+			name:    "base url without scheme",
+			mutate:  func(c *Config) { c.BaseURL = "codeselfstudy.com" },
+			wantSub: `APP_BASE_URL (must be an absolute URL like https://codeselfstudy.com, got "codeselfstudy.com")`,
+		},
 		{name: "password absent", mutate: func(c *Config) { c.CookiePassword = "" }, want: "WORKOS_COOKIE_PASSWORD"},
 		{
 			name:    "password too short",

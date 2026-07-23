@@ -103,10 +103,24 @@ func (c Config) Missing() []string {
 			"WORKOS_COOKIE_PASSWORD (needs >= %d chars, got %d)",
 			minCookiePassword, len(c.CookiePassword)))
 	}
-	if c.BaseURL == "" {
+	switch {
+	case c.BaseURL == "":
 		missing = append(missing, "APP_BASE_URL")
+	case !absoluteURL(c.BaseURL):
+		// A malformed value must land here rather than in New(): main.go
+		// log.Fatalf's on a New() error, so a typo'd base URL would crash-loop
+		// the server instead of warning and leaving the rest of the site up.
+		missing = append(missing, fmt.Sprintf(
+			"APP_BASE_URL (must be an absolute URL like https://codeselfstudy.com, got %q)", c.BaseURL))
 	}
 	return missing
+}
+
+// absoluteURL reports whether raw parses as a URL with both a scheme and a
+// host. New() requires the same shape to build the origin and callback URL.
+func absoluteURL(raw string) bool {
+	u, err := url.Parse(raw)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
 // Enabled reports whether every value required to run the server-side session
@@ -147,6 +161,8 @@ func New(cfg Config, verifier *auth.Verifier) (*Manager, error) {
 	if verifier == nil {
 		return nil, errors.New("session: verifier is required")
 	}
+	// Missing() already rejects a malformed base URL, so this is a belt-and-braces
+	// guard for callers that build a Config by hand rather than via LoadConfig.
 	base, err := url.Parse(cfg.BaseURL)
 	if err != nil || base.Scheme == "" || base.Host == "" {
 		return nil, fmt.Errorf("session: invalid APP_BASE_URL %q", cfg.BaseURL)
