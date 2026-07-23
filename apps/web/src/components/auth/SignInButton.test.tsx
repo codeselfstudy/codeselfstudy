@@ -21,7 +21,7 @@ beforeEach(() => {
   Object.defineProperty(window, "location", {
     configurable: true,
     writable: true,
-    value: { pathname: "/events/", assign: assignMock },
+    value: { pathname: "/events/", search: "", hash: "", assign: assignMock },
   });
 });
 
@@ -86,6 +86,28 @@ describe("SignInButton", () => {
 
     expect(assignMock).toHaveBeenCalledWith(
       "/auth/login?returnTo=%2Fevents%2F"
+    );
+  });
+
+  test("returnTo preserves the query string and hash, not just the path", async () => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: {
+        pathname: "/events/",
+        search: "?tab=upcoming",
+        hash: "#speakers",
+        assign: assignMock,
+      },
+    });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(meUnauthorized));
+    const user = userEvent.setup();
+    render(<SignInButton />);
+
+    await user.click(await screen.findByRole("button", { name: "Sign In" }));
+
+    expect(assignMock).toHaveBeenCalledWith(
+      `/auth/login?returnTo=${encodeURIComponent("/events/?tab=upcoming#speakers")}`
     );
   });
 

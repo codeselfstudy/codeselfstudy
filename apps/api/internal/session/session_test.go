@@ -191,6 +191,8 @@ func TestSafeReturnTo(t *testing.T) {
 		{"/", "/"},
 		{"/events/", "/events/"},
 		{"/events/?tab=upcoming", "/events/?tab=upcoming"},
+		{"/events/?tab=upcoming#speakers", "/events/?tab=upcoming#speakers"},
+		{"/p#anchor", "/p#anchor"},
 		{"//evil.com", "/"},
 		{"https://evil.com", "/"},
 		{"http://evil.com/path", "/"},
@@ -238,20 +240,24 @@ func TestUnsealRejectsTamperAndWrongKey(t *testing.T) {
 func TestStateSignVerify(t *testing.T) {
 	f := newJWKSFixture(t)
 	m := newTestManager(t, f)
-	state := m.signState("/events/")
-	got, ok := m.verifyState(state)
-	if !ok || got != "/events/" {
-		t.Fatalf("verifyState round-trip: got %q ok=%v", got, ok)
+	state := m.signState("/events/", "nonce123")
+	got, nonce, ok := m.verifyState(state)
+	if !ok || got != "/events/" || nonce != "nonce123" {
+		t.Fatalf("verifyState round-trip: got %q nonce %q ok=%v", got, nonce, ok)
 	}
-	if _, ok := m.verifyState(flipLast(state)); ok {
+	if _, _, ok := m.verifyState(flipLast(state)); ok {
 		t.Error("tampered state should not verify")
 	}
-	if _, ok := m.verifyState("not-base64!!"); ok {
+	if _, _, ok := m.verifyState("not-base64!!"); ok {
 		t.Error("garbage state should not verify")
 	}
 	other := newTestManagerPw(t, f, altCookiePassword)
-	if _, ok := m.verifyState(other.signState("/events/")); ok {
+	if _, _, ok := m.verifyState(other.signState("/events/", "nonce123")); ok {
 		t.Error("state signed with a different key should not verify")
+	}
+	// A "|" inside returnTo must survive the right-anchored split.
+	if got, _, ok := m.verifyState(m.signState("/a|b/?x=1|2", "n")); !ok || got != "/a|b/?x=1|2" {
+		t.Errorf("pipe in returnTo: got %q ok=%v", got, ok)
 	}
 }
 
@@ -382,7 +388,57 @@ func TestLoginRedirectsToWorkOS(t *testing.T) {
 	if u.Query().Get("redirect_uri") != "https://app.test/auth/callback" {
 		t.Errorf("redirect_uri: got %q", u.Query().Get("redirect_uri"))
 	}
-	if got, ok := m.verifyState(u.Query().Get("state")); !ok || got != "/events/" {
-		t.Errorf("state did not round-trip: got %q ok=%v", got, ok)
+	returnTo, stateNonce, ok := m.verifyState(u.Query().Get("state"))
+	if !ok || returnTo != "/events/" {
+		t.Errorf("state did not round-trip: got %q ok=%v", returnTo, ok)
+	}
+	// The nonce baked into the state must equal the HttpOnly nonce cookie Login set.
+	var nonceCookie string
+	for _, ck := range rec.Result().Cookies() {
+		if ck.Name == nonceCookieName {
+			nonceCookie = ck.Value
+		}
+	}
+	if nonceCookie == "" || nonceCookie != stateNonce {
+		t.Errorf("nonce cookie %q must match state nonce %q", nonceCookie, stateNonce)
+	}
+}
+
+func TestCallbackRejectsBadNonce(t *testing.T) {
+	f := newJWKSFixture(t)
+	m := newTestManager(t, f)
+	state := m.signState("/events/", "nonce_abc") // validly signed
+
+	e := echo.New()
+	e.GET("/auth/callback", m.Callback)
+
+	// The two-channel CSRF check runs before any WorkOS call, so both the
+	// missing-cookie and mismatched-cookie cases reject deterministically and
+	// must not set a session cookie.
+	cases := []struct {
+		name   string
+		cookie *http.Cookie
+	}{
+		{"no nonce cookie", nil},
+		{"mismatched nonce", &http.Cookie{Name: nonceCookieName, Value: "different"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/auth/callback?code=abc&state="+url.QueryEscape(state), nil)
+			if tc.cookie != nil {
+				req.AddCookie(tc.cookie)
+			}
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusFound || rec.Header().Get("Location") != "/" {
+				t.Fatalf("want 302 -> / got %d loc=%q", rec.Code, rec.Header().Get("Location"))
+			}
+			for _, ck := range rec.Result().Cookies() {
+				if ck.Name == cookieName && ck.Value != "" {
+					t.Error("no session cookie should be set when the CSRF check fails")
+				}
+			}
+		})
 	}
 }

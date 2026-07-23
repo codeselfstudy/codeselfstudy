@@ -89,6 +89,10 @@ export default function SignInButton() {
 // server validates returnTo to a same-origin path, so a crafted value can't
 // turn this into an open redirect.
 function navigateAuth(path: string) {
-  const returnTo = window.location.pathname;
+  // Keep the full in-app location (query + hash), not just the path, so filters
+  // and anchors survive the /auth round-trip. The server re-validates this to a
+  // same-origin path (see session.safeReturnTo).
+  const returnTo =
+    window.location.pathname + window.location.search + window.location.hash;
   window.location.assign(`${path}?returnTo=${encodeURIComponent(returnTo)}`);
 }

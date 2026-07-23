@@ -24,6 +24,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -35,6 +36,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/workos/workos-go/v6/pkg/usermanagement"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/auth"
 )
@@ -45,6 +47,11 @@ const (
 	cookieName     = "wos_session"
 	contextUserKey = "session:user"
 	cookieMaxAge   = 30 * 24 * time.Hour
+
+	// nonceCookieName holds the one-time CSRF nonce that binds an in-flight
+	// OAuth login to the browser that started it. Scoped to /auth and short-lived.
+	nonceCookieName = "wos_oauth"
+	nonceMaxAge     = 10 * time.Minute
 )
 
 // Config is the server-side WorkOS configuration the session flow needs, on top
@@ -88,6 +95,10 @@ type Manager struct {
 	// refresh exchanges a refresh token for a new access/refresh pair. A field
 	// so tests can substitute the WorkOS call.
 	refresh refreshFunc
+
+	// refreshGroup coalesces concurrent refreshes for the same session so the
+	// single-use refresh token is exchanged exactly once (see Middleware).
+	refreshGroup singleflight.Group
 }
 
 type refreshFunc func(ctx context.Context, refreshToken string) (accessToken, newRefreshToken string, err error)
@@ -157,15 +168,22 @@ func (m *Manager) Register(e *echo.Echo) {
 
 // Login sends the browser to the WorkOS hosted AuthKit page. The post-login
 // destination (returnTo) is validated to a same-origin path and signed into the
-// OAuth state so the callback can trust it.
+// OAuth state. A fresh random nonce is signed into the state AND set in a
+// short-lived HttpOnly cookie, so the callback can confirm the redirect came
+// back to the same browser that started the flow (login-CSRF protection).
 func (m *Manager) Login(c echo.Context) error {
 	noStore(c)
 	returnTo := safeReturnTo(c.QueryParam("returnTo"))
+	nonce, err := randomToken()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError)
+	}
+	m.setNonceCookie(c, nonce)
 	authURL, err := usermanagement.GetAuthorizationURL(usermanagement.GetAuthorizationURLOpts{
 		ClientID:    m.clientID,
 		RedirectURI: m.callbackURL,
 		Provider:    "authkit",
-		State:       m.signState(returnTo),
+		State:       m.signState(returnTo, nonce),
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError)
@@ -178,12 +196,27 @@ func (m *Manager) Login(c echo.Context) error {
 // Any failure lands the user back on the home page rather than an error screen.
 func (m *Manager) Callback(c echo.Context) error {
 	noStore(c)
+
+	// The nonce cookie is one-time: read it, then always clear it, whatever the
+	// outcome, so a stale nonce can't be reused by a later request.
+	cookieNonce := ""
+	if ck, err := c.Cookie(nonceCookieName); err == nil {
+		cookieNonce = ck.Value
+	}
+	m.clearNonceCookie(c)
+
 	if c.QueryParam("error") != "" {
 		return c.Redirect(http.StatusFound, "/")
 	}
 	code := c.QueryParam("code")
-	returnTo, ok := m.verifyState(c.QueryParam("state"))
+	returnTo, stateNonce, ok := m.verifyState(c.QueryParam("state"))
 	if code == "" || !ok {
+		return c.Redirect(http.StatusFound, "/")
+	}
+	// Two-channel CSRF check: the nonce signed into the state must match the one
+	// this browser was given at Login. A missing or mismatched cookie means the
+	// callback did not originate from a login this browser started.
+	if cookieNonce == "" || subtle.ConstantTimeCompare([]byte(cookieNonce), []byte(stateNonce)) != 1 {
 		return c.Redirect(http.StatusFound, "/")
 	}
 	returnTo = safeReturnTo(returnTo)
@@ -260,7 +293,13 @@ func (m *Manager) Middleware() echo.MiddlewareFunc {
 				// Expired or otherwise unusable — try one refresh. A cookie an
 				// attacker cannot forge (AES-GCM) means the refresh token here is
 				// genuine; WorkOS rejects a stale one, which we turn into 401.
-				access, refresh, rerr := m.refresh(ctx, data.RefreshToken)
+				//
+				// WorkOS refresh tokens are single-use, so concurrent requests
+				// carrying the same expired cookie must not each call refresh —
+				// the second would present an already-spent token, fail, and
+				// spuriously log the user out. singleflight collapses them to one
+				// exchange keyed by the refresh token; all waiters share its result.
+				access, refresh, rerr := m.refreshOnce(ctx, data.RefreshToken)
 				if rerr != nil {
 					m.clearCookie(c)
 					return echo.NewHTTPError(http.StatusUnauthorized)
@@ -343,6 +382,8 @@ func (m *Manager) sessionID(ctx context.Context, accessToken string) string {
 	return ""
 }
 
+// seal encrypts the session payload with AES-256-GCM and returns a URL-safe
+// base64 string (nonce prepended) suitable for a cookie value.
 func (m *Manager) seal(d sessionData) (string, error) {
 	plain, err := json.Marshal(d)
 	if err != nil {
@@ -356,6 +397,8 @@ func (m *Manager) seal(d sessionData) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(ct), nil
 }
 
+// unseal reverses seal: it authenticates and decrypts the cookie value, failing
+// closed on any tamper, truncation, or wrong-key input.
 func (m *Manager) unseal(s string) (sessionData, error) {
 	var d sessionData
 	raw, err := base64.RawURLEncoding.DecodeString(s)
@@ -376,35 +419,85 @@ func (m *Manager) unseal(s string) (sessionData, error) {
 	return d, nil
 }
 
-// signState HMACs the return path so a tampered state is rejected at the
-// callback; the whole thing is base64'd for safe transport through WorkOS.
-func (m *Manager) signState(returnTo string) string {
-	mac := hmac.New(sha256.New, m.stateKey)
-	mac.Write([]byte(returnTo))
-	payload := returnTo + "|" + base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+// signState HMACs the return path together with the flow nonce, so neither can
+// be tampered with at the callback; the whole thing is base64'd for safe
+// transport through WorkOS. Layout (before the outer base64): returnTo|nonce|sig.
+// nonce and sig are base64url (no "|"), so the callback splits from the right,
+// which keeps a "|" inside returnTo intact.
+func (m *Manager) signState(returnTo, nonce string) string {
+	payload := returnTo + "|" + nonce + "|" + base64.RawURLEncoding.EncodeToString(m.stateMAC(returnTo, nonce))
 	return base64.RawURLEncoding.EncodeToString([]byte(payload))
 }
 
-func (m *Manager) verifyState(state string) (string, bool) {
+func (m *Manager) verifyState(state string) (returnTo, nonce string, ok bool) {
 	raw, err := base64.RawURLEncoding.DecodeString(state)
 	if err != nil {
-		return "", false
+		return "", "", false
 	}
-	i := strings.LastIndex(string(raw), "|")
-	if i < 0 {
-		return "", false
+	s := string(raw)
+	sigAt := strings.LastIndex(s, "|")
+	if sigAt < 0 {
+		return "", "", false
 	}
-	returnTo, sigB64 := string(raw)[:i], string(raw)[i+1:]
+	nonceAt := strings.LastIndex(s[:sigAt], "|")
+	if nonceAt < 0 {
+		return "", "", false
+	}
+	returnTo, nonce, sigB64 := s[:nonceAt], s[nonceAt+1:sigAt], s[sigAt+1:]
 	sig, err := base64.RawURLEncoding.DecodeString(sigB64)
 	if err != nil {
-		return "", false
+		return "", "", false
 	}
+	if !hmac.Equal(sig, m.stateMAC(returnTo, nonce)) {
+		return "", "", false
+	}
+	return returnTo, nonce, true
+}
+
+// stateMAC is the HMAC over returnTo and nonce, domain-separated by a NUL so
+// distinct (returnTo, nonce) pairs can't collide by shifting the boundary.
+func (m *Manager) stateMAC(returnTo, nonce string) []byte {
 	mac := hmac.New(sha256.New, m.stateKey)
 	mac.Write([]byte(returnTo))
-	if !hmac.Equal(sig, mac.Sum(nil)) {
-		return "", false
+	mac.Write([]byte{0})
+	mac.Write([]byte(nonce))
+	return mac.Sum(nil)
+}
+
+// randomToken returns 32 bytes of URL-safe base64 randomness, used for the
+// one-time OAuth nonce.
+func randomToken() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
 	}
-	return returnTo, true
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+// refreshOnce runs the WorkOS refresh through singleflight so that concurrent
+// requests for the same refresh token trigger exactly one exchange and share
+// its result.
+func (m *Manager) refreshOnce(ctx context.Context, refreshToken string) (access, newRefresh string, err error) {
+	key := refreshKey(refreshToken)
+	v, err, _ := m.refreshGroup.Do(key, func() (any, error) {
+		a, r, e := m.refresh(ctx, refreshToken)
+		if e != nil {
+			return nil, e
+		}
+		return [2]string{a, r}, nil
+	})
+	if err != nil {
+		return "", "", err
+	}
+	pair := v.([2]string)
+	return pair[0], pair[1], nil
+}
+
+// refreshKey derives a stable singleflight key from a refresh token without
+// keeping the raw secret around as a map key.
+func refreshKey(refreshToken string) string {
+	sum := sha256.Sum256([]byte(refreshToken))
+	return base64.RawURLEncoding.EncodeToString(sum[:])
 }
 
 func (m *Manager) setCookie(c echo.Context, sealed string) {
@@ -424,6 +517,33 @@ func (m *Manager) clearCookie(c echo.Context) {
 		Name:     cookieName,
 		Value:    "",
 		Path:     "/",
+		HttpOnly: true,
+		Secure:   m.secure,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+}
+
+// setNonceCookie / clearNonceCookie manage the one-time CSRF nonce. It is scoped
+// to /auth so it never rides along with page or /api requests, and SameSite=Lax
+// still lets it return on the top-level GET redirect from WorkOS to /auth/callback.
+func (m *Manager) setNonceCookie(c echo.Context, nonce string) {
+	http.SetCookie(c.Response(), &http.Cookie{
+		Name:     nonceCookieName,
+		Value:    nonce,
+		Path:     "/auth",
+		HttpOnly: true,
+		Secure:   m.secure,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   int(nonceMaxAge.Seconds()),
+	})
+}
+
+func (m *Manager) clearNonceCookie(c echo.Context) {
+	http.SetCookie(c.Response(), &http.Cookie{
+		Name:     nonceCookieName,
+		Value:    "",
+		Path:     "/auth",
 		HttpOnly: true,
 		Secure:   m.secure,
 		SameSite: http.SameSiteLaxMode,
@@ -452,6 +572,11 @@ func safeReturnTo(raw string) string {
 	}
 	if u.RawQuery != "" {
 		out += "?" + u.RawQuery
+	}
+	// Preserve the fragment (e.g. an on-page anchor) — browsers honor it in a
+	// redirect Location, so keeping it round-trips the user's exact spot.
+	if u.Fragment != "" {
+		out += "#" + u.EscapedFragment()
 	}
 	return out
 }
