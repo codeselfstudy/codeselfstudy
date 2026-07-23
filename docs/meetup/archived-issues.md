@@ -3,7 +3,7 @@
 **Archived:** 2026-07-22
 **Status:** all closed / superseded
 
-These are the 18 GitHub issues that were labeled `meetup` (#118–#136), captured verbatim before being closed. They described a first-party Meetup.com replacement (events + RSVPs + AI recaps) planned against the site's **previous** architecture:
+These are the 19 GitHub issues that were labeled `meetup` (#118–#136), captured verbatim before being closed. They described a first-party Meetup.com replacement (events + RSVPs + AI recaps) planned against the site's **previous** architecture:
 
 > TanStack Start + oRPC + Drizzle/Turso (libsql) + WorkOS AuthKit + shadcn/ui + Gemini Flash
 
