@@ -41,7 +41,7 @@ func fixtureDir(t *testing.T) string {
 }
 
 func TestHealthzReturns204(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -55,7 +55,7 @@ func TestHealthzReturns204(t *testing.T) {
 }
 
 func TestStaticFileServed(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	cases := []struct {
 		name string
 		path string
@@ -85,7 +85,7 @@ func TestStaticFileServed(t *testing.T) {
 // revalidates and the kill switches can be retired cleanly. Ordinary assets
 // must be left untouched.
 func TestServiceWorkerScriptsSentNoCache(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	cases := []struct {
 		name        string
 		path        string
@@ -122,7 +122,7 @@ func TestMissingServiceWorkerStillNoCache(t *testing.T) {
 			t.Fatalf("seed %s: %v", name, err)
 		}
 	}
-	e := newServer(dir, nil, nil)
+	e := newServer(dir, nil, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/sw.js", nil)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -138,7 +138,7 @@ func TestMissingServiceWorkerStillNoCache(t *testing.T) {
 // healthcheck probes, and ad-hoc monitoring all use HEAD; without explicit
 // support Echo returns 405 instead of mirroring the GET status.
 func TestHeadMirrorsGet(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	cases := []struct {
 		name       string
 		path       string
@@ -164,7 +164,7 @@ func TestHeadMirrorsGet(t *testing.T) {
 }
 
 func TestSSGFallbackOnUnknownPageRoute(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/nonexistent/", nil)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -181,7 +181,7 @@ func TestSSGFallbackOnUnknownPageRoute(t *testing.T) {
 }
 
 func TestApiAndWsRoutesSkipSSGFallback(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	cases := []string{"/api/missing", "/ws"}
 	for _, path := range cases {
 		t.Run(path, func(t *testing.T) {
@@ -203,7 +203,7 @@ func TestApiAndWsRoutesSkipSSGFallback(t *testing.T) {
 // connection hijack a WebSocket upgrade needs. The middleware in newServer
 // skips /ws so Phase 4's hub keeps working.
 func TestGzipSkippedOnWebsocketPath(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	cases := []struct {
 		path     string
 		wantGzip bool
@@ -231,7 +231,7 @@ func TestSSGFallbackHandlesMissing404Html(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "index.html"), []byte("home"), 0o644); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	e := newServer(dir, nil, nil)
+	e := newServer(dir, nil, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/nope/", nil)
 	rec := httptest.NewRecorder()
@@ -243,7 +243,7 @@ func TestSSGFallbackHandlesMissing404Html(t *testing.T) {
 }
 
 func TestTrailingSlashCanonicalization(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	cases := []struct {
 		name     string
 		method   string
@@ -286,7 +286,7 @@ func TestIngestRouteWiredWhenEnabled(t *testing.T) {
 	// unauthenticated request reaches that auth (401), proving the route is wired
 	// and not swallowed by the /api/* JSON-404 reservation.
 	ing := ingest.New(ingest.Config{IngestToken: "t"}, nil, nil, nil)
-	e := newServer(fixtureDir(t), nil, ing)
+	e := newServer(fixtureDir(t), nil, nil, ing)
 	req := httptest.NewRequest(http.MethodPost, "/api/ingest", strings.NewReader("x"))
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -298,7 +298,7 @@ func TestIngestRouteWiredWhenEnabled(t *testing.T) {
 func TestIngestRouteAbsentWhenDisabled(t *testing.T) {
 	// With no ingest handler, POST /api/ingest falls through to the /api/* JSON
 	// 404 reservation (the pipeline is disabled).
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	req := httptest.NewRequest(http.MethodPost, "/api/ingest", strings.NewReader("x"))
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)

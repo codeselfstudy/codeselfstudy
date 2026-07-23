@@ -6,8 +6,6 @@ import sitemap from "@astrojs/sitemap";
 
 import tailwindcss from "@tailwindcss/vite";
 
-import { requireWorkosEnv } from "./src/integrations/workos/require-workos-env";
-
 // https://astro.build/config
 export default defineConfig({
   site: "https://codeselfstudy.com",
@@ -23,10 +21,6 @@ export default defineConfig({
 
   integrations: [
     react(),
-    // Fail `astro build` loudly when the client-exposed WorkOS vars are empty,
-    // instead of inlining `undefined` and shipping a navbar that throws
-    // NoClientIdProvidedException at runtime. No-ops on `dev`/`preview`.
-    requireWorkosEnv(),
     // Exclude /s/ (the Slack invite page, which is noindex) from the sitemap.
     sitemap({
       filter: (page) => page !== "https://codeselfstudy.com/s/",

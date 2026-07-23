@@ -49,7 +49,7 @@ func TestFindRedirect(t *testing.T) {
 // The legacy map must run before static resolution: /index.html is both a real
 // file in the static root and a mapped redirect to /.
 func TestLegacyRedirectPrecedesStaticFile(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/index.html", nil)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -63,7 +63,7 @@ func TestLegacyRedirectPrecedesStaticFile(t *testing.T) {
 }
 
 func TestLegacyRedirectServedOverHTTP(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 	cases := []struct {
 		name    string
 		method  string

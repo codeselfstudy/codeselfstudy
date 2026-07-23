@@ -1,21 +1,24 @@
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ReactNode } from "react";
-
-// Navbar wraps its content in the WorkOS AuthProvider and renders SignInButton;
-// stub AuthKit so the nav tests don't spin up a real browser session.
-vi.mock("@workos-inc/authkit-react", () => ({
-  AuthKitProvider: ({ children }: { children: ReactNode }) => children,
-  useAuth: () => ({
-    user: null,
-    isLoading: false,
-    signIn: vi.fn(),
-    signOut: vi.fn(),
-  }),
-}));
 
 import Navbar from "@/components/Navbar";
+
+// Navbar renders SignInButton, which fetches the cookie-gated /api/me on mount.
+// Stub fetch as signed-out (401) so the nav tests never hit the network (jsdom
+// ships no fetch of its own); a single SignInButton renders in the top bar.
+beforeEach(() => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue({ ok: false, status: 401, json: async () => null })
+  );
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("Navbar", () => {
   test("renders the logo and desktop links with trailing-slash hrefs", () => {

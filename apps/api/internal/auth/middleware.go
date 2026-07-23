@@ -36,22 +36,7 @@ func authenticate(c echo.Context, v *Verifier) (jwt.Token, error) {
 	if raw == "" {
 		return nil, errors.New("auth: missing bearer token")
 	}
-
-	keys, err := v.keySet(c.Request().Context())
-	if err != nil {
-		return nil, err
-	}
-
-	tok, err := jwt.Parse(
-		[]byte(raw),
-		jwt.WithKeySet(keys),
-		jwt.WithValidate(true),
-		jwt.WithIssuer(v.issuer),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return tok, nil
+	return v.ParseToken(c.Request().Context(), raw)
 }
 
 // Claims returns the validated JWT claims placed on the context by

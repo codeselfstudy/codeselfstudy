@@ -1,63 +1,60 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@workos-inc/authkit-react";
 
-import { apiFetch } from "@/lib/api";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Sign-in / sign-out control, adapted from the project's own TanStack-era
-// workos-user.tsx and restyled with the shared shadcn button. Signed out: a "Sign In" button that
-// launches the WorkOS hosted flow, passing the current path as `returnTo` so the
-// AuthProvider's redirect callback can bring the user back here. Signed in: the
-// user (email from the server, name as a fallback) with a "Sign Out" button.
+type Account = { email: string; name: string; avatar: string };
+
+// Sign-in / sign-out control for the navbar.
+//
+// Auth now lives in a first-party, HTTP-only session cookie that the Go server
+// sets during the WorkOS hosted flow (see apps/api/internal/session). The
+// browser holds no WorkOS tokens, so this component just asks the cookie-gated
+// /api/me who the user is: 200 -> signed in (render avatar + email + Sign Out),
+// 401 -> signed out (render Sign In). Signing in and out are plain navigations
+// to the server's /auth routes, which run the hosted flow and set or clear the
+// cookie, then send the user back to where they were.
 export default function SignInButton() {
-  const { user, isLoading, signIn, signOut, getAccessToken } = useAuth();
-  const userId = user?.id ?? null;
+  const [status, setStatus] = useState<"loading" | "in" | "out">("loading");
+  const [account, setAccount] = useState<Account | null>(null);
 
-  // The fetched email is stored together with the id it belongs to, and rendered
-  // only when that id is still the active one. That way switching accounts never
-  // briefly shows the previous user's email while the new /api/me is in flight.
-  const [account, setAccount] = useState<{ id: string; email: string } | null>(
-    null
-  );
-
-  // Prove the auth loop end to end: with a session, call the WorkOS-gated
-  // /api/me with the access token and record the email the *server* returns (not
-  // the client-side user object), confirming the Go middleware accepted the
-  // token. Keyed on userId so it re-runs only when the identity changes.
   useEffect(() => {
-    if (!userId) {
-      setAccount(null);
-      return;
-    }
     let cancelled = false;
-    apiFetch("/api/me", getAccessToken)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { email?: string } | null) => {
-        if (!cancelled && data?.email) {
-          setAccount({ id: userId, email: data.email });
+    fetch("/api/me", {
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+    })
+      .then((res) =>
+        res.ok ? (res.json() as Promise<Partial<Account>>) : null
+      )
+      .then((data) => {
+        if (cancelled) return;
+        if (data) {
+          setAccount({
+            email: data.email ?? "",
+            name: data.name ?? "",
+            avatar: data.avatar ?? "",
+          });
+          setStatus("in");
+        } else {
+          setStatus("out");
         }
       })
       .catch(() => {
-        // Leave the account unset; the name shows instead.
+        // Network error — treat as signed out rather than crashing the navbar.
+        if (!cancelled) setStatus("out");
       });
     return () => {
       cancelled = true;
     };
-  }, [userId, getAccessToken]);
+  }, []);
 
-  if (user) {
-    const email = account?.id === userId ? account.email : null;
-    const label =
-      email ?? [user.firstName, user.lastName].filter(Boolean).join(" ");
+  if (status === "in" && account) {
+    const label = account.email || account.name;
     return (
       <div className="flex items-center gap-2">
-        {user.profilePictureUrl && (
-          <img
-            src={user.profilePictureUrl}
-            alt=""
-            className="h-7 w-7 rounded-full"
-          />
+        {account.avatar && (
+          <img src={account.avatar} alt="" className="h-7 w-7 rounded-full" />
         )}
         {label && (
           <span className="text-foreground hidden text-sm font-medium sm:inline">
@@ -66,7 +63,7 @@ export default function SignInButton() {
         )}
         <button
           type="button"
-          onClick={() => signOut()}
+          onClick={() => navigateAuth("/auth/logout")}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           Sign Out
@@ -78,11 +75,24 @@ export default function SignInButton() {
   return (
     <button
       type="button"
-      onClick={() => signIn({ state: { returnTo: window.location.pathname } })}
-      disabled={isLoading}
+      disabled={status === "loading"}
+      onClick={() => navigateAuth("/auth/login")}
       className={cn(buttonVariants({ variant: "default", size: "sm" }))}
     >
       Sign In
     </button>
   );
+}
+
+// navigateAuth sends the browser to a server /auth route, passing the current
+// path as returnTo so the server brings the user back here afterwards. The
+// server validates returnTo to a same-origin path, so a crafted value can't
+// turn this into an open redirect.
+function navigateAuth(path: string) {
+  // Keep the full in-app location (query + hash), not just the path, so filters
+  // and anchors survive the /auth round-trip. The server re-validates this to a
+  // same-origin path (see session.safeReturnTo).
+  const returnTo =
+    window.location.pathname + window.location.search + window.location.hash;
+  window.location.assign(`${path}?returnTo=${encodeURIComponent(returnTo)}`);
 }
