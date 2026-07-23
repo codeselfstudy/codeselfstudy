@@ -16,6 +16,7 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/auth"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/session"
 )
 
 // End-to-end check that /api/me wins over the /api/* catchall and that the
@@ -101,7 +102,7 @@ func startedVerifierFor(t *testing.T, f *meFixture) *auth.Verifier {
 func TestApiMeReturnsClaims(t *testing.T) {
 	f := newMeFixture(t)
 	v := startedVerifierFor(t, f)
-	e := newServer(fixtureDir(t), v, nil)
+	e := newServer(fixtureDir(t), v, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/me", nil)
 	req.Header.Set(echo.HeaderAuthorization, "Bearer "+f.sign(t))
@@ -130,7 +131,7 @@ func TestApiMeReturnsClaims(t *testing.T) {
 func TestApiMeRejectsMissingToken(t *testing.T) {
 	f := newMeFixture(t)
 	v := startedVerifierFor(t, f)
-	e := newServer(fixtureDir(t), v, nil)
+	e := newServer(fixtureDir(t), v, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/me", nil)
 	rec := httptest.NewRecorder()
@@ -144,7 +145,7 @@ func TestApiMeRejectsMissingToken(t *testing.T) {
 func TestApiMeHeadHonorsAuth(t *testing.T) {
 	f := newMeFixture(t)
 	v := startedVerifierFor(t, f)
-	e := newServer(fixtureDir(t), v, nil)
+	e := newServer(fixtureDir(t), v, nil, nil)
 
 	cases := []struct {
 		name       string
@@ -170,11 +171,51 @@ func TestApiMeHeadHonorsAuth(t *testing.T) {
 	}
 }
 
+// When a session Manager is wired, newServer must mount the /auth/* routes and
+// gate /api/me on the session cookie (not the Bearer path). This covers the
+// production branch of newServer that the other tests, which pass sess=nil,
+// don't reach.
+func TestSessionWiringMountsAuthAndGatesMe(t *testing.T) {
+	f := newMeFixture(t)
+	v := startedVerifierFor(t, f)
+	sess, err := session.New(session.Config{
+		ClientID:       "client_test",
+		APIKey:         "sk_test",
+		CookiePassword: "0123456789abcdef0123456789abcdef",
+		BaseURL:        "https://app.test",
+	}, v)
+	if err != nil {
+		t.Fatalf("session.New: %v", err)
+	}
+	e := newServer(fixtureDir(t), v, sess, nil)
+
+	t.Run("auth login redirects", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/auth/login?returnTo=/events/", nil)
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, req)
+		if rec.Code != http.StatusFound {
+			t.Fatalf("/auth/login: want 302 got %d", rec.Code)
+		}
+	})
+
+	t.Run("api me needs the cookie", func(t *testing.T) {
+		// A Bearer token must no longer satisfy /api/me — the session cookie is
+		// the only accepted credential once the Manager is wired.
+		req := httptest.NewRequest(http.MethodGet, "/api/me", nil)
+		req.Header.Set(echo.HeaderAuthorization, "Bearer "+f.sign(t))
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, req)
+		if rec.Code != http.StatusUnauthorized {
+			t.Fatalf("/api/me without cookie: want 401 got %d", rec.Code)
+		}
+	})
+}
+
 func TestApiMeIsDisabledWithoutVerifier(t *testing.T) {
 	// /api/me without a verifier should fall through to the /api/* JSON 404,
 	// not return 401 — that's the smoke-test ergonomics we lean on for
 	// runs without WorkOS env config.
-	e := newServer(fixtureDir(t), nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/me", nil)
 	rec := httptest.NewRecorder()

@@ -22,6 +22,7 @@ import (
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/extract"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/ingest"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/session"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
 
@@ -52,12 +53,17 @@ func main() {
 		log.Printf("auth: WORKOS_CLIENT_ID / WORKOS_API_HOSTNAME not set; /api/me disabled")
 	}
 
+	// The server-side session (sealed first-party cookie) needs the extra
+	// server secrets on top of the verifier. When they're absent the site still
+	// runs; /auth/* and the cookie-gated /api/me are simply off.
+	sess := newSessionFromEnv(v)
+
 	ing, database := newIngestFromEnv(ctx)
 	if database != nil {
 		defer database.Close()
 	}
 
-	e := newServer(staticDir, v, ing)
+	e := newServer(staticDir, v, sess, ing)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -107,6 +113,27 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+// newSessionFromEnv builds the server-side session Manager when the extra
+// WorkOS secrets (WORKOS_API_KEY, WORKOS_COOKIE_PASSWORD, APP_BASE_URL) are set,
+// reusing the JWKS verifier for access-token validation. Returns nil — leaving
+// /auth/* and the cookie session off — when the verifier is absent or the config
+// is incomplete, so barebones/static-only boots keep working.
+func newSessionFromEnv(v *auth.Verifier) *session.Manager {
+	if v == nil {
+		return nil
+	}
+	cfg := session.LoadConfig(os.Getenv)
+	if !cfg.Enabled() {
+		log.Printf("auth: WORKOS_API_KEY / WORKOS_COOKIE_PASSWORD / APP_BASE_URL not fully set; server-side session disabled (/auth/* off)")
+		return nil
+	}
+	m, err := session.New(cfg, v)
+	if err != nil {
+		log.Fatalf("auth: session: %v", err)
+	}
+	return m
 }
 
 // newIngestFromEnv builds the email-ingest handlers from the environment. It
@@ -210,10 +237,14 @@ func handleMe(c echo.Context) error {
 }
 
 // newServer wires the routes and middleware for an Echo instance rooted at
-// staticRoot. When v is non-nil, /api/me is mounted under WorkOS-validated
-// auth; otherwise the route falls through to the /api/* JSON 404. Split out
-// from main so tests can build a server against fixtures.
-func newServer(staticRoot string, v *auth.Verifier, ing *ingest.Handlers) *echo.Echo {
+// staticRoot. Auth wiring for /api/me depends on what's configured:
+//   - sess != nil: the /auth/* routes are mounted and /api/me is gated by the
+//     first-party cookie session (the production path).
+//   - else v != nil: /api/me is gated by the legacy Bearer/JWKS middleware.
+//   - else: /api/me falls through to the /api/* JSON 404.
+//
+// Split out from main so tests can build a server against fixtures.
+func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *ingest.Handlers) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
@@ -236,9 +267,15 @@ func newServer(staticRoot string, v *auth.Verifier, ing *ingest.Handlers) *echo.
 		return c.NoContent(http.StatusNoContent)
 	})
 
-	// Authenticated API routes go before the /api/* catchall so the static
-	// paths win over the JSON-404 fallback.
-	if v != nil {
+	// Authenticated API routes go before the /api/* catchall so the concrete
+	// paths win over the JSON-404 fallback. The cookie session (when set up)
+	// owns /auth/* and /api/me; otherwise the legacy Bearer path gates /api/me.
+	switch {
+	case sess != nil:
+		sess.Register(e)
+		api := e.Group("/api", sess.Middleware())
+		api.Match(getOrHead, "/me", sess.HandleMe)
+	case v != nil:
 		api := e.Group("/api", auth.Middleware(v))
 		api.Match(getOrHead, "/me", handleMe)
 	}

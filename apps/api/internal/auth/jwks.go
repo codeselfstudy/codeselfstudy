@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
 // Verifier holds the cached JWKS and the expected issuer for token
@@ -94,4 +95,21 @@ func (v *Verifier) keySet(ctx context.Context) (jwk.Set, error) {
 		return nil, errors.New("auth: verifier not started")
 	}
 	return v.keys.Get(ctx, v.jwksURL)
+}
+
+// ParseToken validates a raw JWT against the cached JWKS and the expected
+// issuer, returning the parsed token. It is the single validation entry point
+// shared by the Bearer Middleware and the cookie-backed session manager, so
+// both accept exactly the same tokens (WorkOS-signed, unexpired, right issuer).
+func (v *Verifier) ParseToken(ctx context.Context, raw string) (jwt.Token, error) {
+	keys, err := v.keySet(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return jwt.Parse(
+		[]byte(raw),
+		jwt.WithKeySet(keys),
+		jwt.WithValidate(true),
+		jwt.WithIssuer(v.issuer),
+	)
 }
