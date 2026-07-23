@@ -14,9 +14,9 @@ import AuthProvider from "@/integrations/workos/AuthProvider";
 import SignInButton from "@/components/auth/SignInButton";
 
 const LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/about/", label: "About" },
+  // { href: "/", label: "Home" },
   { href: "/events/", label: "Events" },
+  { href: "/about/", label: "About" },
   // { href: "/contact/", label: "Contact" },
 ];
 
@@ -44,7 +44,6 @@ export default function Navbar() {
               </a>
             </div>
             <div className="flex items-center gap-1">
-              <ThemeToggle />
               <div className="hidden sm:flex sm:items-center sm:space-x-4">
                 {LINKS.map((link) => (
                   <a
@@ -58,6 +57,7 @@ export default function Navbar() {
                     {link.label}
                   </a>
                 ))}
+                <ThemeToggle />
                 <SignInButton />
               </div>
               <div className="sm:hidden">
