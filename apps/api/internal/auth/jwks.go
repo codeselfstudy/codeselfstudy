@@ -97,19 +97,34 @@ func (v *Verifier) keySet(ctx context.Context) (jwk.Set, error) {
 	return v.keys.Get(ctx, v.jwksURL)
 }
 
-// ParseToken validates a raw JWT against the cached JWKS and the expected
-// issuer, returning the parsed token. It is the single validation entry point
-// shared by the Bearer Middleware and the cookie-backed session manager, so
-// both accept exactly the same tokens (WorkOS-signed, unexpired, right issuer).
+// ParseToken validates a raw JWT against the cached JWKS, the expected issuer,
+// and expiry, returning the parsed token. Used by the Bearer Middleware, where
+// the token arrives unwrapped from an untrusted client and the issuer must be
+// pinned.
 func (v *Verifier) ParseToken(ctx context.Context, raw string) (jwt.Token, error) {
+	return v.parse(ctx, raw, jwt.WithIssuer(v.issuer))
+}
+
+// ParseTokenNoIssuer validates signature and expiry but NOT the issuer. It is
+// for the cookie-backed session, where the token has already been sealed into a
+// first-party AES-256-GCM cookie (tamper-proof) before we ever re-read it — so
+// signature + expiry are the meaningful checks, and pinning the exact issuer
+// only adds fragility. WorkOS AuthKit access tokens use
+// `iss = "https://api.workos.com/"` (trailing slash) or
+// `.../user_management/<client_id>` depending on setup, none of which match the
+// bare host the Bearer path pins; requiring an exact match here made every
+// /api/me reject the session and clear the cookie.
+func (v *Verifier) ParseTokenNoIssuer(ctx context.Context, raw string) (jwt.Token, error) {
+	return v.parse(ctx, raw)
+}
+
+func (v *Verifier) parse(ctx context.Context, raw string, opts ...jwt.ParseOption) (jwt.Token, error) {
 	keys, err := v.keySet(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return jwt.Parse(
 		[]byte(raw),
-		jwt.WithKeySet(keys),
-		jwt.WithValidate(true),
-		jwt.WithIssuer(v.issuer),
+		append([]jwt.ParseOption{jwt.WithKeySet(keys), jwt.WithValidate(true)}, opts...)...,
 	)
 }

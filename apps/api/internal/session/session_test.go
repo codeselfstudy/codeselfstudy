@@ -60,9 +60,15 @@ func newJWKSFixture(t *testing.T) *jwksFixture {
 }
 
 func (f *jwksFixture) signAccess(t *testing.T, exp time.Time) string {
+	return f.signAccessIssuer(t, exp, testIssuer)
+}
+
+// signAccessIssuer signs a token with an arbitrary `iss`, so tests can mint a
+// WorkOS-style token whose issuer does not match the verifier's pinned issuer.
+func (f *jwksFixture) signAccessIssuer(t *testing.T, exp time.Time, iss string) string {
 	t.Helper()
 	tok, err := jwt.NewBuilder().
-		Issuer(testIssuer).
+		Issuer(iss).
 		Subject("user_test").
 		Claim("sid", "session_test_1").
 		IssuedAt(time.Now().Add(-1 * time.Minute)).
@@ -287,6 +293,36 @@ func TestMiddlewareValidCookie(t *testing.T) {
 	}
 	if body["name"] != "Ada Lovelace" {
 		t.Errorf("name: got %v", body["name"])
+	}
+}
+
+// Regression for the /api/me self-destruct: the session path validates the
+// sealed cookie's token but must NOT pin the issuer. WorkOS AuthKit tokens carry
+// an `iss` (e.g. "https://api.workos.com/") that differs from the bare host the
+// Bearer path pins; requiring an exact match made the middleware reject the
+// session and clear the cookie on the first request.
+func TestMiddlewareAcceptsMismatchedIssuer(t *testing.T) {
+	f := newJWKSFixture(t)
+	m := newTestManager(t, f) // verifier is configured WithIssuer(testIssuer)
+
+	// Valid signature + unexpired, but a WorkOS-style issuer != testIssuer.
+	token := f.signAccessIssuer(t, time.Now().Add(5*time.Minute), "https://api.workos.com/")
+	sealed := mustSeal(t, m, sessionData{
+		AccessToken:  token,
+		RefreshToken: "rt",
+		SessionID:    "sid",
+		User:         profile{Email: "ada@example.com"},
+	})
+
+	rec := serveMe(m, cookie(sealed))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status: want 200 got %d body=%s", rec.Code, rec.Body.String())
+	}
+	// The cookie must not be cleared (that was the self-destruct symptom).
+	for _, ck := range rec.Result().Cookies() {
+		if ck.Name == cookieName && ck.MaxAge < 0 {
+			t.Error("session cookie was cleared despite a valid token with a mismatched issuer")
+		}
 	}
 }
 
