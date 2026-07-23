@@ -35,8 +35,8 @@ export function safeReturnTo(
 export default function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthKitProvider
-      clientId={import.meta.env.VITE_WORKOS_CLIENT_ID}
-      apiHostname={import.meta.env.VITE_WORKOS_API_HOSTNAME}
+      clientId={import.meta.env.PUBLIC_WORKOS_CLIENT_ID}
+      apiHostname={import.meta.env.PUBLIC_WORKOS_API_HOSTNAME}
       onRedirectCallback={({ state }) => {
         const target = safeReturnTo(
           (state as { returnTo?: string } | null)?.returnTo,

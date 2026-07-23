@@ -3,15 +3,15 @@ import type { AstroIntegration } from "astro";
 // Client-exposed WorkOS config that the browser bundle cannot work without.
 // These mirror the two vars declared in env.d.ts and consumed by AuthProvider.tsx.
 const REQUIRED_VARS = [
-  "VITE_WORKOS_CLIENT_ID",
-  "VITE_WORKOS_API_HOSTNAME",
+  "PUBLIC_WORKOS_CLIENT_ID",
+  "PUBLIC_WORKOS_API_HOSTNAME",
 ] as const;
 
 // Build-time guard for the client-exposed WorkOS config.
 //
 // The web app is built locally and its `dist/` ships prebuilt into the Fly image
 // (see Dockerfile + the `just deploy` recipe). Vite *statically inlines*
-// `import.meta.env.VITE_WORKOS_CLIENT_ID` — read in AuthProvider.tsx — at build
+// `import.meta.env.PUBLIC_WORKOS_CLIENT_ID` — read in AuthProvider.tsx — at build
 // time, so if that var is empty when `astro build` runs, the shipped bundle bakes
 // in `undefined`. At runtime AuthKit then calls `createClient(undefined)` and
 // throws `NoClientIdProvidedException`, which takes down the whole navbar island

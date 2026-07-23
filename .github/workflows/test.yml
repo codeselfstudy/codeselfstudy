@@ -46,8 +46,8 @@ jobs:
           # fails `astro build` when these are empty; CI is not a deploy target,
           # so fall back to a placeholder when the repo Variables aren't set.
           # Real values live in .env.local for `just deploy`.
-          VITE_WORKOS_CLIENT_ID: ${{ vars.VITE_WORKOS_CLIENT_ID || 'client_ci_placeholder' }}
-          VITE_WORKOS_API_HOSTNAME: ${{ vars.VITE_WORKOS_API_HOSTNAME || 'auth.workos.com' }}
+          PUBLIC_WORKOS_CLIENT_ID: ${{ vars.PUBLIC_WORKOS_CLIENT_ID || 'client_ci_placeholder' }}
+          PUBLIC_WORKOS_API_HOSTNAME: ${{ vars.PUBLIC_WORKOS_API_HOSTNAME || 'auth.workos.com' }}
 
       - name: Test web with coverage
         run: bun run --filter web test:coverage

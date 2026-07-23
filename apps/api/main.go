@@ -82,13 +82,14 @@ func main() {
 }
 
 // newVerifierFromEnv reads WorkOS client config from the environment. The
-// web app already validates the same pair as VITE_WORKOS_CLIENT_ID /
-// VITE_WORKOS_API_HOSTNAME (a Vite prefix convention; the OS-level vars are
-// the same values), so production deploys reuse them. Returns nil if either
-// is missing — the caller falls back to running without auth.
+// web app validates the same pair as PUBLIC_WORKOS_CLIENT_ID /
+// PUBLIC_WORKOS_API_HOSTNAME (Astro's client-var prefix; VITE_WORKOS_* is
+// kept as a legacy fallback; the OS-level vars are the same values), so
+// production deploys reuse them. Returns nil if either is missing — the
+// caller falls back to running without auth.
 func newVerifierFromEnv() *auth.Verifier {
-	clientID := firstNonEmpty(os.Getenv("WORKOS_CLIENT_ID"), os.Getenv("VITE_WORKOS_CLIENT_ID"))
-	hostname := firstNonEmpty(os.Getenv("WORKOS_API_HOSTNAME"), os.Getenv("VITE_WORKOS_API_HOSTNAME"))
+	clientID := firstNonEmpty(os.Getenv("WORKOS_CLIENT_ID"), os.Getenv("PUBLIC_WORKOS_CLIENT_ID"), os.Getenv("VITE_WORKOS_CLIENT_ID"))
+	hostname := firstNonEmpty(os.Getenv("WORKOS_API_HOSTNAME"), os.Getenv("PUBLIC_WORKOS_API_HOSTNAME"), os.Getenv("VITE_WORKOS_API_HOSTNAME"))
 	if clientID == "" || hostname == "" {
 		return nil
 	}

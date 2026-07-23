@@ -34,8 +34,8 @@ Copy `env.local.example` to `.env.local` at the repo root and fill in:
 ```bash
 # client-side variables (browser-exposed). The Astro app consumes these for the
 # WorkOS AuthKit sign-in control; the Go verifier reads them as fallback names.
-VITE_WORKOS_CLIENT_ID="your_workos_client_id"
-VITE_WORKOS_API_HOSTNAME="your_workos_api_hostname"
+PUBLIC_WORKOS_CLIENT_ID="your_workos_client_id"
+PUBLIC_WORKOS_API_HOSTNAME="your_workos_api_hostname"
 
 # server-only variables
 WORKOS_API_KEY="your_workos_api_key"
