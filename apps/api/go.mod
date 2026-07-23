@@ -10,7 +10,7 @@ require (
 	golang.org/x/net v0.56.0
 	golang.org/x/text v0.39.0
 	google.golang.org/genai v1.64.0
-	modernc.org/sqlite v1.50.0
+	modernc.org/sqlite v1.54.0
 )
 
 require (
@@ -53,7 +53,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260420184626-e10c466a9529 // indirect
 	google.golang.org/grpc v1.82.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
-	modernc.org/libc v1.72.1 // indirect
+	modernc.org/libc v1.74.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )
