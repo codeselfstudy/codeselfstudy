@@ -9,6 +9,8 @@ exact = true
 # Note: Bun does not run lifecycle scripts by default. Allowlist trusted
 # packages via `"trustedDependencies"` in package.json.
 
-[test]
-coverage = true
-coverageThreshold = 0.9
+# No `[test]` block here on purpose: nothing runs `bun test` at the repo root,
+# and Vitest ignores bunfig, so a root coverage threshold would look like a
+# repo-wide gate while enforcing nothing. The real gates are the thresholds in
+# apps/web/vitest.config.ts and the `[test]` block in
+# apps/email_receiver/bunfig.toml (that app does run `bun test`).
