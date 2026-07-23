@@ -306,3 +306,41 @@ func TestIngestRouteAbsentWhenDisabled(t *testing.T) {
 		t.Fatalf("POST /api/ingest with pipeline disabled: want 404, got %d", rec.Code)
 	}
 }
+
+// TestNewVerifierFromEnvCanonicalNamesOnly locks the PUBLIC_/VITE_ aliases out
+// of the verifier. It used to accept three names for the client id while
+// session.LoadConfig accepted a different set, so a deploy carrying only an
+// alias brought the verifier up and left sign-in off: /api/me answered while
+// /auth/login returned 404.
+func TestNewVerifierFromEnvCanonicalNamesOnly(t *testing.T) {
+	clear := func(t *testing.T) {
+		t.Helper()
+		for _, k := range []string{
+			"WORKOS_CLIENT_ID", "WORKOS_API_HOSTNAME",
+			"PUBLIC_WORKOS_CLIENT_ID", "PUBLIC_WORKOS_API_HOSTNAME",
+			"VITE_WORKOS_CLIENT_ID", "VITE_WORKOS_API_HOSTNAME",
+		} {
+			t.Setenv(k, "")
+		}
+	}
+
+	t.Run("canonical names build a verifier", func(t *testing.T) {
+		clear(t)
+		t.Setenv("WORKOS_CLIENT_ID", "client_canonical")
+		t.Setenv("WORKOS_API_HOSTNAME", "api.workos.com")
+		if newVerifierFromEnv() == nil {
+			t.Fatal("newVerifierFromEnv() = nil with canonical names set")
+		}
+	})
+
+	for _, prefix := range []string{"PUBLIC_", "VITE_"} {
+		t.Run(prefix+"aliases are ignored", func(t *testing.T) {
+			clear(t)
+			t.Setenv(prefix+"WORKOS_CLIENT_ID", "client_alias")
+			t.Setenv(prefix+"WORKOS_API_HOSTNAME", "api.workos.com")
+			if v := newVerifierFromEnv(); v != nil {
+				t.Fatalf("newVerifierFromEnv() = %v with only %s aliases set, want nil", v, prefix)
+			}
+		})
+	}
+}
