@@ -1,5 +1,4 @@
 import type { AstroIntegration } from "astro";
-import { loadEnv } from "vite";
 
 // Client-exposed WorkOS config that the browser bundle cannot work without.
 // These mirror the two vars declared in env.d.ts and consumed by AuthProvider.tsx.
@@ -24,18 +23,22 @@ const REQUIRED_VARS = [
 // It deliberately does nothing on `dev`/`preview` so pure-UI local work isn't
 // blocked by missing auth config.
 //
-// We read through Vite's `loadEnv` rather than `process.env` directly so the
-// check sees exactly what Vite will inline: the `VITE_`-prefixed vars that
-// `bun run --env-file=.env.local` injects into `process.env`, plus any
-// `apps/web/.env*` files.
+// We read `process.env` directly (rather than Vite's `loadEnv`) because that is
+// exactly what the deploy path feeds Vite: `just deploy` runs
+// `bun run --env-file=.env.local --filter web build`, which injects the vars
+// into `process.env` for `astro build` to inline. Importing `vite` here would
+// also break config loading in CI, where `vite` is only a transitive dep and
+// does not resolve from a file under `src/`. (The repo keeps no `apps/web/.env*`
+// files, so there is no file-only source of these vars to miss.)
 export function requireWorkosEnv(): AstroIntegration {
   return {
     name: "require-workos-env",
     hooks: {
       "astro:config:setup": ({ command }) => {
         if (command !== "build") return; // leave `dev` / `preview` alone
-        const env = loadEnv("production", process.cwd(), "VITE_");
-        const missing = REQUIRED_VARS.filter((key) => !env[key]?.trim());
+        const missing = REQUIRED_VARS.filter(
+          (key) => !process.env[key]?.trim()
+        );
         if (missing.length > 0) {
           throw new Error(
             `Refusing to build: ${missing.join(", ")} ` +
