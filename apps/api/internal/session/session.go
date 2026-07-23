@@ -289,7 +289,7 @@ func (m *Manager) Middleware() echo.MiddlewareFunc {
 			}
 
 			ctx := c.Request().Context()
-			if _, err := m.verifier.ParseToken(ctx, data.AccessToken); err != nil {
+			if _, err := m.verifier.ParseTokenNoIssuer(ctx, data.AccessToken); err != nil {
 				// Expired or otherwise unusable — try one refresh. A cookie an
 				// attacker cannot forge (AES-GCM) means the refresh token here is
 				// genuine; WorkOS rejects a stale one, which we turn into 401.
@@ -304,7 +304,7 @@ func (m *Manager) Middleware() echo.MiddlewareFunc {
 					m.clearCookie(c)
 					return echo.NewHTTPError(http.StatusUnauthorized)
 				}
-				if _, verr := m.verifier.ParseToken(ctx, access); verr != nil {
+				if _, verr := m.verifier.ParseTokenNoIssuer(ctx, access); verr != nil {
 					m.clearCookie(c)
 					return echo.NewHTTPError(http.StatusUnauthorized)
 				}
@@ -370,7 +370,7 @@ func profileFrom(u usermanagement.User) profile {
 // sessionID extracts the WorkOS session id (`sid` claim) from a validated
 // access token, for use at logout. Best-effort: an unreadable token yields "".
 func (m *Manager) sessionID(ctx context.Context, accessToken string) string {
-	tok, err := m.verifier.ParseToken(ctx, accessToken)
+	tok, err := m.verifier.ParseTokenNoIssuer(ctx, accessToken)
 	if err != nil {
 		return ""
 	}
