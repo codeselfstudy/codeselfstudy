@@ -5,8 +5,8 @@ import { apiFetch } from "@/lib/api";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Sign-in / sign-out control, ported from the doolin fork's workos-user.tsx and
-// restyled with the shared shadcn button. Signed out: a "Sign In" button that
+// Sign-in / sign-out control, adapted from the project's own TanStack-era
+// workos-user.tsx and restyled with the shared shadcn button. Signed out: a "Sign In" button that
 // launches the WorkOS hosted flow, passing the current path as `returnTo` so the
 // AuthProvider's redirect callback can bring the user back here. Signed in: the
 // user (email from the server, name as a fallback) with a "Sign Out" button.

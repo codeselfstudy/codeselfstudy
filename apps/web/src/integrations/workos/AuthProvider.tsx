@@ -22,14 +22,14 @@ export function safeReturnTo(
   return null;
 }
 
-// Client-side WorkOS AuthKit provider, ported from the doolin fork's
-// TanStack-Start version. AuthKit-react is a browser-only SPA integration (PKCE,
+// Client-side WorkOS AuthKit provider, adapted from the project's own
+// TanStack-Start version for Astro. AuthKit-react is a browser-only SPA integration (PKCE,
 // tokens held in the browser), so this has no server-rendered form and must be
 // mounted inside a `client:only="react"` island.
 //
 // After the hosted sign-in flow redirects back, `onRedirectCallback` returns the
 // user to the page they started from — the `returnTo` the sign-in call stashed
-// on `state`. The fork navigated with TanStack Router's `useNavigate`; on a
+// on `state`. The TanStack version navigated with the router's `useNavigate`; on a
 // static Astro site there is no client router, so a full-page
 // `window.location.assign` is the equivalent (origin-guarded by safeReturnTo).
 export default function AuthProvider({ children }: { children: ReactNode }) {
