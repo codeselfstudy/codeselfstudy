@@ -26,6 +26,19 @@ export default [
     },
   },
   {
+    // Static scripts in public/ (the /sw.js and /service-worker.js kill
+    // switches) run in the ServiceWorkerGlobalScope; expose the globals they
+    // reference so the linter doesn't flag them as undefined.
+    files: ["public/**/*.js"],
+    languageOptions: {
+      globals: {
+        self: "readonly",
+        caches: "readonly",
+        clients: "readonly",
+      },
+    },
+  },
+  {
     // The repo now has multiple app tsconfigs (apps/web, apps/email_receiver),
     // so pin this config's TSConfig root explicitly — otherwise typescript-eslint
     // errors with "multiple candidate TSConfigRootDirs" when a run spans apps.

@@ -60,7 +60,7 @@ export default function SignInButton() {
           />
         )}
         {label && (
-          <span className="hidden text-sm font-medium text-[#4a4a4a] sm:inline">
+          <span className="text-foreground hidden text-sm font-medium sm:inline">
             {label}
           </span>
         )}

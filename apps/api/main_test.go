@@ -25,6 +25,8 @@ func fixtureDir(t *testing.T) string {
 		"404.html":              "<!doctype html><title>Not Found</title>missing",
 		"favicon.ico":           "icon-bytes",
 		"team/alice/index.html": "<!doctype html><title>Alice</title>alice",
+		"sw.js":                 "/* kill switch */",
+		"service-worker.js":     "/* kill switch */",
 	}
 	for rel, body := range files {
 		full := filepath.Join(dir, rel)
@@ -75,6 +77,60 @@ func TestStaticFileServed(t *testing.T) {
 				t.Fatalf("body: want to contain %q, got %q", tc.body, rec.Body.String())
 			}
 		})
+	}
+}
+
+// Service worker scripts sit at fixed, unhashed URLs; they must be served
+// Cache-Control: no-cache so a returning visitor's browser (and the CDN) always
+// revalidates and the kill switches can be retired cleanly. Ordinary assets
+// must be left untouched.
+func TestServiceWorkerScriptsSentNoCache(t *testing.T) {
+	e := newServer(fixtureDir(t), nil, nil)
+	cases := []struct {
+		name        string
+		path        string
+		wantNoCache bool
+	}{
+		{"sw.js", "/sw.js", true},
+		{"service-worker.js", "/service-worker.js", true},
+		{"ordinary asset", "/favicon.ico", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tc.path, nil)
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
+
+			if rec.Code != http.StatusOK {
+				t.Fatalf("status: want 200, got %d", rec.Code)
+			}
+			cc := rec.Header().Get("Cache-Control")
+			if gotNoCache := strings.Contains(cc, "no-cache"); gotNoCache != tc.wantNoCache {
+				t.Fatalf("%s Cache-Control=%q: no-cache want=%v got=%v", tc.path, cc, tc.wantNoCache, gotNoCache)
+			}
+		})
+	}
+}
+
+// Service worker scripts must carry no-cache even when the file is missing:
+// caches can store 404s, and a negatively cached /sw.js would hide a later
+// kill-switch deploy.
+func TestMissingServiceWorkerStillNoCache(t *testing.T) {
+	dir := t.TempDir()
+	for name, body := range map[string]string{"index.html": "home", "404.html": "missing"} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
+			t.Fatalf("seed %s: %v", name, err)
+		}
+	}
+	e := newServer(dir, nil, nil)
+	req := httptest.NewRequest(http.MethodGet, "/sw.js", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status: want 404, got %d", rec.Code)
+	}
+	if cc := rec.Header().Get("Cache-Control"); !strings.Contains(cc, "no-cache") {
+		t.Fatalf("missing /sw.js: want Cache-Control no-cache, got %q", cc)
 	}
 }
 

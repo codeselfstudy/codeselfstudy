@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import ThemeToggle from "@/components/ThemeToggle";
 import AuthProvider from "@/integrations/workos/AuthProvider";
 import SignInButton from "@/components/auth/SignInButton";
 
@@ -25,65 +26,71 @@ export default function Navbar() {
   // The whole navbar is wrapped in AuthProvider so the sign-in control can live
   // inline with the links (desktop) and in the drawer (mobile). AuthKit-react is
   // browser-only, so this island is mounted with client:only="react" (see
-  // Layout.astro) and is never prerendered. Keeping the control inside the navbar
-  // island — rather than a separate overlay — is what lets it sit inline without
-  // overlapping the links.
+  // Layout.astro) and is never prerendered. The theme toggle sits alongside it;
+  // the theme itself is set before paint by the inline script in Layout.astro, so
+  // dark mode still works even though the nav (including the toggle) hydrates late.
   return (
     <AuthProvider>
-      <nav className="fixed top-0 left-0 z-10 w-full border-b border-gray-100 bg-white shadow-sm">
+      <nav className="bg-background border-border fixed top-0 left-0 z-10 w-full border-b shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-[58px] items-center justify-between">
             <div className="flex shrink-0 items-center">
               <a
                 href="/"
-                className="text-lg font-bold text-[#4a4a4a] hover:text-[#363636]"
+                className="text-foreground text-lg font-bold hover:no-underline hover:opacity-80"
                 id="siteLogoText"
               >
                 Code Self Study
               </a>
             </div>
-            <div className="hidden sm:flex sm:items-center sm:space-x-4">
-              {LINKS.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className={cn(
-                    buttonVariants({ variant: "ghost" }),
-                    "text-[1rem] font-medium text-[#4a4a4a]"
-                  )}
-                >
-                  {link.label}
-                </a>
-              ))}
-              <SignInButton />
-            </div>
-            <div className="sm:hidden">
-              <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger
-                  className={buttonVariants({ variant: "ghost", size: "icon" })}
-                >
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Open main menu</span>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <SheetTitle>Menu</SheetTitle>
-                  <div className="mt-6 flex flex-col space-y-4">
-                    {LINKS.map((link) => (
-                      <a
-                        key={link.label}
-                        href={link.href}
-                        className="text-lg font-medium text-[#4a4a4a] hover:text-[#363636]"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {link.label}
-                      </a>
-                    ))}
-                    <div className="mt-2 border-t border-gray-100 pt-4">
-                      <SignInButton />
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <div className="hidden sm:flex sm:items-center sm:space-x-4">
+                {LINKS.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className={cn(
+                      buttonVariants({ variant: "ghost" }),
+                      "text-foreground text-[1rem] font-medium"
+                    )}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <SignInButton />
+              </div>
+              <div className="sm:hidden">
+                <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                  <SheetTrigger
+                    className={buttonVariants({
+                      variant: "ghost",
+                      size: "icon",
+                    })}
+                  >
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Open main menu</span>
+                  </SheetTrigger>
+                  <SheetContent side="right">
+                    <SheetTitle>Menu</SheetTitle>
+                    <div className="mt-6 flex flex-col space-y-4">
+                      {LINKS.map((link) => (
+                        <a
+                          key={link.label}
+                          href={link.href}
+                          className="text-foreground text-lg font-medium hover:no-underline hover:opacity-80"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                      <div className="border-border mt-2 border-t pt-4">
+                        <SignInButton />
+                      </div>
                     </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </div>
         </div>
