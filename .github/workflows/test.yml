@@ -64,7 +64,7 @@ jobs:
       # version in use. Complements Dependabot's alerts by catching them at PR time.
       - name: govulncheck api
         run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
+          go install golang.org/x/vuln/cmd/govulncheck@v1.6.0
           govulncheck ./...
         working-directory: apps/api
 
