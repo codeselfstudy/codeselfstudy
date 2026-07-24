@@ -2,6 +2,8 @@ package store_test
 
 import (
 	"errors"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -166,5 +168,43 @@ func TestDeletionRequest_Idempotent(t *testing.T) {
 	}
 	if pending == nil || pending.Status != "pending" || pending.Reason != "moving on" {
 		t.Errorf("pending = %+v, want the first request (reason 'moving on')", pending)
+	}
+}
+
+// TestCreateDeletionRequest_ConcurrentSingleWinner locks in the atomic
+// idempotency guaranteed by the deletion_requests_pending UNIQUE index: many
+// simultaneous requests for one user produce exactly one pending row. Without the
+// index the check-then-insert could interleave and file duplicates. Mirrors
+// TestClaimDigestConcurrentSingleWinner; runs under `go test -race`.
+func TestCreateDeletionRequest_ConcurrentSingleWinner(t *testing.T) {
+	s := newStore(t)
+	u, _, err := s.UpsertUserByWorkOSID(ctx, store.User{WorkOSID: "wos_del", Email: "d@x.com", Username: "delme"})
+	if err != nil {
+		t.Fatalf("seed user: %v", err)
+	}
+
+	const n = 8
+	var created int64
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			ok, err := s.CreateDeletionRequest(ctx, u.ID, "moving on")
+			if err != nil {
+				t.Errorf("CreateDeletionRequest: %v", err)
+			}
+			if ok {
+				atomic.AddInt64(&created, 1)
+			}
+		}()
+	}
+	wg.Wait()
+
+	if created != 1 {
+		t.Fatalf("created = %d, want exactly 1", created)
+	}
+	if pending, err := s.PendingDeletionRequest(ctx, u.ID); err != nil || pending == nil {
+		t.Fatalf("PendingDeletionRequest = (%v, %v), want one pending row", pending, err)
 	}
 }

@@ -72,12 +72,11 @@ func (s *Store) UpsertUserByWorkOSID(ctx context.Context, u User) (stored User, 
 	case err == nil:
 		// Returning user: WorkOS is the source of truth for email/avatar, so
 		// refresh those; never touch the username the user may have chosen.
-		if err := s.refreshUserProfile(ctx, existing.ID, u.Email, u.AvatarURL); err != nil {
-			return User{}, false, err
+		refreshed, rerr := s.refreshExistingUser(ctx, existing, u)
+		if rerr != nil {
+			return User{}, false, rerr
 		}
-		existing.Email = u.Email
-		existing.AvatarURL = u.AvatarURL
-		return existing, false, nil
+		return refreshed, false, nil
 	case errors.Is(err, sql.ErrNoRows):
 		return s.insertUserDedup(ctx, u)
 	default:
@@ -104,12 +103,17 @@ func (s *Store) insertUserDedup(ctx context.Context, u User) (User, bool, error)
 			candidate = withSuffix(base, "-"+strconv.Itoa(attempt+1)) // -2, -3, …
 		case isWorkOSConflict(err):
 			// A concurrent login for the same brand-new user won the insert
-			// race; adopt its row rather than erroring the second login.
+			// race; adopt its row rather than erroring the second login, and
+			// apply this login's WorkOS email/avatar just like the normal path.
 			existing, gerr := s.GetUserByWorkOSID(ctx, u.WorkOSID)
 			if gerr != nil {
 				return User{}, false, gerr
 			}
-			return existing, false, nil
+			refreshed, rerr := s.refreshExistingUser(ctx, existing, u)
+			if rerr != nil {
+				return User{}, false, rerr
+			}
+			return refreshed, false, nil
 		default:
 			return User{}, false, fmt.Errorf("insert user: %w", err)
 		}
@@ -137,11 +141,28 @@ func (s *Store) tryInsertUser(ctx context.Context, workosID, email, username, av
 	return res.LastInsertId()
 }
 
-// refreshUserProfile updates the WorkOS-owned mirror fields on each login.
-func (s *Store) refreshUserProfile(ctx context.Context, id int64, email, avatar string) error {
+// refreshExistingUser applies the WorkOS-owned mirror fields (email, avatar) to an
+// existing row and returns the in-memory copy kept in sync with the persisted row,
+// including the new updated_at. Shared by the returning-login path and the
+// concurrent-insert adopt path so they refresh identically.
+func (s *Store) refreshExistingUser(ctx context.Context, existing, u User) (User, error) {
+	now := s.Now().UTC()
+	if err := s.refreshUserProfile(ctx, existing.ID, u.Email, u.AvatarURL, now); err != nil {
+		return User{}, err
+	}
+	existing.Email = u.Email
+	existing.AvatarURL = u.AvatarURL
+	existing.UpdatedAt = now
+	return existing, nil
+}
+
+// refreshUserProfile updates the WorkOS-owned mirror fields on each login. now is
+// the timestamp written to updated_at (passed in so the caller can reflect it on
+// the returned row).
+func (s *Store) refreshUserProfile(ctx context.Context, id int64, email, avatar string, now time.Time) error {
 	_, err := s.db.ExecContext(ctx,
 		`UPDATE users SET email = ?, avatar_url = ?, updated_at = ? WHERE id = ?`,
-		email, avatar, formatTime(s.Now().UTC()), id)
+		email, avatar, formatTime(now), id)
 	if err != nil {
 		return fmt.Errorf("refresh user profile: %w", err)
 	}
@@ -185,21 +206,20 @@ func (s *Store) SetTimezone(ctx context.Context, id int64, tz string) error {
 }
 
 // CreateDeletionRequest files a pending account-deletion request for the user. It
-// is idempotent: if the user already has a pending request, it creates nothing
-// and returns created=false, so a double-click never files two.
+// is idempotent: the deletion_requests_pending UNIQUE index allows only one open
+// request per user, so a second (even concurrent) call — a double-click — hits the
+// constraint and returns created=false rather than filing a duplicate. The first
+// request's reason is preserved. A UNIQUE violation is the only way this INSERT can
+// fail on that index; other failures (e.g. the foreign key) surface as errors.
 func (s *Store) CreateDeletionRequest(ctx context.Context, userID int64, reason string) (created bool, err error) {
-	existing, err := s.PendingDeletionRequest(ctx, userID)
-	if err != nil {
-		return false, err
-	}
-	if existing != nil {
-		return false, nil
-	}
 	_, err = s.db.ExecContext(ctx,
 		`INSERT INTO account_deletion_requests (user_id, requested_at, reason, status)
 		 VALUES (?,?,?,'pending')`,
 		userID, formatTime(s.Now().UTC()), reason)
 	if err != nil {
+		if isUniqueViolation(err) {
+			return false, nil // a pending request already exists — idempotent
+		}
 		return false, fmt.Errorf("create deletion request: %w", err)
 	}
 	return true, nil

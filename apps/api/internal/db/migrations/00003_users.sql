@@ -28,9 +28,12 @@ CREATE TABLE account_deletion_requests (
   handled_at   TEXT
 );
 
--- Partial index over just the open requests: the admin's "who wants out" query
--- stays tiny no matter how many historical requests accumulate.
-CREATE INDEX deletion_requests_pending ON account_deletion_requests(status) WHERE status = 'pending';
+-- One open request per user, enforced in the schema so CreateDeletionRequest is
+-- idempotent even under a double-click race (the store's check-then-insert is not
+-- atomic). Also serves the admin's "who wants out" query — SQLite can scan this
+-- partial index for `WHERE status = 'pending'` — and stays tiny no matter how many
+-- historical requests accumulate.
+CREATE UNIQUE INDEX deletion_requests_pending ON account_deletion_requests(user_id) WHERE status = 'pending';
 
 -- +goose Down
 DROP INDEX deletion_requests_pending;
