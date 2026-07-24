@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import SignInButton from "@/components/auth/SignInButton";
@@ -153,7 +153,7 @@ describe("SignInButton", () => {
     );
   });
 
-  test("a failed /api/me request falls back to signed out", async () => {
+  test("a failed /api/me request leaves an unhinted visitor on Sign In", async () => {
     // The API being down must not take the whole navbar with it.
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
     render(<SignInButton />);
@@ -318,16 +318,22 @@ describe("SignInButton", () => {
       expect(readAccountHint()).toBeNull();
     });
 
-    test("a network error keeps the cache for the next attempt", async () => {
-      // The server never said the session was gone, so don't act as if it did:
-      // the server-owned flag cookie is what gates whether the cache gets used.
+    test("a network error changes nothing — no flash on flakiness", async () => {
+      // The server never said the session was gone, so don't act as if it did.
+      // Flipping to Sign In here would be the same bug as #367, just triggered
+      // by a dropped request instead of fetch latency.
       signedInHint({ username: "adalovelace", avatar: "" });
-      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+      const fetchMock = vi.fn().mockRejectedValue(new Error("offline"));
+      vi.stubGlobal("fetch", fetchMock);
       render(<SignInButton />);
 
+      await waitFor(() => expect(fetchMock).toHaveBeenCalled());
       expect(
-        await screen.findByRole("button", { name: "Sign In" })
-      ).toBeEnabled();
+        screen.getByRole("button", { name: "Account menu for adalovelace" })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Sign In" })
+      ).not.toBeInTheDocument();
       expect(readAccountHint()).toEqual({
         username: "adalovelace",
         avatar: "",

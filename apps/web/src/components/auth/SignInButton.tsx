@@ -78,10 +78,12 @@ export default function SignInButton() {
         }
       })
       .catch(() => {
-        // Network error — treat as signed out rather than crashing the navbar.
-        // The cached detail is left alone: the session may well still be valid,
-        // and the server-owned flag is what decides whether it gets used.
-        if (!cancelled) setState({ status: "out" });
+        // Network error. Leave both the state and the cache exactly as seeded:
+        // a fetch that never arrived is not the server saying "signed out", and
+        // flipping to Sign In here would re-create the very flash this fixes,
+        // triggered by flakiness instead of latency. Only a definitive /api/me
+        // answer changes what is displayed. Someone with no hint was already
+        // showing Sign In, so they see no change either.
       });
     return () => {
       cancelled = true;
