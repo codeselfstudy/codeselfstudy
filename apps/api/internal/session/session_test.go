@@ -158,6 +158,17 @@ func cookieFrom(rec *httptest.ResponseRecorder) string {
 	return ""
 }
 
+// hintFrom returns the auth-hint cookie the response set, or nil. Tests care
+// about MaxAge and HttpOnly, not just the value, so this hands back the cookie.
+func hintFrom(rec *httptest.ResponseRecorder) *http.Cookie {
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == authHintCookieName {
+			return c
+		}
+	}
+	return nil
+}
+
 // flipFirst mutates the FIRST character of a base64 string, not the last.
 // Everything here is RawURLEncoding (unpadded), so when the encoded length is
 // 2 or 3 mod 4 the final character's low bits map to no output byte and Go's
@@ -497,6 +508,107 @@ func TestMiddlewareRefreshFailureClears(t *testing.T) {
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status: want 401 got %d", rec.Code)
 	}
+}
+
+// The auth hint is a JavaScript-readable flag that lets the navbar paint the
+// right control on its first frame (#367). It is worthless unless it moves in
+// lockstep with the session cookie, so these tests pin it to both halves: set
+// where a session is established, cleared where one ends.
+func TestAuthHintFollowsTheSessionCookie(t *testing.T) {
+	f := newJWKSFixture(t)
+
+	t.Run("set alongside a refreshed session", func(t *testing.T) {
+		m := newTestManager(t, f)
+		fresh := f.signAccess(t, time.Now().Add(5*time.Minute))
+		m.refresh = func(context.Context, string) (string, string, error) {
+			return fresh, "rt_new", nil
+		}
+		sealed := mustSeal(t, m, sessionData{
+			AccessToken:  f.signAccess(t, time.Now().Add(-1*time.Minute)), // expired
+			RefreshToken: "rt_old",
+		})
+
+		rec := serveMe(m, cookie(sealed))
+		if rec.Code != http.StatusOK {
+			t.Fatalf("want 200 got %d", rec.Code)
+		}
+		hint := hintFrom(rec)
+		if hint == nil || hint.Value != "1" {
+			t.Fatalf("hint cookie = %v, want one valued \"1\"", hint)
+		}
+		if hint.HttpOnly {
+			t.Error("hint is HttpOnly: the browser cannot read it, which is its whole purpose")
+		}
+		if hint.MaxAge != int(cookieMaxAge.Seconds()) {
+			t.Errorf("hint MaxAge = %d, want %d (the session's)", hint.MaxAge, int(cookieMaxAge.Seconds()))
+		}
+	})
+
+	// A hint that outlived its session would flash the username at someone who
+	// has been signed out — worse than the flash it exists to fix.
+	t.Run("cleared on every unauthorized path", func(t *testing.T) {
+		m := newTestManager(t, f)
+		m.refresh = func(context.Context, string) (string, string, error) {
+			return "", "", errors.New("refresh rejected")
+		}
+		good := mustSeal(t, m, sessionData{AccessToken: f.signAccess(t, time.Now().Add(5*time.Minute))})
+		expired := mustSeal(t, m, sessionData{
+			AccessToken:  f.signAccess(t, time.Now().Add(-1*time.Minute)),
+			RefreshToken: "rt_old",
+		})
+
+		for _, tc := range []struct {
+			name   string
+			sealed string
+		}{
+			{"tampered", flipFirst(good)},
+			{"refresh rejected", expired},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				rec := serveMe(m, cookie(tc.sealed))
+				if rec.Code != http.StatusUnauthorized {
+					t.Fatalf("want 401 got %d", rec.Code)
+				}
+				hint := hintFrom(rec)
+				if hint == nil || hint.MaxAge >= 0 {
+					t.Errorf("hint = %v, want one expired with MaxAge < 0", hint)
+				}
+			})
+		}
+	})
+
+	t.Run("cleared on logout", func(t *testing.T) {
+		m := newTestManager(t, f)
+		e := echo.New()
+		e.GET("/auth/logout", m.Logout)
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/auth/logout?returnTo=/events/", nil))
+
+		if rec.Code != http.StatusFound {
+			t.Fatalf("want 302 got %d", rec.Code)
+		}
+		hint := hintFrom(rec)
+		if hint == nil || hint.MaxAge >= 0 {
+			t.Errorf("hint = %v, want one expired with MaxAge < 0", hint)
+		}
+	})
+
+	// Mirrors the session cookie's own guard: a valid token whose issuer simply
+	// isn't the one we'd have pinned must not look like a logout.
+	t.Run("survives a mismatched issuer", func(t *testing.T) {
+		m := newTestManager(t, f)
+		sealed := mustSeal(t, m, sessionData{
+			AccessToken: f.signAccessIssuer(t, time.Now().Add(5*time.Minute), "https://api.workos.com/"),
+		})
+
+		rec := serveMe(m, cookie(sealed))
+		if rec.Code != http.StatusOK {
+			t.Fatalf("want 200 got %d", rec.Code)
+		}
+		if hint := hintFrom(rec); hint != nil && hint.MaxAge < 0 {
+			t.Error("hint was cleared despite a valid session")
+		}
+	})
 }
 
 func TestLoginRedirectsToWorkOS(t *testing.T) {

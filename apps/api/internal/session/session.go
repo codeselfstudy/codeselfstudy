@@ -53,6 +53,14 @@ const (
 	nonceCookieName = "wos_oauth"
 	nonceMaxAge     = 10 * time.Minute
 
+	// authHintCookieName is a display hint, NOT an auth input. It carries no
+	// secret and grants nothing: Middleware and HandleMe gate solely on the
+	// sealed HttpOnly session cookie above. It is readable by JavaScript so the
+	// navbar can render the right control on its first paint, instead of
+	// flashing Sign In at someone who is already signed in (#367). Never treat
+	// its presence as proof of anything.
+	authHintCookieName = "css_auth"
+
 	// onLoginTimeout bounds the OnLogin hook so a slow database can't hold the
 	// post-login redirect open. See resolveReturnTo.
 	onLoginTimeout = 3 * time.Second
@@ -609,12 +617,26 @@ func refreshKey(refreshToken string) string {
 	return base64.RawURLEncoding.EncodeToString(sum[:])
 }
 
+// setCookie and clearCookie always move the auth hint with the session cookie.
+// Keeping both writes in this one pair is what makes the hint trustworthy: it
+// is set exactly when a session starts and cleared exactly when one ends, so it
+// cannot outlive the session it advertises. Every caller — Callback, the silent
+// refresh, Logout, and each unrecoverable-failure path — inherits that for free.
 func (m *Manager) setCookie(c echo.Context, sealed string) {
 	http.SetCookie(c.Response(), &http.Cookie{
 		Name:     cookieName,
 		Value:    sealed,
 		Path:     "/",
 		HttpOnly: true,
+		Secure:   m.secure,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   int(cookieMaxAge.Seconds()),
+	})
+	http.SetCookie(c.Response(), &http.Cookie{
+		Name:     authHintCookieName,
+		Value:    "1",
+		Path:     "/",
+		HttpOnly: false, // deliberately readable — see authHintCookieName
 		Secure:   m.secure,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   int(cookieMaxAge.Seconds()),
@@ -627,6 +649,15 @@ func (m *Manager) clearCookie(c echo.Context) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
+		Secure:   m.secure,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+	http.SetCookie(c.Response(), &http.Cookie{
+		Name:     authHintCookieName,
+		Value:    "",
+		Path:     "/",
+		HttpOnly: false,
 		Secure:   m.secure,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
