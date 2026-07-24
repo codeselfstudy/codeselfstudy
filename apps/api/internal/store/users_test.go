@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/users"
 )
 
 func TestUpsertUserByWorkOSID_CreatesThenRefreshes(t *testing.T) {
@@ -217,5 +218,17 @@ func TestCreateDeletionRequest_ConcurrentSingleWinner(t *testing.T) {
 	}
 	if pending, err := s.PendingDeletionRequest(ctx, u.ID); err != nil || pending == nil {
 		t.Fatalf("PendingDeletionRequest = (%v, %v), want one pending row", pending, err)
+	}
+}
+
+// The store keeps its own copy of the username width limit to stay free of a
+// dependency on internal/users. Nothing in the compiler holds the two together,
+// and a suffixed dedupe candidate ("ada-2") is inserted without re-running
+// users.Validate — so a drift here would put an over-length username in the
+// database. This test is the thing that notices.
+func TestUsernameMaxLenMatchesUsersPackage(t *testing.T) {
+	if store.UsernameMaxLen != users.MaxLen {
+		t.Fatalf("store usernameMaxLen = %d, users.MaxLen = %d: the duplicated constant drifted",
+			store.UsernameMaxLen, users.MaxLen)
 	}
 }
