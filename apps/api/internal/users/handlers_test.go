@@ -86,15 +86,26 @@ func decode(t *testing.T, rec *httptest.ResponseRecorder) map[string]any {
 	return m
 }
 
+// fakePoster records Slack pings. The handler fires them on their own goroutine,
+// so posted lets a test wait for one to land instead of racing it.
 type fakePoster struct {
-	mu sync.Mutex
-	n  int
+	mu     sync.Mutex
+	n      int
+	posted chan struct{}
+}
+
+func newFakePoster() *fakePoster {
+	return &fakePoster{posted: make(chan struct{}, 4)}
 }
 
 func (f *fakePoster) Post(context.Context, []byte) error {
 	f.mu.Lock()
-	defer f.mu.Unlock()
 	f.n++
+	f.mu.Unlock()
+	select {
+	case f.posted <- struct{}{}:
+	default: // more posts than any test waits on; count() still sees them
+	}
 	return nil
 }
 
@@ -102,6 +113,59 @@ func (f *fakePoster) count() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return f.n
+}
+
+// blockingPoster holds a ping open until released, so a test can observe what
+// the handler does while the webhook is still in flight.
+type blockingPoster struct {
+	release chan struct{}
+	done    chan struct{}
+
+	mu       sync.Mutex
+	finished bool
+	ctxErr   error
+}
+
+func newBlockingPoster() *blockingPoster {
+	return &blockingPoster{release: make(chan struct{}), done: make(chan struct{})}
+}
+
+func (b *blockingPoster) Post(ctx context.Context, _ []byte) error {
+	select {
+	case <-b.release:
+	case <-time.After(5 * time.Second): // don't wedge the suite if a test forgets
+	}
+	b.mu.Lock()
+	b.finished, b.ctxErr = true, ctx.Err()
+	b.mu.Unlock()
+	close(b.done)
+	return nil
+}
+
+func (b *blockingPoster) state() (bool, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.finished, b.ctxErr
+}
+
+// awaitPost blocks until the next ping lands, failing the test if none does.
+func (f *fakePoster) awaitPost(t *testing.T) {
+	t.Helper()
+	select {
+	case <-f.posted:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for the slack ping")
+	}
+}
+
+// expectNoPost gives a stray ping time to show up and fails if one does.
+func (f *fakePoster) expectNoPost(t *testing.T) {
+	t.Helper()
+	select {
+	case <-f.posted:
+		t.Error("unexpected second slack ping")
+	case <-time.After(100 * time.Millisecond):
+	}
 }
 
 func TestRoutesRequireSession(t *testing.T) {
@@ -334,7 +398,7 @@ func TestDeleteRequestIdempotentAndNotifies(t *testing.T) {
 	if _, _, err := st.UpsertUserByWorkOSID(ctx, store.User{WorkOSID: "wos_1", Email: "a@x.com", Username: "ada"}); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	fp := &fakePoster{}
+	fp := newFakePoster()
 	p := prof("wos_1", "a@x.com")
 	e := mount(users.New(st, fp), &p)
 
@@ -345,6 +409,9 @@ func TestDeleteRequestIdempotentAndNotifies(t *testing.T) {
 	if decode(t, rec)["deletion_requested_at"] == nil {
 		t.Errorf("first: deletion_requested_at should be set")
 	}
+	// The ping is detached from the request, so wait for it rather than
+	// assuming it landed before the 202.
+	fp.awaitPost(t)
 
 	// A second click is idempotent: still 202, but no second Slack ping (nothing
 	// new was created).
@@ -352,6 +419,7 @@ func TestDeleteRequestIdempotentAndNotifies(t *testing.T) {
 	if rec.Code != http.StatusAccepted {
 		t.Fatalf("second: want 202 got %d", rec.Code)
 	}
+	fp.expectNoPost(t)
 	if fp.count() != 1 {
 		t.Errorf("slack posts = %d, want exactly 1", fp.count())
 	}
@@ -360,6 +428,39 @@ func TestDeleteRequestIdempotentAndNotifies(t *testing.T) {
 	rec = do(t, e, http.MethodGet, "/api/settings", "", nil)
 	if decode(t, rec)["deletion_requested_at"] == nil {
 		t.Errorf("GET settings: deletion_requested_at should be set")
+	}
+}
+
+// The row is the durable record, so the 202 must not wait on the webhook, and a
+// client that disconnects the moment it lands must not cancel the ping the admin
+// depends on.
+func TestDeleteRequestDoesNotWaitOnSlack(t *testing.T) {
+	st := newStore(t)
+	if _, _, err := st.UpsertUserByWorkOSID(ctx, store.User{WorkOSID: "wos_1", Email: "a@x.com", Username: "ada"}); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	bp := newBlockingPoster()
+	p := prof("wos_1", "a@x.com")
+	e := mount(users.New(st, bp), &p)
+
+	reqCtx, cancel := context.WithCancel(context.Background())
+	r := httptest.NewRequest(http.MethodPost, "/api/settings/delete-request", nil).WithContext(reqCtx)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, r)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("want 202 got %d body=%s", rec.Code, rec.Body.String())
+	}
+	if finished, _ := bp.state(); finished {
+		t.Fatal("the 202 waited for the slack ping to finish")
+	}
+
+	cancel()          // the browser goes away
+	close(bp.release) // ...and only then does the webhook answer
+	<-bp.done
+
+	if _, ctxErr := bp.state(); ctxErr != nil {
+		t.Errorf("ping context err = %v, want nil: the request's cancellation must not reach it", ctxErr)
 	}
 }
 
