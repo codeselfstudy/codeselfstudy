@@ -3,6 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import Navbar from "@/components/Navbar";
+import { AUTH_FLAG_COOKIE, writeAccountHint } from "@/lib/authHint";
 
 // Navbar renders SignInButton, which fetches the cookie-gated /api/me on mount.
 // Stub fetch as signed-out (401) so the nav tests never hit the network (jsdom
@@ -18,6 +19,8 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  localStorage.clear();
+  document.cookie = `${AUTH_FLAG_COOKIE}=; max-age=0`;
 });
 
 describe("Navbar", () => {
@@ -101,5 +104,18 @@ describe("Navbar", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("adalovelace")).toBeInTheDocument();
     expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
+  });
+
+  test("signed in: the username is there on the first frame, no Sign In flash", () => {
+    // #367 end to end: with the server's flag cookie and a cached username, the
+    // navbar must never paint the Sign In button while /api/me is in flight.
+    document.cookie = `${AUTH_FLAG_COOKIE}=1`;
+    writeAccountHint({ username: "adalovelace", avatar: "" });
+    render(<Navbar />); // the beforeEach fetch stub is still pending here
+
+    expect(screen.getByText("adalovelace")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Sign In" })
+    ).not.toBeInTheDocument();
   });
 });

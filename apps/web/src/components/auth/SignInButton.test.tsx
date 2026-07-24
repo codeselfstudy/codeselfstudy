@@ -3,12 +3,28 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import SignInButton from "@/components/auth/SignInButton";
+import {
+  AUTH_FLAG_COOKIE,
+  readAccountHint,
+  writeAccountHint,
+} from "@/lib/authHint";
 
 // The cookie-gated /api/me is the single source of auth truth: 200 -> signed in,
 // 401 -> signed out. Drive both states through a mocked fetch, and capture
 // window.location.assign to assert the /auth navigations. When signed in the
 // control renders UserMenu, so the username shows in the trigger and Sign Out
 // lives inside the opened menu (never the email — see #351).
+//
+// What paints *before* that fetch resolves is the auth hint's job (#367), so the
+// tests below split into two groups: what the first frame shows, and what the
+// fetch reconciles it to.
+
+// signedInHint puts the browser in the state a signed-in visitor arrives with:
+// the server's flag cookie, and optionally a cached username/avatar.
+function signedInHint(hint?: { username: string; avatar: string }) {
+  document.cookie = `${AUTH_FLAG_COOKIE}=1`;
+  if (hint) writeAccountHint(hint);
+}
 
 function meOk(data: { email?: string; username?: string; avatar?: string }) {
   return { ok: true, status: 200, json: async () => data };
@@ -35,6 +51,8 @@ afterEach(() => {
     writable: true,
     value: realLocation,
   });
+  localStorage.clear();
+  document.cookie = `${AUTH_FLAG_COOKIE}=; max-age=0`;
 });
 
 describe("SignInButton", () => {
@@ -196,6 +214,147 @@ describe("SignInButton", () => {
     expect(
       await screen.findByRole("menuitem", { name: "Sign Out" })
     ).toBeInTheDocument();
+  });
+
+  // These assert synchronously, with no await between render and the
+  // expectation: that is the whole point — what the user sees on frame one,
+  // before /api/me has answered.
+  describe("first paint, before /api/me answers", () => {
+    test("no flag cookie: Sign In, immediately", () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(meUnauthorized));
+      render(<SignInButton />);
+
+      expect(screen.getByRole("button", { name: "Sign In" })).toBeEnabled();
+    });
+
+    test("flag cookie plus a cached hint: the username, immediately", () => {
+      // The regression this fixes: a signed-in visitor used to watch Sign In
+      // paint and then get replaced by their own name.
+      signedInHint({ username: "adalovelace", avatar: "https://i/ada.png" });
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(meOk({ username: "adalovelace" }))
+      );
+      const { container } = render(<SignInButton />);
+
+      expect(
+        screen.getByRole("button", { name: "Account menu for adalovelace" })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Sign In" })
+      ).not.toBeInTheDocument();
+      expect(container.querySelector("img")).toHaveAttribute(
+        "src",
+        "https://i/ada.png"
+      );
+    });
+
+    test("flag cookie with no cached hint: the generic account menu, not Sign In", () => {
+      // Signed in on another device, or storage cleared. Still must not flash.
+      signedInHint();
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(meOk({ username: "adalovelace" }))
+      );
+      render(<SignInButton />);
+
+      expect(
+        screen.getByRole("button", { name: "Account menu" })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Sign In" })
+      ).not.toBeInTheDocument();
+    });
+
+    test("the email is never seeded from the cache", async () => {
+      // The hint deliberately stores no email; only /api/me supplies one.
+      signedInHint({ username: "", avatar: "" });
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(meOk({ email: "ada@example.com" }))
+      );
+      render(<SignInButton />);
+
+      expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
+      // ...and it appears only once the server actually says so.
+      expect(
+        await screen.findByRole("button", {
+          name: "Account menu for ada@example.com",
+        })
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("reconciling with /api/me", () => {
+    test("a 200 caches the username and avatar for the next page load", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          meOk({
+            email: "ada@example.com",
+            username: "adalovelace",
+            avatar: "https://i/ada.png",
+          })
+        )
+      );
+      render(<SignInButton />);
+
+      await screen.findByRole("button", { name: /account menu/i });
+      expect(readAccountHint()).toEqual({
+        username: "adalovelace",
+        avatar: "https://i/ada.png",
+      });
+    });
+
+    test("a stale flag falls back to Sign In and drops the cache", async () => {
+      // Session revoked server-side while the flag lingered in this tab.
+      signedInHint({ username: "adalovelace", avatar: "" });
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(meUnauthorized));
+      render(<SignInButton />);
+
+      expect(
+        await screen.findByRole("button", { name: "Sign In" })
+      ).toBeEnabled();
+      expect(readAccountHint()).toBeNull();
+    });
+
+    test("a network error keeps the cache for the next attempt", async () => {
+      // The server never said the session was gone, so don't act as if it did:
+      // the server-owned flag cookie is what gates whether the cache gets used.
+      signedInHint({ username: "adalovelace", avatar: "" });
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+      render(<SignInButton />);
+
+      expect(
+        await screen.findByRole("button", { name: "Sign In" })
+      ).toBeEnabled();
+      expect(readAccountHint()).toEqual({
+        username: "adalovelace",
+        avatar: "",
+      });
+    });
+
+    test("signing out drops the cached username", async () => {
+      signedInHint({ username: "adalovelace", avatar: "" });
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(meOk({ username: "adalovelace" }))
+      );
+      const user = userEvent.setup();
+      render(<SignInButton />);
+
+      await user.click(
+        await screen.findByRole("button", { name: /account menu/i })
+      );
+      await user.click(
+        await screen.findByRole("menuitem", { name: "Sign Out" })
+      );
+
+      expect(readAccountHint()).toBeNull();
+      expect(assignMock).toHaveBeenCalledWith(
+        "/auth/logout?returnTo=%2Fevents%2F"
+      );
+    });
   });
 
   test("ignores a /api/me response that arrives after unmount", async () => {
