@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { SyntheticEvent } from "react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -167,7 +167,7 @@ export default function SettingsForm() {
 
   const zones = useMemo(() => timezoneOptions(timezone), [timezone]);
 
-  async function handleSave(e: FormEvent) {
+  async function handleSave(e: SyntheticEvent) {
     e.preventDefault();
     setSaving(true);
     setSaved(false);
