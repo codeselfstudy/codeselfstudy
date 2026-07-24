@@ -24,6 +24,7 @@ import (
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/ingest"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/session"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/users"
 )
 
 const staticDir = "static"
@@ -58,12 +59,18 @@ func main() {
 	// runs; /auth/* and the cookie-gated /api/me are simply off.
 	sess := newSessionFromEnv(v)
 
-	ing, database := newIngestFromEnv(ctx)
+	// One database handle, opened on DATABASE_URL alone, shared by accounts and
+	// (when INGEST_TOKEN is also set) the email pipeline. Accounts must not
+	// require the deals pipeline, so the DB is no longer welded to ingest.
+	database := newDatabaseFromEnv(ctx)
 	if database != nil {
 		defer database.Close()
 	}
 
-	e := newServer(staticDir, v, sess, ing)
+	ing := newIngestFromEnv(ctx, database)
+	usr := newUsersFromEnv(database, sess)
+
+	e := newServer(staticDir, v, sess, ing, usr)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -135,43 +142,51 @@ func newSessionFromEnv(v *auth.Verifier) *session.Manager {
 	return m
 }
 
-// newIngestFromEnv builds the email-ingest handlers from the environment. It
-// returns (nil, nil) when the pipeline is not configured (no DATABASE_URL /
-// INGEST_TOKEN), so the server still runs static-only — mirroring the WorkOS
-// graceful-degrade above. The returned *sql.DB (when non-nil) is owned by the
-// caller, which must Close it on shutdown. Fatal only on a genuinely broken
-// setup (bad duration, unreachable DB, bad Gemini client).
-func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
+// newDatabaseFromEnv opens the shared database when DATABASE_URL is set,
+// returning nil (static-only) otherwise. Accounts need only DATABASE_URL; the
+// ingest pipeline layers INGEST_TOKEN on top. The returned handle is owned by the
+// caller, which must Close it on shutdown. Migrate on boot only for a local
+// SQLite database (dev ergonomics); a remote libsql/Turso database is migrated
+// out of band by `server -migrate` (the Fly release_command), so a migration
+// failure aborts the deploy rather than crash-looping the serving process.
+func newDatabaseFromEnv(ctx context.Context) *sql.DB {
+	if os.Getenv("DATABASE_URL") == "" {
+		log.Printf("db: DATABASE_URL not set; accounts and /api/ingest disabled")
+		return nil
+	}
+	dbURL := db.ResolveURL(os.Getenv("DATABASE_URL"), os.Getenv("TURSO_AUTH_TOKEN"))
+	database, err := db.Open(dbURL)
+	if err != nil {
+		log.Fatalf("db: open: %s", db.RedactToken(err.Error(), dbURL))
+	}
+	if !db.IsRemote(dbURL) {
+		if err := db.Migrate(ctx, database); err != nil {
+			_ = database.Close()
+			log.Fatalf("db: migrate: %s", db.RedactToken(err.Error(), dbURL))
+		}
+	}
+	return database
+}
+
+// newIngestFromEnv builds the email-ingest handlers over the shared database. It
+// returns nil when the pipeline is not configured (no DATABASE_URL / INGEST_TOKEN,
+// or no database), so the server still runs static-only — mirroring the WorkOS
+// graceful-degrade above. Fatal only on a genuinely broken setup (bad duration,
+// bad Gemini client).
+func newIngestFromEnv(ctx context.Context, database *sql.DB) *ingest.Handlers {
 	cfg, err := ingest.Load(os.Getenv)
 	if err != nil {
 		log.Fatalf("ingest: %v", err)
 	}
-	if !cfg.Enabled() {
-		log.Printf("ingest: DATABASE_URL / INGEST_TOKEN not set; /api/ingest disabled")
-		return nil, nil
-	}
-
-	dbURL := db.ResolveURL(cfg.DatabaseURL, os.Getenv("TURSO_AUTH_TOKEN"))
-	database, err := db.Open(dbURL)
-	if err != nil {
-		log.Fatalf("ingest: db open: %s", db.RedactToken(err.Error(), dbURL))
-	}
-	// Migrate on boot only for a local SQLite database (dev ergonomics). A
-	// remote libsql/Turso database is migrated out of band by `server -migrate`
-	// (the Fly release_command), so a migration failure aborts the deploy rather
-	// than crash-looping the serving process.
-	if !db.IsRemote(dbURL) {
-		if err := db.Migrate(ctx, database); err != nil {
-			_ = database.Close()
-			log.Fatalf("ingest: db migrate: %s", db.RedactToken(err.Error(), dbURL))
-		}
+	if !cfg.Enabled() || database == nil {
+		log.Printf("ingest: DATABASE_URL / INGEST_TOKEN not both set; /api/ingest disabled")
+		return nil
 	}
 
 	var extractor extract.Extractor = extract.Disabled{}
 	if cfg.GeminiAPIKey != "" {
 		g, err := extract.NewGemini(ctx, cfg.GeminiAPIKey, cfg.GeminiModel, "")
 		if err != nil {
-			_ = database.Close()
 			log.Fatalf("ingest: gemini: %v", err)
 		}
 		extractor = g
@@ -180,7 +195,41 @@ func newIngestFromEnv(ctx context.Context) (*ingest.Handlers, *sql.DB) {
 	}
 
 	poster := digest.NewHTTPPoster(cfg.SlackWebhookURL)
-	return ingest.New(cfg, store.New(database), extractor, poster), database
+	return ingest.New(cfg, store.New(database), extractor, poster)
+}
+
+// newUsersFromEnv builds the account handlers over the shared database and, when
+// a session Manager is present, wires session.OnLogin to upsert the user row at
+// login (sending a brand-new user to /settings/?welcome=1). Returns nil when
+// there is no database, so /api/me falls back to the session's cookie profile.
+func newUsersFromEnv(database *sql.DB, sess *session.Manager) *users.Handlers {
+	if database == nil {
+		return nil
+	}
+	st := store.New(database)
+	if sess != nil {
+		sess.OnLogin = func(ctx context.Context, p session.Profile) (string, error) {
+			_, isNew, err := users.Upsert(ctx, st, p)
+			if err != nil {
+				return "", err
+			}
+			if isNew {
+				return "/settings/?welcome=1", nil
+			}
+			return "", nil
+		}
+	}
+	return users.New(st, newAdminPosterFromEnv())
+}
+
+// newAdminPosterFromEnv builds the admin-channel Slack poster for deletion-request
+// notifications, or nil when SLACK_WEBHOOK_FOR_ADMIN_CHANNEL is unset (the
+// deletion request still records its durable row; only the ping is skipped).
+func newAdminPosterFromEnv() digest.WebhookPoster {
+	if os.Getenv("SLACK_WEBHOOK_FOR_ADMIN_CHANNEL") == "" {
+		return nil
+	}
+	return digest.NewHTTPPoster(os.Getenv("SLACK_WEBHOOK_FOR_ADMIN_CHANNEL"))
 }
 
 // migrateRequested reports whether the process was asked to apply migrations and
@@ -243,7 +292,7 @@ func handleMe(c echo.Context) error {
 //   - else: /api/me falls through to the /api/* JSON 404.
 //
 // Split out from main so tests can build a server against fixtures.
-func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *ingest.Handlers) *echo.Echo {
+func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *ingest.Handlers, usr *users.Handlers) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
@@ -284,7 +333,14 @@ func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *
 	case sess != nil:
 		sess.Register(e)
 		api := e.Group("/api", sess.Middleware())
-		api.Match(getOrHead, "/me", sess.HandleMe)
+		// With the account DB present the users handlers own /api/me (DB-backed,
+		// with the username) plus the settings routes; without it, the session's
+		// cookie-profile /api/me keeps the site working.
+		if usr != nil {
+			usr.Register(api)
+		} else {
+			api.Match(getOrHead, "/me", sess.HandleMe)
+		}
 	case v != nil:
 		api := e.Group("/api", auth.Middleware(v))
 		api.Match(getOrHead, "/me", handleMe)

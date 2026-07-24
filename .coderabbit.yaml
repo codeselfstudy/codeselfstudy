@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit's cloud settings only auto-review PRs into the default branch
+# (main). This feature is built as sub-issue PRs into a long-lived integration
+# branch (claude/usernames-user-settings-44e328), and we want each of those
+# PRs reviewed before it merges — so enable auto-review when the PR's *base* is
+# a claude/* branch too. CodeRabbit reads this file from the PR's base branch,
+# so it lives on the integration branch (and travels to main with the feature).
+language: en-US
+reviews:
+  auto_review:
+    enabled: true
+    # Regexes matched against the PR base branch. The default branch is always
+    # included; this adds the claude/* integration branches.
+    base_branches:
+      - "claude/.*"

@@ -102,7 +102,7 @@ func startedVerifierFor(t *testing.T, f *meFixture) *auth.Verifier {
 func TestApiMeReturnsClaims(t *testing.T) {
 	f := newMeFixture(t)
 	v := startedVerifierFor(t, f)
-	e := newServer(fixtureDir(t), v, nil, nil)
+	e := newServer(fixtureDir(t), v, nil, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/me", nil)
 	req.Header.Set(echo.HeaderAuthorization, "Bearer "+f.sign(t))
@@ -131,7 +131,7 @@ func TestApiMeReturnsClaims(t *testing.T) {
 func TestApiMeRejectsMissingToken(t *testing.T) {
 	f := newMeFixture(t)
 	v := startedVerifierFor(t, f)
-	e := newServer(fixtureDir(t), v, nil, nil)
+	e := newServer(fixtureDir(t), v, nil, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/me", nil)
 	rec := httptest.NewRecorder()
@@ -145,7 +145,7 @@ func TestApiMeRejectsMissingToken(t *testing.T) {
 func TestApiMeHeadHonorsAuth(t *testing.T) {
 	f := newMeFixture(t)
 	v := startedVerifierFor(t, f)
-	e := newServer(fixtureDir(t), v, nil, nil)
+	e := newServer(fixtureDir(t), v, nil, nil, nil)
 
 	cases := []struct {
 		name       string
@@ -187,7 +187,7 @@ func TestSessionWiringMountsAuthAndGatesMe(t *testing.T) {
 	if err != nil {
 		t.Fatalf("session.New: %v", err)
 	}
-	e := newServer(fixtureDir(t), v, sess, nil)
+	e := newServer(fixtureDir(t), v, sess, nil, nil)
 
 	t.Run("auth login redirects", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/auth/login?returnTo=/events/", nil)
@@ -215,7 +215,7 @@ func TestApiMeIsDisabledWithoutVerifier(t *testing.T) {
 	// /api/me without a verifier should fall through to the /api/* JSON 404,
 	// not return 401 — that's the smoke-test ergonomics we lean on for
 	// runs without WorkOS env config.
-	e := newServer(fixtureDir(t), nil, nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/me", nil)
 	rec := httptest.NewRecorder()
