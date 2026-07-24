@@ -119,5 +119,23 @@ describe("UserMenu", () => {
     expect(
       screen.getByRole("button", { name: "Account menu" })
     ).toBeInTheDocument();
+    // A visible "Account" fallback keeps the trigger a real affordance.
+    expect(screen.getByText("Account")).toBeInTheDocument();
+  });
+
+  test("shows a visible label with no avatar (mobile has no other affordance)", () => {
+    const { container } = render(
+      <UserMenu
+        account={{
+          email: "ada@example.com",
+          username: "adalovelace",
+          avatar: "",
+        }}
+        onSignOut={() => {}}
+      />
+    );
+
+    expect(container.querySelector("img")).toBeNull();
+    expect(screen.getByText("adalovelace")).toBeInTheDocument();
   });
 });

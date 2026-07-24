@@ -37,11 +37,10 @@ export default function UserMenu({
         {account.avatar && (
           <img src={account.avatar} alt="" className="h-6 w-6 rounded-full" />
         )}
-        {label && (
-          <span className="hidden max-w-[16ch] truncate sm:inline">
-            {label}
-          </span>
-        )}
+        {/* Always visible so the trigger stays a real affordance even with no
+            avatar (e.g. on mobile); falls back to "Account" for an empty
+            profile. */}
+        <span className="max-w-[16ch] truncate">{label || "Account"}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}
