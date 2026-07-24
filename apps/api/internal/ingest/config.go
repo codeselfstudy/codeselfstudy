@@ -7,6 +7,8 @@ package ingest
 
 import (
 	"fmt"
+	"net/mail"
+	"strings"
 	"time"
 )
 
@@ -22,13 +24,17 @@ type Config struct {
 	SlackWebhookURL string
 	DigestInterval  time.Duration
 	RepostAfter     time.Duration
+	// ApprovedSenders is the set of normalized addresses whose mail bypasses the
+	// DigestInterval wait (see IsApprovedSender). Nil/empty means nobody.
+	ApprovedSenders map[string]bool
 }
 
 // Load builds a Config from getenv (normally os.Getenv). GeminiModel and the two
 // durations get defaults; the rest default to empty. It errors only on a
 // malformed value (an unparseable or non-positive duration); a missing value is
 // not an error, so the server still boots static-only when the pipeline is not
-// configured. The Slack webhook comes from SLACK_WEBHOOK_FOR_DEALS_CHANNEL.
+// configured. The Slack webhook comes from SLACK_WEBHOOK_FOR_DEALS_CHANNEL and
+// the approved-sender allowlist from APPROVED_FORWARDING_EMAILS.
 func Load(getenv func(string) string) (Config, error) {
 	cfg := Config{
 		GeminiModel:    "gemini-3.5-flash-lite",
@@ -42,6 +48,7 @@ func Load(getenv func(string) string) (Config, error) {
 		cfg.GeminiModel = v
 	}
 	cfg.SlackWebhookURL = getenv("SLACK_WEBHOOK_FOR_DEALS_CHANNEL")
+	cfg.ApprovedSenders = parseApprovedSenders(getenv("APPROVED_FORWARDING_EMAILS"))
 	if v := getenv("DIGEST_INTERVAL"); v != "" {
 		d, err := time.ParseDuration(v)
 		if err != nil {
@@ -67,6 +74,50 @@ func Load(getenv func(string) string) (Config, error) {
 	return cfg, nil
 }
 
+// parseApprovedSenders turns a comma-separated APPROVED_FORWARDING_EMAILS value
+// into a lookup set of normalized addresses. Blank entries are dropped, so an
+// unset or all-whitespace value yields an empty set (nobody is approved) rather
+// than an error — a typo must not take the pipeline down.
+func parseApprovedSenders(v string) map[string]bool {
+	set := map[string]bool{}
+	for _, part := range strings.Split(v, ",") {
+		if addr := normalizeAddress(part); addr != "" {
+			set[addr] = true
+		}
+	}
+	return set
+}
+
+// normalizeAddress reduces a From / X-Envelope-From header value (or a configured
+// allowlist entry) to a comparable bare address: display name stripped, trimmed,
+// lowercased. A value net/mail cannot parse is compared as-is, which still
+// matches a plain "alice@example.com" written without angle brackets.
+func normalizeAddress(s string) string {
+	if a, err := mail.ParseAddress(s); err == nil {
+		s = a.Address
+	}
+	return strings.ToLower(strings.TrimSpace(s))
+}
+
+// IsApprovedSender reports whether any of the given From / X-Envelope-From header
+// values is on the APPROVED_FORWARDING_EMAILS allowlist. Such a sender's email
+// posts its digest immediately instead of waiting out DigestInterval.
+//
+// Both headers are checked because the two forwarding styles differ: a
+// hand-composed "Forward" puts the forwarder in From:, while an auto-forward rule
+// preserves the original newsletter's From: and only changes the envelope sender.
+func (c Config) IsApprovedSender(headers ...string) bool {
+	if len(c.ApprovedSenders) == 0 {
+		return false
+	}
+	for _, h := range headers {
+		if addr := normalizeAddress(h); addr != "" && c.ApprovedSenders[addr] {
+			return true
+		}
+	}
+	return false
+}
+
 // Enabled reports whether the pipeline has the minimum configuration to run: a
 // database to store into and a shared token to authenticate the Worker. When it
 // is false the server runs static-only and the /api/ingest routes are not
@@ -83,9 +134,11 @@ func (c Config) String() string {
 		}
 		return "***"
 	}
+	// The allowlist is secret-managed too, so log only how many addresses it holds.
 	return fmt.Sprintf(
-		"ingest.Config{DatabaseURL:%s IngestToken:%s GeminiAPIKey:%s GeminiModel:%s SlackWebhookURL:%s DigestInterval:%v RepostAfter:%v}",
+		"ingest.Config{DatabaseURL:%s IngestToken:%s GeminiAPIKey:%s GeminiModel:%s SlackWebhookURL:%s DigestInterval:%v RepostAfter:%v ApprovedSenders:%d}",
 		redact(c.DatabaseURL), redact(c.IngestToken), redact(c.GeminiAPIKey),
 		c.GeminiModel, redact(c.SlackWebhookURL), c.DigestInterval, c.RepostAfter,
+		len(c.ApprovedSenders),
 	)
 }
