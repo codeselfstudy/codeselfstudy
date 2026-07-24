@@ -316,7 +316,7 @@ func TestSafeReturnTo(t *testing.T) {
 
 func TestSealUnsealRoundTrip(t *testing.T) {
 	m := newTestManager(t, newJWKSFixture(t))
-	in := sessionData{AccessToken: "at", RefreshToken: "rt", SessionID: "sid", User: profile{ID: "u1", Email: "a@b.com"}}
+	in := sessionData{AccessToken: "at", RefreshToken: "rt", SessionID: "sid", User: Profile{ID: "u1", Email: "a@b.com"}}
 	sealed := mustSeal(t, m, in)
 	out, err := m.unseal(sealed)
 	if err != nil {
@@ -373,7 +373,7 @@ func TestMiddlewareValidCookie(t *testing.T) {
 		AccessToken:  f.signAccess(t, time.Now().Add(5*time.Minute)),
 		RefreshToken: "rt",
 		SessionID:    "sid",
-		User:         profile{ID: "u1", Email: "ada@example.com", FirstName: "Ada", LastName: "Lovelace"},
+		User:         Profile{ID: "u1", Email: "ada@example.com", FirstName: "Ada", LastName: "Lovelace"},
 	})
 
 	rec := serveMe(m, cookie(sealed))
@@ -410,7 +410,7 @@ func TestMiddlewareAcceptsMismatchedIssuer(t *testing.T) {
 		AccessToken:  token,
 		RefreshToken: "rt",
 		SessionID:    "sid",
-		User:         profile{Email: "ada@example.com"},
+		User:         Profile{Email: "ada@example.com"},
 	})
 
 	rec := serveMe(m, cookie(sealed))
@@ -460,7 +460,7 @@ func TestMiddlewareRefreshesExpired(t *testing.T) {
 	sealed := mustSeal(t, m, sessionData{
 		AccessToken:  f.signAccess(t, time.Now().Add(-1*time.Minute)), // expired
 		RefreshToken: "rt_old",
-		User:         profile{Email: "a@b.com"},
+		User:         Profile{Email: "a@b.com"},
 	})
 
 	rec := serveMe(m, cookie(sealed))
@@ -575,5 +575,56 @@ func TestCallbackRejectsBadNonce(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func newEchoCtx() echo.Context {
+	req := httptest.NewRequest(http.MethodGet, "/auth/callback", nil)
+	return echo.New().NewContext(req, httptest.NewRecorder())
+}
+
+// resolveReturnTo is the post-login redirect decision Callback delegates to. It
+// is tested directly because Callback's WorkOS code exchange is not stubbable.
+func TestResolveReturnTo(t *testing.T) {
+	c := newEchoCtx()
+
+	cases := []struct {
+		name    string
+		onLogin func(context.Context, Profile) (string, error)
+		want    string
+	}{
+		{"nil OnLogin keeps returnTo", nil, "/events/"},
+		{"new user goes to welcome",
+			func(context.Context, Profile) (string, error) { return "/settings/?welcome=1", nil },
+			"/settings/?welcome=1"},
+		{"returning user keeps returnTo",
+			func(context.Context, Profile) (string, error) { return "", nil },
+			"/events/"},
+		{"error is ignored, login not blocked",
+			func(context.Context, Profile) (string, error) { return "/settings/", errors.New("db down") },
+			"/events/"},
+		{"hostile dest collapses via safeReturnTo",
+			func(context.Context, Profile) (string, error) { return "//evil.example/x", nil },
+			"/"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			m := &Manager{OnLogin: tc.onLogin}
+			if got := m.resolveReturnTo(c, "/events/", Profile{ID: "u1"}); got != tc.want {
+				t.Errorf("resolveReturnTo = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestUserContext(t *testing.T) {
+	c := newEchoCtx()
+	if _, ok := User(c); ok {
+		t.Error("User on a bare context: ok = true, want false")
+	}
+	want := Profile{ID: "u1", Email: "ada@example.com"}
+	ContextWithUser(c, want)
+	if got, ok := User(c); !ok || got != want {
+		t.Errorf("User = (%+v, %v), want (%+v, true)", got, ok, want)
 	}
 }

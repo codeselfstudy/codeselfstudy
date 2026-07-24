@@ -140,6 +140,14 @@ type Manager struct {
 	callbackURL string
 	secure      bool
 
+	// OnLogin, when set, is called in Callback after the session cookie is
+	// sealed. It lets the app create or refresh the local user row and choose a
+	// post-login destination (a non-empty path, validated like any returnTo — a
+	// brand-new user goes to /settings/?welcome=1). Its error is only logged: the
+	// cookie is already set, so a database hiccup must never block a sign-in. A
+	// nil OnLogin keeps the plain returnTo behavior.
+	OnLogin func(ctx context.Context, p Profile) (redirectTo string, err error)
+
 	// refresh exchanges a refresh token for a new access/refresh pair. A field
 	// so tests can substitute the WorkOS call.
 	refresh refreshFunc
@@ -290,7 +298,28 @@ func (m *Manager) Callback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 	m.setCookie(c, sealed)
-	return c.Redirect(http.StatusFound, returnTo)
+	return c.Redirect(http.StatusFound, m.resolveReturnTo(c, returnTo, profileFrom(resp.User)))
+}
+
+// resolveReturnTo hands the freshly-authenticated profile to OnLogin (when set)
+// so the app can upsert the local user row and optionally redirect a first-time
+// user, then decides where Callback sends the browser: the OnLogin-provided path
+// when it returns a non-empty one (re-validated through safeReturnTo), otherwise
+// the original returnTo. An OnLogin error is logged and ignored — the cookie is
+// already set, so a database hiccup must never block or misdirect a sign-in.
+func (m *Manager) resolveReturnTo(c echo.Context, returnTo string, p Profile) string {
+	if m.OnLogin == nil {
+		return returnTo
+	}
+	dest, err := m.OnLogin(c.Request().Context(), p)
+	if err != nil {
+		c.Logger().Errorf("session: OnLogin: %v", err)
+		return returnTo
+	}
+	if dest != "" {
+		return safeReturnTo(dest)
+	}
+	return returnTo
 }
 
 // Logout clears the local cookie and redirects through the WorkOS logout URL so
@@ -376,9 +405,10 @@ func (m *Manager) Middleware() echo.MiddlewareFunc {
 
 // HandleMe returns the signed-in user. It reads the profile the middleware
 // placed on the context (sealed in the cookie at login), so it needs no WorkOS
-// round-trip.
+// round-trip. Used only when the account database is absent; when it is present,
+// the users handlers own /api/me and return the DB-backed username too.
 func (m *Manager) HandleMe(c echo.Context) error {
-	p, ok := c.Get(contextUserKey).(profile)
+	p, ok := User(c)
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
@@ -390,16 +420,33 @@ func (m *Manager) HandleMe(c echo.Context) error {
 	})
 }
 
+// User returns the authenticated profile the session Middleware placed on the
+// request context, or ok=false when the request is not authenticated. It lets
+// other packages (the users handlers) read the identity without importing the
+// session internals.
+func User(c echo.Context) (Profile, bool) {
+	p, ok := c.Get(contextUserKey).(Profile)
+	return p, ok
+}
+
+// ContextWithUser stores p as the authenticated profile on c, exactly as
+// Middleware does. Exposed so handlers in other packages can be exercised with an
+// authenticated context in tests without running the full cookie flow.
+func ContextWithUser(c echo.Context, p Profile) {
+	c.Set(contextUserKey, p)
+}
+
 // sessionData is the payload sealed into the cookie.
 type sessionData struct {
 	AccessToken  string  `json:"at"`
 	RefreshToken string  `json:"rt"`
 	SessionID    string  `json:"sid"`
-	User         profile `json:"u"`
+	User         Profile `json:"u"`
 }
 
-// profile is the subset of the WorkOS user the frontend renders.
-type profile struct {
+// Profile is the subset of the WorkOS user the frontend renders and the identity
+// other packages read via User(c).
+type Profile struct {
 	ID                string `json:"id"`
 	Email             string `json:"email"`
 	FirstName         string `json:"first_name,omitempty"`
@@ -407,8 +454,8 @@ type profile struct {
 	ProfilePictureURL string `json:"avatar,omitempty"`
 }
 
-func profileFrom(u usermanagement.User) profile {
-	return profile{
+func profileFrom(u usermanagement.User) Profile {
+	return Profile{
 		ID:                u.ID,
 		Email:             u.Email,
 		FirstName:         u.FirstName,

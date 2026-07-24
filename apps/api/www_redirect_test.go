@@ -14,7 +14,7 @@ import (
 // request-target — the tests mirror that (origin-form path + explicit Host +
 // XFP header) so req.RequestURI and c.Scheme() match what the app really sees.
 func TestNonWWWRedirect(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil, nil)
 	cases := []struct {
 		name    string
 		method  string
@@ -52,7 +52,7 @@ func TestNonWWWRedirect(t *testing.T) {
 
 // A request already on the apex host is served normally — no redirect.
 func TestApexHostNotRedirected(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Host = "codeselfstudy.com"
 	req.Header.Set("X-Forwarded-Proto", "https")
@@ -68,7 +68,7 @@ func TestApexHostNotRedirected(t *testing.T) {
 // Without that header (bare dev over http) the target is http, not https —
 // confirming the header is what selects https in production behind the proxy.
 func TestNonWWWRedirectSchemeFromForwardedProto(t *testing.T) {
-	e := newServer(fixtureDir(t), nil, nil, nil)
+	e := newServer(fixtureDir(t), nil, nil, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Host = "www.codeselfstudy.com"
 	// no X-Forwarded-Proto set
