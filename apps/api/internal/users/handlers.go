@@ -22,6 +22,10 @@ import (
 // changes are unlimited.
 const renameCooldown = 30 * 24 * time.Hour
 
+// notifyTimeout bounds the detached admin Slack ping. The HTTP poster carries
+// its own client timeout; this also covers a poster that ignores one.
+const notifyTimeout = 15 * time.Second
+
 // Handlers exposes the account routes (/api/me and /api/settings*) over the
 // store. Construct with New and mount on a session-gated group with Register.
 // poster is the admin-channel Slack webhook and may be nil (the ping is optional;
@@ -262,6 +266,12 @@ func (h *Handlers) userRow(ctx context.Context, p session.Profile) (store.User, 
 
 // notifyAdmin posts a best-effort Slack message about a new deletion request. A
 // nil poster (webhook unset) or a post failure is logged and swallowed.
+//
+// The post runs off the request goroutine, on a context detached from the
+// request's: the durable row is what matters, so the 202 must not wait on a slow
+// webhook, and a client that navigates away mid-request must not cancel the
+// ping the admin depends on. A shutdown can still cut an in-flight post, which
+// is the accepted cost of a best-effort notification.
 func (h *Handlers) notifyAdmin(ctx context.Context, c echo.Context, u store.User) {
 	if h.poster == nil {
 		return
@@ -273,9 +283,24 @@ func (h *Handlers) notifyAdmin(ctx context.Context, c echo.Context, u store.User
 		c.Logger().Errorf("delete-request: marshal slack payload: %v", err)
 		return
 	}
-	if err := h.poster.Post(ctx, payload); err != nil {
-		c.Logger().Errorf("delete-request: slack notify: %v", err)
-	}
+	// Captured before the goroutine: echo may recycle the Context once the
+	// handler returns, but the logger it hands out is the server's own.
+	logger := c.Logger()
+	detached, cancel := context.WithTimeout(context.WithoutCancel(ctx), notifyTimeout)
+	go func() {
+		defer cancel()
+		// Leaving the request goroutine also leaves Echo's recover middleware
+		// behind, and a panic on a goroutine takes the process with it. A
+		// misbehaving webhook must cost one notification, not the server.
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Errorf("delete-request: slack notify panicked: %v", r)
+			}
+		}()
+		if err := h.poster.Post(detached, payload); err != nil {
+			logger.Errorf("delete-request: slack notify: %v", err)
+		}
+	}()
 }
 
 // originCheck rejects a cross-origin state-changing request. The session cookie is

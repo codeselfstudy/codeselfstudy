@@ -52,6 +52,10 @@ const (
 	// OAuth login to the browser that started it. Scoped to /auth and short-lived.
 	nonceCookieName = "wos_oauth"
 	nonceMaxAge     = 10 * time.Minute
+
+	// onLoginTimeout bounds the OnLogin hook so a slow database can't hold the
+	// post-login redirect open. See resolveReturnTo.
+	onLoginTimeout = 3 * time.Second
 )
 
 // Config is the server-side WorkOS configuration the session flow needs, on top
@@ -307,11 +311,19 @@ func (m *Manager) Callback(c echo.Context) error {
 // when it returns a non-empty one (re-validated through safeReturnTo), otherwise
 // the original returnTo. An OnLogin error is logged and ignored — the cookie is
 // already set, so a database hiccup must never block or misdirect a sign-in.
+//
+// The hook gets a bounded context rather than the raw request one so that
+// promise holds for latency too: a hung database would otherwise stall the
+// sign-in redirect for the whole request lifetime. A timed-out upsert degrades
+// exactly like the error case, because the users handlers re-upsert a missing
+// row on the next request.
 func (m *Manager) resolveReturnTo(c echo.Context, returnTo string, p Profile) string {
 	if m.OnLogin == nil {
 		return returnTo
 	}
-	dest, err := m.OnLogin(c.Request().Context(), p)
+	ctx, cancel := context.WithTimeout(c.Request().Context(), onLoginTimeout)
+	defer cancel()
+	dest, err := m.OnLogin(ctx, p)
 	if err != nil {
 		c.Logger().Errorf("session: OnLogin: %v", err)
 		return returnTo

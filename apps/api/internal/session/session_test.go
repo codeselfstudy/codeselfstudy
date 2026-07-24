@@ -617,6 +617,28 @@ func TestResolveReturnTo(t *testing.T) {
 	}
 }
 
+// The OnLogin hook must run on a bounded context, not the raw request one: an
+// unresponsive database would otherwise hold the post-login redirect open for
+// the whole request lifetime, which the "never block a sign-in" promise in
+// resolveReturnTo's doc comment covers.
+func TestResolveReturnToBoundsOnLogin(t *testing.T) {
+	var deadline time.Time
+	var hasDeadline bool
+	m := &Manager{OnLogin: func(ctx context.Context, _ Profile) (string, error) {
+		deadline, hasDeadline = ctx.Deadline()
+		return "", nil
+	}}
+
+	m.resolveReturnTo(newEchoCtx(), "/events/", Profile{ID: "u1"})
+
+	if !hasDeadline {
+		t.Fatal("OnLogin ctx has no deadline, want one bounded by onLoginTimeout")
+	}
+	if d := time.Until(deadline); d <= 0 || d > onLoginTimeout {
+		t.Errorf("OnLogin ctx deadline in %v, want (0, %v]", d, onLoginTimeout)
+	}
+}
+
 func TestUserContext(t *testing.T) {
 	c := newEchoCtx()
 	if _, ok := User(c); ok {
