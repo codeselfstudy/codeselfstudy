@@ -78,4 +78,28 @@ describe("Navbar", () => {
       within(dialog).queryByRole("button", { name: "Sign In" })
     ).not.toBeInTheDocument();
   });
+
+  test("signed in: shows the username in the top bar, never the email", async () => {
+    // Override the signed-out default from beforeEach with a signed-in /api/me.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          email: "ada@example.com",
+          username: "adalovelace",
+        }),
+      })
+    );
+    render(<Navbar />);
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Account menu for adalovelace",
+      })
+    ).toBeInTheDocument();
+    expect(screen.getByText("adalovelace")).toBeInTheDocument();
+    expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
+  });
 });

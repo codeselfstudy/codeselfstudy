@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-type Account = { email: string; name: string; avatar: string };
+import UserMenu from "@/components/auth/UserMenu";
+import type { Account } from "@/components/auth/UserMenu";
 
 // Sign-in / sign-out control for the navbar.
 //
@@ -32,7 +32,7 @@ export default function SignInButton() {
         if (data) {
           setAccount({
             email: data.email ?? "",
-            name: data.name ?? "",
+            username: data.username ?? "",
             avatar: data.avatar ?? "",
           });
           setStatus("in");
@@ -50,25 +50,14 @@ export default function SignInButton() {
   }, []);
 
   if (status === "in" && account) {
-    const label = account.email || account.name;
+    // The username is shown here, never the email — email on a public page is a
+    // privacy leak (#351). UserMenu falls back to email only when the server
+    // runs without a database and /api/me returns no username.
     return (
-      <div className="flex items-center gap-2">
-        {account.avatar && (
-          <img src={account.avatar} alt="" className="h-7 w-7 rounded-full" />
-        )}
-        {label && (
-          <span className="text-foreground hidden text-sm font-medium sm:inline">
-            {label}
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={() => navigateAuth("/auth/logout")}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        >
-          Sign Out
-        </button>
-      </div>
+      <UserMenu
+        account={account}
+        onSignOut={() => navigateAuth("/auth/logout")}
+      />
     );
   }
 
