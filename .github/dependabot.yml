@@ -24,3 +24,16 @@ updates:
       golang-x:
         patterns:
           - "golang.org/x/*"
+
+  # Keep the workflow actions current so their bundled Node runtime doesn't drift
+  # onto a deprecated version (the reason checkout/setup-go/upload-artifact all
+  # needed a manual node20 -> node24 bump). Workflows live in .github/workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      # One PR for all action bumps rather than one per action.
+      github-actions:
+        patterns:
+          - "*"
