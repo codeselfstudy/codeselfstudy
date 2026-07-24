@@ -383,4 +383,39 @@ describe("SettingsForm", () => {
       await screen.findByText(/couldn’t submit your request/i)
     ).toBeInTheDocument();
   });
+
+  test("locks the fields while a save is in flight so a late response can't clobber edits", async () => {
+    let resolvePatch: (v: ReturnType<typeof res>) => void = () => {};
+    const patchPending = new Promise<ReturnType<typeof res>>((r) => {
+      resolvePatch = r;
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(settings())
+      .mockReturnValueOnce(patchPending);
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<SettingsForm />);
+
+    await screen.findByLabelText("Username");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    // In flight: inputs are locked so newer keystrokes can't be overwritten by
+    // the server's echo of the previously submitted values.
+    expect(screen.getByLabelText("Username")).toBeDisabled();
+    expect(screen.getByLabelText("Time zone")).toBeDisabled();
+
+    resolvePatch(
+      res(200, {
+        username: "ada",
+        email: "ada@example.com",
+        timezone: "America/Los_Angeles",
+        deletion_requested_at: null,
+      })
+    );
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Saved");
+    expect(screen.getByLabelText("Username")).toBeEnabled();
+    expect(screen.getByLabelText("Time zone")).toBeEnabled();
+  });
 });

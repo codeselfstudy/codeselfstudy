@@ -311,6 +311,7 @@ export default function SettingsForm() {
             autoComplete="off"
             autoCapitalize="none"
             spellCheck={false}
+            disabled={saving}
             aria-invalid={error?.field === "username" || undefined}
             aria-describedby={
               error?.field === "username" ? "username-error" : undefined
@@ -358,6 +359,7 @@ export default function SettingsForm() {
               setTimezone(e.target.value);
               onEdit();
             }}
+            disabled={saving}
             aria-invalid={error?.field === "timezone" || undefined}
             className={inputClass}
           >
