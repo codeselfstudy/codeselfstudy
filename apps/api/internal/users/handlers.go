@@ -289,6 +289,14 @@ func (h *Handlers) notifyAdmin(ctx context.Context, c echo.Context, u store.User
 	detached, cancel := context.WithTimeout(context.WithoutCancel(ctx), notifyTimeout)
 	go func() {
 		defer cancel()
+		// Leaving the request goroutine also leaves Echo's recover middleware
+		// behind, and a panic on a goroutine takes the process with it. A
+		// misbehaving webhook must cost one notification, not the server.
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Errorf("delete-request: slack notify panicked: %v", r)
+			}
+		}()
 		if err := h.poster.Post(detached, payload); err != nil {
 			logger.Errorf("delete-request: slack notify: %v", err)
 		}

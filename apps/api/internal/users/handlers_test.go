@@ -148,6 +148,15 @@ func (b *blockingPoster) state() (bool, error) {
 	return b.finished, b.ctxErr
 }
 
+// panicPoster stands in for a webhook implementation that blows up. It signals
+// before panicking so the test can be sure the goroutine actually ran.
+type panicPoster struct{ entered chan struct{} }
+
+func (p *panicPoster) Post(context.Context, []byte) error {
+	close(p.entered)
+	panic("webhook exploded")
+}
+
 // awaitPost blocks until the next ping lands, failing the test if none does.
 func (f *fakePoster) awaitPost(t *testing.T) {
 	t.Helper()
@@ -461,6 +470,37 @@ func TestDeleteRequestDoesNotWaitOnSlack(t *testing.T) {
 
 	if _, ctxErr := bp.state(); ctxErr != nil {
 		t.Errorf("ping context err = %v, want nil: the request's cancellation must not reach it", ctxErr)
+	}
+}
+
+// The ping runs outside Echo's recover middleware now, so it has to recover
+// itself: an unrecovered panic on a goroutine takes down the whole server. If
+// this regresses, the test binary dies rather than reporting a failure.
+func TestDeleteRequestSurvivesPanickingPoster(t *testing.T) {
+	st := newStore(t)
+	if _, _, err := st.UpsertUserByWorkOSID(ctx, store.User{WorkOSID: "wos_1", Email: "a@x.com", Username: "ada"}); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	pp := &panicPoster{entered: make(chan struct{})}
+	p := prof("wos_1", "a@x.com")
+	e := mount(users.New(st, pp), &p)
+
+	rec := do(t, e, http.MethodPost, "/api/settings/delete-request", "", nil)
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("want 202 got %d body=%s", rec.Code, rec.Body.String())
+	}
+
+	select {
+	case <-pp.entered:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for the poster to run")
+	}
+	// Give the panic a moment to either be recovered or kill the process.
+	time.Sleep(50 * time.Millisecond)
+
+	// Still serving: the deletion request is recorded and readable.
+	if decode(t, do(t, e, http.MethodGet, "/api/settings", "", nil))["deletion_requested_at"] == nil {
+		t.Error("deletion_requested_at should be set")
 	}
 }
 
