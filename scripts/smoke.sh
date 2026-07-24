@@ -86,7 +86,7 @@ check_body_contains() { # path needle
 
 echo "Pages (200 at trailing-slash URLs):"
 for p in / /about/ /codewars/ /contact/ /credits/ /discounts/ /events/ \
-  /forum/ /jobs/ /learn/ /puzzles/ /s/ /tools/; do
+  /forum/ /jobs/ /learn/ /puzzles/ /s/ /settings/ /tools/; do
   check_status "$p" 200
 done
 
@@ -100,6 +100,7 @@ check_redirect /index.html 308 /          # precedence over the real file
 
 echo "Other:"
 check_body_contains /s/ noindex
+check_body_contains /settings/ noindex
 check_status /nonexistent-page-xyz/ 404
 check_body_contains /nonexistent-page-xyz/ "Page not found"
 check_status /healthz 204

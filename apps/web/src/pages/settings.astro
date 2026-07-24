@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import PageWrapper from "@/components/PageWrapper.astro";
+import SettingsForm from "@/components/settings/SettingsForm";
+---
+
+<Layout
+  title="Settings"
+  description="Your Code Self Study account settings"
+  isNoIndex
+>
+  <PageWrapper>
+    <SettingsForm client:only="react" />
+  </PageWrapper>
+</Layout>
