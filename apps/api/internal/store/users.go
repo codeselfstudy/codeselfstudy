@@ -18,6 +18,12 @@ import (
 // rejects the write, so "JaneDoe" and "janedoe" collide. Callers map this to 409.
 var ErrUsernameTaken = errors.New("store: username already taken")
 
+// ErrUsernameCooldown is returned by SetUsername when the account changed its
+// username too recently: the atomic cooldown predicate in the UPDATE rejected the
+// change. This is the store-level backstop that makes the rename rate limit safe
+// against two concurrent requests both passing a handler check. Callers map it to 429.
+var ErrUsernameCooldown = errors.New("store: username change within cooldown")
+
 // maxUsernameSuffix bounds the deterministic "-2", "-3", … dedupe attempts before
 // falling back to a random suffix. Ten is far more than any real name collides in
 // practice; the random fallback only exists so a pathological run can still insert.
@@ -177,19 +183,32 @@ func (s *Store) GetUserByWorkOSID(ctx context.Context, workosID string) (User, e
 	return scanUser(row)
 }
 
-// SetUsername changes a user's username and stamps username_changed_at (which the
-// handler's rate limit reads). Returns ErrUsernameTaken when the new name
-// collides case-insensitively with another user's.
-func (s *Store) SetUsername(ctx context.Context, id int64, username string) error {
+// SetUsername changes a user's username and stamps username_changed_at, enforcing
+// the rename cooldown atomically: the UPDATE only applies when the current stamp
+// is NULL (never renamed) or at/older than cooldownCutoff. Pass now minus the
+// rename window as cooldownCutoff — a stamp newer than it updates zero rows and
+// yields ErrUsernameCooldown, so two concurrent PATCHes that both passed a
+// handler-level check cannot both slip through. A case-insensitive collision maps
+// to ErrUsernameTaken. The caller must have already confirmed the row exists (so
+// zero rows affected means the cooldown, not a missing user).
+func (s *Store) SetUsername(ctx context.Context, id int64, username string, cooldownCutoff time.Time) error {
 	now := formatTime(s.Now().UTC())
-	_, err := s.db.ExecContext(ctx,
-		`UPDATE users SET username = ?, username_changed_at = ?, updated_at = ? WHERE id = ?`,
-		username, now, now, id)
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE users SET username = ?, username_changed_at = ?, updated_at = ?
+		 WHERE id = ? AND (username_changed_at IS NULL OR username_changed_at <= ?)`,
+		username, now, now, id, formatTime(cooldownCutoff.UTC()))
 	if err != nil {
 		if isUsernameConflict(err) {
 			return ErrUsernameTaken
 		}
 		return fmt.Errorf("set username: %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("set username rows: %w", err)
+	}
+	if n == 0 {
+		return ErrUsernameCooldown
 	}
 	return nil
 }

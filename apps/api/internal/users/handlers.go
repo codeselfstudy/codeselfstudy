@@ -140,38 +140,44 @@ func (h *Handlers) PatchSettings(c echo.Context) error {
 		return err
 	}
 
-	// Timezone: validated against the tz database so an arbitrary string can't be
-	// stored. Unlimited.
-	if req.Timezone != nil && *req.Timezone != u.Timezone {
+	changingTZ := req.Timezone != nil && *req.Timezone != u.Timezone
+	changingName := req.Username != nil && *req.Username != u.Username
+
+	// Validate every field BEFORE writing any of them, so an invalid field can't
+	// leave a partial mutation behind (a bad username must not commit a timezone).
+	if changingTZ {
 		if _, err := time.LoadLocation(*req.Timezone); err != nil {
 			return errJSON(c, http.StatusBadRequest, "timezone_invalid")
 		}
-		if err := h.store.SetTimezone(ctx, u.ID, *req.Timezone); err != nil {
-			return err
-		}
 	}
-
-	// Username: format + reserved validation, the 30-day rename cooldown, then the
-	// unique-index collision mapped to 409.
-	if req.Username != nil && *req.Username != u.Username {
+	if changingName {
 		switch err := Validate(*req.Username); {
 		case errors.Is(err, ErrUsernameReserved):
 			return errJSON(c, http.StatusBadRequest, "username_reserved")
 		case err != nil:
 			return errJSON(c, http.StatusBadRequest, "username_invalid")
 		}
-		if u.UsernameChangedAt != nil {
-			if elapsed := h.store.Now().UTC().Sub(*u.UsernameChangedAt); elapsed < renameCooldown {
-				return c.JSON(http.StatusTooManyRequests, map[string]any{
-					"error":            "rate_limited",
-					"retry_after_days": daysUntil(renameCooldown - elapsed),
-				})
-			}
+	}
+
+	// Writes. Username first, so its 409/429 returns before any timezone write.
+	// The rename cooldown is enforced atomically in the store — a handler-only
+	// check would let two concurrent PATCHes both slip past the window.
+	if changingName {
+		cutoff := h.store.Now().UTC().Add(-renameCooldown)
+		switch err := h.store.SetUsername(ctx, u.ID, *req.Username, cutoff); {
+		case errors.Is(err, store.ErrUsernameCooldown):
+			return c.JSON(http.StatusTooManyRequests, map[string]any{
+				"error":            "rate_limited",
+				"retry_after_days": retryAfterDays(u.UsernameChangedAt, h.store.Now().UTC()),
+			})
+		case errors.Is(err, store.ErrUsernameTaken):
+			return errJSON(c, http.StatusConflict, "username_taken")
+		case err != nil:
+			return err
 		}
-		if err := h.store.SetUsername(ctx, u.ID, *req.Username); err != nil {
-			if errors.Is(err, store.ErrUsernameTaken) {
-				return errJSON(c, http.StatusConflict, "username_taken")
-			}
+	}
+	if changingTZ {
+		if err := h.store.SetTimezone(ctx, u.ID, *req.Timezone); err != nil {
 			return err
 		}
 	}
@@ -301,6 +307,20 @@ func originCheck(next echo.HandlerFunc) echo.HandlerFunc {
 // errJSON writes a structured error the web form maps to a message.
 func errJSON(c echo.Context, status int, code string) error {
 	return c.JSON(status, map[string]string{"error": code})
+}
+
+// retryAfterDays reports whole days left in the rename cooldown given the last
+// change time (nil → the full window, a defensive fallback: the store only
+// returns the cooldown error when a stamp exists) and the current time.
+func retryAfterDays(changedAt *time.Time, now time.Time) int {
+	if changedAt == nil {
+		return daysUntil(renameCooldown)
+	}
+	remaining := renameCooldown - now.Sub(*changedAt)
+	if remaining < 0 {
+		remaining = 0
+	}
+	return daysUntil(remaining)
 }
 
 // daysUntil rounds a remaining duration up to whole days, so a user 29.1 days

@@ -234,6 +234,42 @@ func TestPatchUsernameValidation(t *testing.T) {
 	}
 }
 
+func TestPatchIsAtomicOnInvalidField(t *testing.T) {
+	st := newStore(t)
+	for _, u := range []store.User{
+		{WorkOSID: "wos_1", Email: "a@x.com", Username: "ada"},
+		{WorkOSID: "wos_2", Email: "b@x.com", Username: "bob"},
+	} {
+		if _, _, err := st.UpsertUserByWorkOSID(ctx, u); err != nil {
+			t.Fatalf("seed %s: %v", u.Username, err)
+		}
+	}
+	p := prof("wos_1", "a@x.com")
+	e := mount(users.New(st, nil), &p)
+
+	// A valid timezone paired with a failing username must not commit the timezone:
+	// all fields are validated, and the username writes first, before any timezone
+	// write.
+	cases := []struct {
+		name, body string
+		wantCode   int
+	}{
+		{"reserved username", `{"timezone":"Europe/London","username":"admin"}`, http.StatusBadRequest},
+		{"taken username", `{"timezone":"Europe/London","username":"bob"}`, http.StatusConflict},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			rec := do(t, e, http.MethodPatch, "/api/settings", tc.body, nil)
+			if rec.Code != tc.wantCode {
+				t.Fatalf("want %d got %d body=%s", tc.wantCode, rec.Code, rec.Body.String())
+			}
+			if u, _ := st.GetUserByWorkOSID(ctx, "wos_1"); u.Timezone != "" {
+				t.Errorf("timezone = %q, want empty (a rejected username must not commit the timezone)", u.Timezone)
+			}
+		})
+	}
+}
+
 func TestPatchUsernameTaken(t *testing.T) {
 	st := newStore(t)
 	for _, u := range []store.User{
@@ -265,8 +301,9 @@ func TestPatchUsernameRateLimited(t *testing.T) {
 	if _, _, err := st.UpsertUserByWorkOSID(ctx, store.User{WorkOSID: "wos_1", Email: "a@x.com", Username: "ada"}); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	// First change stamps username_changed_at at the current clock.
-	if err := st.SetUsername(ctx, 1, "ada1"); err != nil {
+	// First change stamps username_changed_at at the current clock (no prior stamp,
+	// so the cutoff is irrelevant here).
+	if err := st.SetUsername(ctx, 1, "ada1", clock); err != nil {
 		t.Fatalf("SetUsername: %v", err)
 	}
 	// One day later — inside the 30-day cooldown.

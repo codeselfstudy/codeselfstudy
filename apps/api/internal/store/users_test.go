@@ -103,8 +103,11 @@ func TestSetUsername_StampsAndConflicts(t *testing.T) {
 		t.Fatalf("new user UsernameChangedAt = %v, want nil", a.UsernameChangedAt)
 	}
 
+	const cooldown = 30 * 24 * time.Hour
+
+	// A first rename: no prior stamp, so any cutoff passes.
 	setNow(clock.Add(48 * time.Hour))
-	if err := s.SetUsername(ctx, a.ID, "alice2"); err != nil {
+	if err := s.SetUsername(ctx, a.ID, "alice2", clock.Add(48*time.Hour).Add(-cooldown)); err != nil {
 		t.Fatalf("SetUsername: %v", err)
 	}
 	got, err := s.GetUserByWorkOSID(ctx, "wos_a")
@@ -118,8 +121,16 @@ func TestSetUsername_StampsAndConflicts(t *testing.T) {
 		t.Errorf("UsernameChangedAt = %v, want %v", got.UsernameChangedAt, clock.Add(48*time.Hour))
 	}
 
-	// Case-insensitive collision with bob's name → ErrUsernameTaken.
-	if err := s.SetUsername(ctx, a.ID, "BOB"); !errors.Is(err, store.ErrUsernameTaken) {
+	// A change within the cooldown window (the stamp is newer than the cutoff) is
+	// rejected atomically by the store, not just by a handler check.
+	if err := s.SetUsername(ctx, a.ID, "alice3", clock.Add(48*time.Hour).Add(-cooldown)); !errors.Is(err, store.ErrUsernameCooldown) {
+		t.Fatalf("SetUsername within cooldown = %v, want ErrUsernameCooldown", err)
+	}
+
+	// Case-insensitive collision with bob's name → ErrUsernameTaken. Use a cutoff
+	// at/after the stamp so the cooldown allows the write and the unique index is
+	// what rejects it.
+	if err := s.SetUsername(ctx, a.ID, "BOB", clock.Add(48*time.Hour)); !errors.Is(err, store.ErrUsernameTaken) {
 		t.Fatalf("SetUsername to taken name = %v, want ErrUsernameTaken", err)
 	}
 	_ = b
