@@ -6,9 +6,11 @@ import SignInButton from "@/components/auth/SignInButton";
 
 // The cookie-gated /api/me is the single source of auth truth: 200 -> signed in,
 // 401 -> signed out. Drive both states through a mocked fetch, and capture
-// window.location.assign to assert the /auth navigations.
+// window.location.assign to assert the /auth navigations. When signed in the
+// control renders UserMenu, so the username shows in the trigger and Sign Out
+// lives inside the opened menu (never the email — see #351).
 
-function meOk(data: { email?: string; name?: string; avatar?: string }) {
+function meOk(data: { email?: string; username?: string; avatar?: string }) {
   return { ok: true, status: 200, json: async () => data };
 }
 const meUnauthorized = { ok: false, status: 401, json: async () => null };
@@ -44,24 +46,28 @@ describe("SignInButton", () => {
       await screen.findByRole("button", { name: "Sign In" })
     ).toBeEnabled();
     expect(
-      screen.queryByRole("button", { name: "Sign Out" })
+      screen.queryByRole("button", { name: /account menu/i })
     ).not.toBeInTheDocument();
   });
 
-  test("signed in: shows the email from /api/me and a Sign Out button", async () => {
+  test("signed in: shows the username, not the email, with Sign Out in the menu", async () => {
     vi.stubGlobal(
       "fetch",
       vi
         .fn()
         .mockResolvedValue(
-          meOk({ email: "ada@example.com", name: "Ada Lovelace" })
+          meOk({ email: "ada@example.com", username: "adalovelace" })
         )
     );
+    const user = userEvent.setup();
     render(<SignInButton />);
 
-    expect(await screen.findByText("ada@example.com")).toBeInTheDocument();
+    expect(await screen.findByText("adalovelace")).toBeInTheDocument();
+    expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /account menu/i }));
     expect(
-      screen.getByRole("button", { name: "Sign Out" })
+      await screen.findByRole("menuitem", { name: "Sign Out" })
     ).toBeInTheDocument();
   });
 
@@ -111,15 +117,18 @@ describe("SignInButton", () => {
     );
   });
 
-  test("clicking Sign Out navigates to /auth/logout", async () => {
+  test("Sign Out in the menu navigates to /auth/logout with returnTo", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(meOk({ email: "ada@example.com" }))
+      vi.fn().mockResolvedValue(meOk({ username: "adalovelace" }))
     );
     const user = userEvent.setup();
     render(<SignInButton />);
 
-    await user.click(await screen.findByRole("button", { name: "Sign Out" }));
+    await user.click(
+      await screen.findByRole("button", { name: /account menu/i })
+    );
+    await user.click(await screen.findByRole("menuitem", { name: "Sign Out" }));
 
     expect(assignMock).toHaveBeenCalledWith(
       "/auth/logout?returnTo=%2Fevents%2F"
@@ -136,19 +145,19 @@ describe("SignInButton", () => {
     ).toBeEnabled();
   });
 
-  test("renders the avatar when /api/me returns one", async () => {
+  test("renders the avatar in the trigger when /api/me returns one", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
         meOk({
-          email: "ada@example.com",
+          username: "adalovelace",
           avatar: "https://example.com/ada.png",
         })
       )
     );
     const { container } = render(<SignInButton />);
 
-    await screen.findByRole("button", { name: "Sign Out" });
+    await screen.findByRole("button", { name: /account menu/i });
     // The avatar is decorative (alt=""), so it is not in the a11y tree.
     expect(container.querySelector("img")).toHaveAttribute(
       "src",
@@ -156,27 +165,37 @@ describe("SignInButton", () => {
     );
   });
 
-  test("falls back to the name when /api/me returns no email", async () => {
+  test("falls back to the email label when /api/me returns no username", async () => {
+    // Degrades sensibly when the server runs without a database.
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(meOk({ name: "Ada Lovelace" }))
+      vi.fn().mockResolvedValue(meOk({ email: "ada@example.com" }))
     );
     render(<SignInButton />);
 
-    expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", {
+        name: "Account menu for ada@example.com",
+      })
+    ).toBeInTheDocument();
   });
 
-  test("signed in with an empty profile still renders Sign Out only", async () => {
-    // A 200 with no email, name or avatar is still a valid session; render the
-    // sign-out control without an empty label or a broken image beside it.
+  test("signed in with an empty profile still renders the account menu", async () => {
+    // A 200 with no username, email or avatar is still a valid session; render
+    // the menu trigger (named for assistive tech) without an empty label or a
+    // broken image.
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(meOk({})));
+    const user = userEvent.setup();
     const { container } = render(<SignInButton />);
 
-    expect(
-      await screen.findByRole("button", { name: "Sign Out" })
-    ).toBeInTheDocument();
+    const trigger = await screen.findByRole("button", { name: "Account menu" });
+    expect(trigger).toBeInTheDocument();
     expect(container.querySelector("img")).toBeNull();
-    expect(container.querySelector("span")).toBeNull();
+
+    await user.click(trigger);
+    expect(
+      await screen.findByRole("menuitem", { name: "Sign Out" })
+    ).toBeInTheDocument();
   });
 
   test("ignores a /api/me response that arrives after unmount", async () => {
@@ -194,14 +213,14 @@ describe("SignInButton", () => {
 
     // The `cancelled` flag set by the effect cleanup is what keeps this late
     // resolution from touching state on a component that is already gone.
-    settle(meOk({ email: "ada@example.com" }));
+    settle(meOk({ username: "adalovelace" }));
     await pending;
     await Promise.resolve();
     await Promise.resolve();
 
     expect(consoleError).not.toHaveBeenCalled();
     expect(
-      screen.queryByRole("button", { name: "Sign Out" })
+      screen.queryByRole("button", { name: /account menu/i })
     ).not.toBeInTheDocument();
   });
 
