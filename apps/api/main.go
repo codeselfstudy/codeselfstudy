@@ -247,6 +247,17 @@ func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *
 	e := echo.New()
 	e.HideBanner = true
 
+	// Canonical host: 308-redirect every www.* request to the bare apex host,
+	// preserving scheme, path and query (e.g. https://www.codeselfstudy.com/x/
+	// -> https://codeselfstudy.com/x/). Runs in the Pre phase so it fires before
+	// routing, for every path and method. Echo's NonWWWRedirect defaults to 301;
+	// force 308 so the method/body survive, matching the statuses in
+	// redirects.go. c.Scheme() reads X-Forwarded-Proto, so behind Fly's
+	// force_https proxy the redirect target stays https.
+	e.Pre(middleware.NonWWWRedirectWithConfig(middleware.RedirectConfig{
+		Code: http.StatusPermanentRedirect,
+	}))
+
 	e.Use(middleware.Recover())
 	// Gzip wraps the ResponseWriter, which breaks the connection hijack a
 	// future WebSocket upgrade will need. Skip it on /ws so Phase 2's choices
