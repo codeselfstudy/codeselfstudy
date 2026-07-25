@@ -105,7 +105,7 @@ db_create name:
 
 # Find all the license files
 find_licenses:
-  find . -name "LICENSE.md" -not -path "*/node_modules/*"
+  find . -name "LICENSE.md" -not -path "*/node_modules/*" -not -path "*/.claude/*"
 
 # View HTML mockups
 mockups:
