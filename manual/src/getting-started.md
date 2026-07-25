@@ -43,7 +43,7 @@ DATABASE_URL="dev.db"
 WORKOS_CLIENT_ID=client_...
 WORKOS_API_HOSTNAME=api.workos.com
 WORKOS_API_KEY=sk_test_...
-WORKOS_COOKIE_PASSWORD=<32+ secure random chars>
+WORKOS_COOKIE_PASSWORD=  # 32+ secure random chars, e.g. from: openssl rand -base64 32
 APP_BASE_URL=http://localhost:8080
 
 # optional: Slack webhook pinged when a user requests account deletion
