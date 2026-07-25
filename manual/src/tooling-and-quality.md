@@ -16,6 +16,9 @@ bun run --filter web lint            # ESLint + Stylelint
 go test -race ./...                  # Go race tests
 go vet ./...                         # static analysis
 
+# Worker (apps/email_receiver)
+bun run --filter email_receiver test # tsc typecheck + bun test
+
 # Repo-wide
 bun run format                       # Prettier
 bun run check                        # Prettier + ESLint
@@ -36,12 +39,13 @@ bun run check                        # Prettier + ESLint
 
 ## Continuous Integration
 
-`.github/workflows/test.yml` runs both sides on every pull request and on pushes to `main`:
+`.github/workflows/test.yml` runs all three apps on every pull request and on pushes to `main`:
 
-- `bun install` + `bun run --filter web test`
-- `cd apps/api && go test -race ./... && go vet ./...`
-- ESLint and Stylelint via `bunx` against `apps/web`.
+- ESLint and Stylelint against `apps/web` (without `--fix` — the local `lint` script auto-fixes, CI only checks).
+- `bun run --filter web build` (`astro check` + the static build), then the web tests with coverage.
+- `go test -race ./...`, `go vet ./...`, and `govulncheck` in `apps/api`.
+- ESLint and the typecheck + tests for `apps/email_receiver`.
 
 ## Git Hooks
 
-`lefthook.yml` runs Prettier on staged files in `pre-commit` and `just test` + lint in `pre-push`. If hooks block you, fix the reported files and re-run the command — never bypass them with `--no-verify`.
+`lefthook.yml` runs Prettier on staged files in `pre-commit`; in `pre-push` it runs `bun run test` (the web tests) plus ESLint and Stylelint on the pushed files. If hooks block you, fix the reported files and re-run the command — never bypass them with `--no-verify`.

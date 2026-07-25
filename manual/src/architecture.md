@@ -15,7 +15,9 @@ codeselfstudy/
 │   ├── api/                    Go + Echo backend
 │   │   ├── main.go             Echo bootstrap, static serving, route wiring
 │   │   ├── cmd/migrate/        thin goose CLI for ad-hoc migration runs
-│   │   ├── internal/auth/      WorkOS JWKS verifier + Echo middleware
+│   │   ├── internal/session/   server-side WorkOS sign-in + cookie session
+│   │   ├── internal/users/     account rows, /api/me + settings handlers
+│   │   ├── internal/auth/      WorkOS JWKS verifier + Echo middleware (fallback)
 │   │   ├── internal/db/        SQLite / Turso access (driver by URL scheme)
 │   │   ├── internal/db/migrations/   goose .sql migrations (embedded)
 │   │   ├── internal/ingest/    /api/ingest + /api/admin/digest handlers, config
@@ -36,7 +38,7 @@ codeselfstudy/
 
 1. The Go binary listens on `:8080`.
 2. `/healthz` → 204 (Fly health check).
-3. `/api/*` → JSON handlers. `/api/me` is gated by the WorkOS JWKS middleware; `POST /api/ingest` and `POST /api/admin/digest` (the email pipeline) are gated by the `INGEST_TOKEN` bearer. Unknown `/api/*` paths return a JSON 404, never the static fallback.
+3. `/auth/*` → the server-side sign-in flow (login redirect, WorkOS code exchange, logout). `/api/*` → JSON handlers. `/api/me` and the settings routes are gated by the session-cookie middleware; `POST /api/ingest` and `POST /api/admin/digest` (the email pipeline) are gated by the `INGEST_TOKEN` bearer. Unknown `/api/*` paths return a JSON 404, never the static fallback.
 4. `/ws` → reserved for the future WebSocket hub.
 5. Anything else → static handler. It first checks the legacy redirect map (`apps/api/redirects.go`) and emits a 308 if the path matches. Then, for an extensionless path with no trailing slash that resolves to a directory index, it emits a 301 to the trailing-slash form (the site is built with `trailingSlash: "always"`). Otherwise it resolves `/foo` against `static/foo`, then `static/foo/index.html`, then `static/foo.html`. If nothing matches it serves `static/404.html` with a 404 status.
 
@@ -44,10 +46,13 @@ codeselfstudy/
 
 ## Auth
 
-- **Client:** the Astro navbar mounts a WorkOS AuthKit sign-in control (`@workos-inc/authkit-react`) as a browser-only island, so `Layout.astro` renders `Navbar` with `client:only="react"`. Signing in yields a WorkOS access token that `apiFetch` (`apps/web/src/lib/api.ts`) attaches as a Bearer credential to the gated API — the navbar reads `/api/me` to show the signed-in user.
-- **Server:** `apps/api/internal/auth/jwks.go` fetches the WorkOS JWKS on startup and refreshes periodically. `apps/api/internal/auth/middleware.go` validates signature, issuer, and expiry on every protected request. Validated claims are stashed in the Echo context for handlers to read.
+Sign-in is entirely server-side — the browser bundle reads no WorkOS values.
 
-The Go-side auth is opt-in: if `WORKOS_CLIENT_ID` / `WORKOS_API_HOSTNAME` (or their `VITE_`-prefixed fallbacks) are missing, `/api/me` is not mounted. Static serving and `/healthz` keep working — useful for barebones smoke tests.
+- **Server:** `apps/api/internal/session` owns `GET /auth/login` (redirect to WorkOS's hosted sign-in), `GET /auth/callback` (code exchange via `WORKOS_API_KEY`), and `GET /auth/logout`. The session lives in a sealed first-party cookie (encrypted with `WORKOS_COOKIE_PASSWORD`); a session middleware gates `/api/*`. When `DATABASE_URL` is set, `apps/api/internal/users` owns the account routes on top of that session: `GET /api/me` (DB-backed, with the username), `GET`/`PATCH /api/settings`, and `POST /api/settings/delete-request`. Without the DB, the session's cookie-profile `/api/me` keeps the site working.
+- **Client:** the navbar island renders `SignInButton` (which navigates to `/auth/login`) or `UserMenu` from `apps/web/src/components/auth/`. To paint the right control on the first frame it reads the JavaScript-readable `css_auth` hint cookie that the server sets beside the session cookie, plus a localStorage-cached username/avatar (`apps/web/src/lib/authHint.ts`), then confirms against `/api/me` (a same-origin fetch that sends the cookie).
+- **Fallback:** the older Bearer/JWKS path (`apps/api/internal/auth`: JWKS fetch + refresh, signature/expiry validation) still exists and gates `/api/me` when the session config is absent but a verifier is configured.
+
+The Go-side auth is opt-in: sign-in needs all five WorkOS variables (`WORKOS_CLIENT_ID`, `WORKOS_API_HOSTNAME`, `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, `APP_BASE_URL`) — with any of them missing the `/auth/*` routes stay off and the server logs which one is absent. Static serving and `/healthz` keep working — useful for barebones smoke tests.
 
 ## Database
 

@@ -13,15 +13,20 @@ Inside `apps/web/src/`:
 - `pages/`: file-based routes (Astro `.astro` pages).
 - `layouts/`: shared page shell (`Layout.astro` — `<head>`, nav, footer).
 - `components/`: reusable UI building blocks, including the React navbar island.
+- `components/auth/`: the navbar's `SignInButton` and `UserMenu`.
+- `components/settings/`: the settings-page form island.
+- `components/ui/`: small shadcn-style primitives (button, dropdown, sheet).
 - `components/copyrighted/`: licensed page copy (see its `LICENSE.md`).
-- `lib/`: shared utilities (`metadata`, `cn`).
+- `lib/`: shared utilities (`metadata`, `utils` with `cn`, `authHint`, `minify`).
 - `styles/`: the global stylesheet.
 
 Inside `apps/api/`:
 
 - `main.go`: Echo bootstrap, static serving, route wiring.
 - `cmd/migrate/`: small CLI around goose for ad-hoc migration runs.
-- `internal/auth/`: WorkOS JWKS verifier + Echo middleware.
+- `internal/session/`: server-side WorkOS sign-in (`/auth/*`), sealed cookie session, session middleware.
+- `internal/users/`: account rows and the session-gated `/api/me` + settings handlers.
+- `internal/auth/`: WorkOS JWKS verifier + Echo middleware (legacy Bearer fallback).
 - `internal/db/`: SQLite / Turso access (driver chosen by `DATABASE_URL` scheme).
 - `internal/db/migrations/`: goose `.sql` migrations, embedded into the binary and applied by the deploy's release command (on boot for a local SQLite DB).
 - `internal/ingest/`: the `/api/ingest` + `/api/admin/digest` handlers, bearer-token middleware, and pipeline config.

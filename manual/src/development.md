@@ -35,9 +35,10 @@ cd apps/api && go get -u ./... && go mod tidy
 ## Running tests
 
 ```bash
-just test            # Go race tests + Vitest
+just test            # Go race tests + Vitest + Worker tests
 just test-watch      # Vitest in watch mode (web only)
 just test-coverage   # Vitest with coverage report
+just smoke_test      # build, then end-to-end checks through the Go server
 ```
 
 Backend changes require Go test coverage — that's a hard rule of the stack. Add tests under `apps/api/` next to the code under test (`*_test.go`).
@@ -49,7 +50,7 @@ just format    # Prettier across the repo
 just lint      # ESLint + Stylelint on the web side
 ```
 
-`lefthook` runs Prettier on staged files in `pre-commit` and `just test` + lint in `pre-push`.
+`lefthook` runs Prettier on staged files in `pre-commit`; in `pre-push` it runs `bun run test` (the web tests) plus ESLint and Stylelint on the pushed files.
 
 ## See available recipes
 
