@@ -2,8 +2,8 @@
 default:
   @just --list
 
-# Run the web (port 7001) and api (port 8080) dev servers together. The Vite
-# dev server proxies /api and /ws to the Go server.
+# Run the web (port 7001) and api (port 8080) dev servers together. They run
+# independently — there is no dev proxy between them (see manual/src/development.md).
 dev:
   just dev-api & just dev-web && wait
 

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Install [Bun](https://bun.sh/). It's an alternative to Node.js.
+- Install [Bun](https://bun.com/). It's an alternative to Node.js.
 - Install [Go](https://go.dev/) 1.26+. The backend is Go + Echo.
 - Install [just](https://just.systems/). It's a command runner.
 
@@ -24,22 +24,30 @@ The dev server runs at `http://localhost:7001`.
 
 ```bash
 just build
-bun run preview
+bun run --filter web preview
 ```
+
+`astro preview` serves only the prerendered files. To preview production URL behavior too (redirects, trailing-slash canonicalization, `/api/*`), run the Go server against the same build instead: `just build`, then `just dev-api`.
 
 ## Environment Variables
 
-Copy `.env.local.example` to `.env.local` at the repo root and fill in:
+Copy `.env.local.example` to `.env.local` at the repo root and fill in the values. The example file is the authoritative, commented reference; the short version:
 
 ```bash
-# client-side variables (browser-exposed). The Astro app consumes these for the
-# WorkOS AuthKit sign-in control; the Go verifier reads them as fallback names.
-PUBLIC_WORKOS_CLIENT_ID="your_workos_client_id"
-PUBLIC_WORKOS_API_HOSTNAME="your_workos_api_hostname"
-
-# server-only variables
-WORKOS_API_KEY="your_workos_api_key"
+# database (also enables user accounts when set)
 DATABASE_URL="dev.db"
+
+# WorkOS auth — all server-only; sign-in is a server-side session, so the
+# browser bundle reads no WorkOS values and there are no PUBLIC_/VITE_ aliases.
+# All five must be set or the /auth/* routes stay off.
+WORKOS_CLIENT_ID=client_...
+WORKOS_API_HOSTNAME=api.workos.com
+WORKOS_API_KEY=sk_test_...
+WORKOS_COOKIE_PASSWORD=  # 32+ secure random chars, e.g. from: openssl rand -base64 32
+APP_BASE_URL=http://localhost:8080
+
+# optional: Slack webhook pinged when a user requests account deletion
+SLACK_WEBHOOK_FOR_ADMIN_CHANNEL=
 
 # email-ingest pipeline (optional — see below)
 INGEST_TOKEN=""

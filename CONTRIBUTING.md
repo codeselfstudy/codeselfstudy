@@ -12,11 +12,11 @@ Please attend a meetup to learn more about the project and group.
 
 Start by looking at open issues, or open a new issue to suggest improvements if you notice something unclear in the documentation or code.
 
-1. Fork the repository to your own GitHub account using GitHub’s Fork button.
-2. Clone your fork to your local machine:
+1. Fork the main repository, [codeselfstudy/codeselfstudy](https://github.com/codeselfstudy/codeselfstudy), to your own GitHub account using GitHub’s Fork button.
+2. Clone your fork to your local machine, replacing `YOUR-USERNAME` with your GitHub username:
 
 ```bash
-git clone https://github.com/your-username/codeselfstudy.git
+git clone https://github.com/YOUR-USERNAME/codeselfstudy.git
 ```
 
 3. Change directory into the project:
@@ -68,7 +68,7 @@ git push origin my-contribution-branch
 ## Pull Requests
 
 - Describe what you changed and why.
-- Include testing notes (for example: `bun run test`, `bun run lint`).
+- Include testing notes (for example: `just test`, `just lint`).
 - Include screenshots for UI changes.
 - Reference related issues if applicable.
 - Be open to feedback — PRs don't need to be perfect.

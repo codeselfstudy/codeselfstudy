@@ -25,7 +25,7 @@ Common recipes: `just dev`, `just build`, `just clean`, `just deploy`,
 
 ## Bun
 
-Run `package.json` scripts with [Bun](https://bun.sh/).
+Run `package.json` scripts with [Bun](https://bun.com/).
 
 ```bash
 bun run <script-name>

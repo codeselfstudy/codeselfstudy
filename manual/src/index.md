@@ -2,14 +2,14 @@
 
 Welcome to the Code Self Study website codebase. This mdBook manual is a short guide for getting the app running and understanding how the project is organized.
 
-The repo is a Bun workspace with an Astro frontend (`apps/web/`) and a Go + Echo backend (`apps/api/`). In production a single Go binary serves the prerendered site, the JSON API, and a future WebSocket endpoint — there is no JavaScript runtime on the server.
+The repo is a Bun workspace with an Astro frontend (`apps/web/`), a Go + Echo backend (`apps/api/`), and a Cloudflare Worker that receives forwarded email (`apps/email_receiver/`). In production a single Go binary serves the prerendered site, the JSON API, and a future WebSocket endpoint — there is no JavaScript runtime on the server.
 
 ## Project Goals
 
 - Help members find something in common to work on.
 - Support meetup activities and discussion.
 
-Current ideas include authentication, daily puzzles, marking completed puzzles, and surfacing tasks by difficulty.
+Sign-in and user settings are live; ideas in progress include daily puzzles, marking completed puzzles, and surfacing tasks by difficulty.
 
 ## Start Here
 
