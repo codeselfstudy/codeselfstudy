@@ -4,7 +4,7 @@ This is the new [Code Self Study](https://codeselfstudy.com/) website.
 
 Attend a meetup to find out how to contribute. :construction:
 
-See the documentation in [manual](./manual/src/SUMMARY.md). If [just](https://just.systems/) is installed, you can view the manual in the browser with the command: `just manual`.
+See the documentation in [manual](./manual/src/SUMMARY.md). If `just` is installed (see Quick start below), you can view the manual in the browser with the command: `just manual`.
 
 ## Architecture
 
@@ -25,9 +25,9 @@ codeselfstudy/
 
 The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future WebSocket endpoint at `/ws`. It also owns the URL layer: legacy redirects and trailing-slash canonicalization (the site is built with `trailingSlash: "always"`) live in the Go server, since a static build can't emit real redirects. No JS runtime in production. Targets a single 256 MB Fly machine.
 
-**Auth.** An Echo middleware validates access tokens against the WorkOS JWKS for protected `/api/*` routes. The client-side WorkOS sign-in UI is deferred to the API phase — the current Astro build ships without it.
+**Auth.** Sign-in is entirely server-side: the Go API owns `/auth/login`, `/auth/callback`, and `/auth/logout` (`internal/session`), runs the WorkOS code exchange, and keeps the session in a sealed first-party cookie — the browser bundle reads no WorkOS values. `internal/users` serves the session-gated `/api/me` and settings routes, and a JavaScript-readable `css_auth` hint cookie lets the static navbar paint the right sign-in/user control on the first frame. A legacy Bearer/JWKS middleware (`internal/auth`) remains as a fallback when the session config is absent.
 
-**Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO) locally; Turso (`libsql://`) in production via the pure-Go `tursodatabase/libsql-client-go` driver — `internal/db.Open` selects the driver by URL scheme, so the distroless image stays static. The Go side owns the schema: goose migrations live in `apps/api/internal/db/migrations/`, are embedded into the binary via `//go:embed`, and apply automatically on server startup.
+**Database.** SQLite via `modernc.org/sqlite` (pure Go, no CGO) locally; Turso (`libsql://`) in production via the pure-Go `tursodatabase/libsql-client-go` driver — `internal/db.Open` selects the driver by URL scheme, so the distroless image stays static. The Go side owns the schema: goose migrations live in `apps/api/internal/db/migrations/` and are embedded into the binary via `//go:embed`. A local SQLite database is migrated automatically on server startup; in production Fly runs `server -migrate` as the deploy's release command, once per deploy before the new version serves traffic.
 
 **Email → deals → Slack.** The `apps/email_receiver` Cloudflare Worker receives forwarded newsletters via Cloudflare Email Routing and POSTs the raw RFC822 to the Go server's `POST /api/ingest` (bearer `INGEST_TOKEN`). The server parses the email, stores it in Turso, extracts deals with the Gemini API, and posts a Block Kit digest to a Slack channel (at most once per `DIGEST_INTERVAL`); mail from a sender listed in `APPROVED_FORWARDING_EMAILS` posts immediately instead of waiting, and `POST /api/admin/digest` forces one by hand. The pipeline is opt-in — it runs only when `DATABASE_URL` and `INGEST_TOKEN` are set, so the server otherwise stays a pure static host.
 
@@ -47,7 +47,7 @@ just dev                          # web :7001 (Astro), api :8080 (Go)
 ```sh
 # Common tasks
 just build       # produce a deployable artifact
-just test        # Go race tests + Vitest
+just test        # Go race tests + Vitest + Worker tests
 just deploy      # build, then fly deploy
 ```
 
