@@ -1,43 +1,14 @@
-# Astro Starter Kit: Minimal
+# Code Self Study — web
+
+The Astro frontend of the Code Self Study website: statically generated pages with React islands, prerendered to `dist/` and served by the Go backend (`apps/api/`) in production.
+
+Work from the repo root:
 
 ```sh
-bun create astro@latest -- --template minimal
+bun install
+just dev       # Astro dev server on http://localhost:7001 (+ Go API on :8080)
+just build     # prerender to dist/ and mirror into apps/api/static/
+just test      # full test suite (Go + web + Worker)
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command               | Action                                           |
-| :-------------------- | :----------------------------------------------- |
-| `bun install`         | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+See the [root README](../../README.md) and the [manual](../../manual/src/SUMMARY.md) for architecture, conventions, and deployment.
