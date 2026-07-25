@@ -5,7 +5,7 @@ The codebase is licensed under BSD 3-Clause. Some subdirectories have their own 
 To list all license files:
 
 ```bash
-find . -name "LICENSE.md" -not -path "*/node_modules/*"
+find . -name "LICENSE.md" -not -path "*/node_modules/*" -not -path "*/.claude/*"
 ```
 
 Or with the `justfile` script:
