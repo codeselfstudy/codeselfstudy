@@ -83,12 +83,7 @@ The code is licensed under BSD 3-Clause license. Some of the subdirectories are 
 You can use this command to see their locations:
 
 ```bash
-find . -name "LICENSE.md" -not -path "*/node_modules/*"
-```
-
-or with `just`:
-
-```bash
+# see the `justfile` for the exact code that runs
 just find_licenses
 ```
 
