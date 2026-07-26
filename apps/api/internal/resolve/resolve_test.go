@@ -291,21 +291,21 @@ func TestRejectNonPublic(t *testing.T) {
 		address string
 		wantErr bool
 	}{
-		{"10.0.0.8:80", true},          // RFC 1918
-		{"192.168.1.1:443", true},      // RFC 1918
-		{"127.0.0.1:80", true},         // loopback
-		{"169.254.169.254:80", true},   // link-local (cloud metadata)
-		{"[::1]:443", true},            // v6 loopback
-		{"[fdaa::3]:80", true},         // ULA — Fly 6PN
-		{"[fe80::1]:80", true},         // v6 link-local
-		{"0.0.0.0:80", true},           // unspecified
-		{"224.0.0.1:80", true},         // multicast
-		{"100.64.0.5:80", true},        // CGNAT low end (RFC 6598)
-		{"100.127.255.254:443", true},  // CGNAT high end
-		{"100.63.255.255:80", false},   // just below CGNAT — public
-		{"100.128.0.1:80", false},      // just above CGNAT — public
-		{"example.com:80", true},       // Control sees IPs only; a name here is wrong
-		{"93.184.216.34:443", false},   // public v4
+		{"10.0.0.8:80", true},                               // RFC 1918
+		{"192.168.1.1:443", true},                           // RFC 1918
+		{"127.0.0.1:80", true},                              // loopback
+		{"169.254.169.254:80", true},                        // link-local (cloud metadata)
+		{"[::1]:443", true},                                 // v6 loopback
+		{"[fdaa::3]:80", true},                              // ULA — Fly 6PN
+		{"[fe80::1]:80", true},                              // v6 link-local
+		{"0.0.0.0:80", true},                                // unspecified
+		{"224.0.0.1:80", true},                              // multicast
+		{"100.64.0.5:80", true},                             // CGNAT low end (RFC 6598)
+		{"100.127.255.254:443", true},                       // CGNAT high end
+		{"100.63.255.255:80", false},                        // just below CGNAT — public
+		{"100.128.0.1:80", false},                           // just above CGNAT — public
+		{"example.com:80", true},                            // Control sees IPs only; a name here is wrong
+		{"93.184.216.34:443", false},                        // public v4
 		{"[2606:2800:220:1:248:1893:25c8:1946]:443", false}, // public v6
 	}
 	for _, tc := range cases {
