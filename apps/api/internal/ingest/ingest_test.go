@@ -69,22 +69,40 @@ func (f *fakePoster) count() int {
 
 // fakeResolver maps input URLs to resolved ones; unmapped inputs pass through
 // unchanged, and err (if set) is returned alongside — matching the URLResolver
-// contract of always handing back a usable URL.
+// contract of always handing back a usable URL. ResolvePage additionally hands
+// back the canned page (nil for an empty URL, like the real resolver).
 type fakeResolver struct {
-	mu    sync.Mutex
-	byURL map[string]string
-	err   error
-	calls int
+	mu           sync.Mutex
+	byURL        map[string]string
+	page         []byte
+	err          error
+	resolveCalls int
+	pageCalls    int
 }
 
 func (f *fakeResolver) Resolve(_ context.Context, raw string) (string, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	f.calls++
-	if r, ok := f.byURL[raw]; ok {
-		return r, f.err
+	f.resolveCalls++
+	return f.mapURL(raw), f.err
+}
+
+func (f *fakeResolver) ResolvePage(_ context.Context, raw string) (string, []byte, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.pageCalls++
+	if raw == "" {
+		return raw, nil, nil
 	}
-	return raw, f.err
+	return f.mapURL(raw), f.page, f.err
+}
+
+// mapURL requires f.mu held.
+func (f *fakeResolver) mapURL(raw string) string {
+	if r, ok := f.byURL[raw]; ok {
+		return r
+	}
+	return raw
 }
 
 type env struct {
@@ -223,6 +241,9 @@ func TestIngestResolvesDealURLs(t *testing.T) {
 	if a.URL != "https://deals.example/a" {
 		t.Errorf("deal A URL = %q, want the resolved URL", a.URL)
 	}
+	if a.EndsAt != "" {
+		t.Errorf("deal A ends_at = %q, want empty (no page returned)", a.EndsAt)
+	}
 	b, err := e.st.GetDealByDedupeKey(ctx, store.DedupeKey("deals@humblebundle.com", "Bundle B"))
 	if err != nil {
 		t.Fatalf("GetDealByDedupeKey B: %v", err)
@@ -230,8 +251,72 @@ func TestIngestResolvesDealURLs(t *testing.T) {
 	if b.URL != "" {
 		t.Errorf("deal B URL = %q, want empty (no URL extracted)", b.URL)
 	}
-	if fr.calls != 2 {
-		t.Errorf("resolver calls = %d, want 2 (one per deal)", fr.calls)
+	if fr.pageCalls != 2 {
+		t.Errorf("resolver page calls = %d, want 2 (one per deal; both lack ends_at)", fr.pageCalls)
+	}
+}
+
+func TestIngestFillsEndsAtFromPage(t *testing.T) {
+	// A deal whose email stated no deadline gets one mined from the resolved
+	// page's structured data.
+	e := setup(t)
+	e.h.Resolver = &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"@type":"Product","offers":{"priceValidUntil":"2026-08-01"}}
+		</script></head><body></body></html>`),
+	}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x1@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	ctx := context.Background()
+	a, err := e.st.GetDealByDedupeKey(ctx, store.DedupeKey("deals@humblebundle.com", "Bundle A"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey A: %v", err)
+	}
+	if a.EndsAt != "2026-08-01" {
+		t.Errorf("deal A ends_at = %q, want 2026-08-01 from the page", a.EndsAt)
+	}
+	// Bundle B has no URL, so there is no page to mine.
+	b, err := e.st.GetDealByDedupeKey(ctx, store.DedupeKey("deals@humblebundle.com", "Bundle B"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey B: %v", err)
+	}
+	if b.EndsAt != "" {
+		t.Errorf("deal B ends_at = %q, want empty", b.EndsAt)
+	}
+}
+
+func TestIngestEmailEndsAtNotOverwritten(t *testing.T) {
+	// An email-stated deadline wins: the page is not even fetched for that deal.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle C", URL: "https://h/c", EndsAt: "2026-12-31"},
+	}, nil)
+	fr := &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"priceValidUntil":"2026-08-01"}
+		</script></head></html>`),
+	}
+	e.h.Resolver = fr
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x2@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle C"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "2026-12-31" {
+		t.Errorf("ends_at = %q, want the email's 2026-12-31 kept", d.EndsAt)
+	}
+	if fr.pageCalls != 0 {
+		t.Errorf("page calls = %d, want 0 (deadline already known)", fr.pageCalls)
+	}
+	if fr.resolveCalls != 1 {
+		t.Errorf("resolve calls = %d, want 1", fr.resolveCalls)
 	}
 }
 

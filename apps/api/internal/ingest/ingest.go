@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/expiry"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/extract"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/mailparse"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
@@ -22,17 +23,32 @@ import (
 // size.
 const defaultMaxIngestBytes = 25 * 1024 * 1024
 
-// resolveBudget bounds URL resolution for one email's whole batch of deals, so
-// a pathological email full of slow links cannot stall the ingest request.
-// Deals that miss the budget keep their extracted URLs.
-const resolveBudget = 15 * time.Second
+// resolveBudget bounds URL resolution and page mining for one email's whole
+// batch of deals, so a pathological email full of slow links cannot stall the
+// ingest request. It scales with the batch — a page fetch costs real time per
+// deal — but stays capped so /api/ingest remains responsive. Deals that miss
+// the budget keep their extracted values.
+func resolveBudget(deals int) time.Duration {
+	const (
+		floor   = 15 * time.Second
+		perDeal = 3 * time.Second
+		ceiling = 45 * time.Second
+	)
+	budget := floor + time.Duration(deals)*perDeal
+	if budget > ceiling {
+		return ceiling
+	}
+	return budget
+}
 
 // URLResolver cleans one deal URL (following tracking redirects, stripping
 // tracking parameters). Implementations must return a usable URL — the input
-// unchanged on any failure — plus the failure for logging. See
-// internal/resolve.
+// unchanged on any failure — plus the failure for logging. ResolvePage
+// additionally returns the destination page (nil when skipped or failed) so
+// the caller can mine it. See internal/resolve.
 type URLResolver interface {
 	Resolve(ctx context.Context, rawURL string) (string, error)
+	ResolvePage(ctx context.Context, rawURL string) (string, []byte, error)
 }
 
 // Handlers holds the email-ingest pipeline dependencies and exposes the Echo
@@ -147,17 +163,32 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	}
 
 	// Resolve tracking-redirect URLs to their clean destinations before
-	// storing (see internal/resolve). Strictly best-effort under one shared
-	// budget: a failed or skipped resolution keeps the extracted URL, and a
-	// resolver problem never fails the ingest.
+	// storing (see internal/resolve). When the email stated no deadline, the
+	// same fetch also brings back the deal page so its structured data can
+	// fill ends_at (see internal/expiry) — an email-stated deadline is never
+	// overwritten. Strictly best-effort under one shared budget: a failed or
+	// skipped step keeps the extracted values, and a resolver problem never
+	// fails the ingest.
 	if h.Resolver != nil && len(deals) > 0 {
-		rctx, cancel := context.WithTimeout(ctx, resolveBudget)
+		rctx, cancel := context.WithTimeout(ctx, resolveBudget(len(deals)))
 		for i := range deals {
-			resolved, rerr := h.Resolver.Resolve(rctx, deals[i].URL)
+			d := &deals[i]
+			if d.EndsAt != "" {
+				resolved, rerr := h.Resolver.Resolve(rctx, d.URL)
+				if rerr != nil {
+					c.Logger().Warnf("resolve deal url: %v", rerr)
+				}
+				d.URL = resolved
+				continue
+			}
+			resolved, page, rerr := h.Resolver.ResolvePage(rctx, d.URL)
 			if rerr != nil {
 				c.Logger().Warnf("resolve deal url: %v", rerr)
 			}
-			deals[i].URL = resolved
+			d.URL = resolved
+			if len(page) > 0 {
+				d.EndsAt = expiry.FromHTML(page)
+			}
 		}
 		cancel()
 	}
