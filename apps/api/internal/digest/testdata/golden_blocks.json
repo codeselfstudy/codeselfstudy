@@ -36,15 +36,6 @@
     },
     {
       "type": "divider"
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "mrkdwn",
-          "text": "deal-digest · 2026-07-20 07:02 PDT"
-        }
-      ]
     }
   ]
 }
