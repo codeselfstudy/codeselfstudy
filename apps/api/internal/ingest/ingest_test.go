@@ -67,6 +67,26 @@ func (f *fakePoster) count() int {
 	return f.n
 }
 
+// fakeResolver maps input URLs to resolved ones; unmapped inputs pass through
+// unchanged, and err (if set) is returned alongside — matching the URLResolver
+// contract of always handing back a usable URL.
+type fakeResolver struct {
+	mu    sync.Mutex
+	byURL map[string]string
+	err   error
+	calls int
+}
+
+func (f *fakeResolver) Resolve(_ context.Context, raw string) (string, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.calls++
+	if r, ok := f.byURL[raw]; ok {
+		return r, f.err
+	}
+	return raw, f.err
+}
+
 type env struct {
 	e      *echo.Echo
 	h      *ingest.Handlers
@@ -179,6 +199,57 @@ func TestIngestHappyPath(t *testing.T) {
 	}
 	if got.Status != store.StatusExtracted {
 		t.Errorf("email status = %q, want extracted", got.Status)
+	}
+}
+
+func TestIngestResolvesDealURLs(t *testing.T) {
+	// The stored deal carries the resolver's cleaned URL, not the extracted one.
+	e := setup(t)
+	fr := &fakeResolver{byURL: map[string]string{
+		"https://h/a": "https://deals.example/a",
+	}}
+	e.h.Resolver = fr
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<r1@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+
+	ctx := context.Background()
+	a, err := e.st.GetDealByDedupeKey(ctx, store.DedupeKey("deals@humblebundle.com", "Bundle A"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey A: %v", err)
+	}
+	if a.URL != "https://deals.example/a" {
+		t.Errorf("deal A URL = %q, want the resolved URL", a.URL)
+	}
+	b, err := e.st.GetDealByDedupeKey(ctx, store.DedupeKey("deals@humblebundle.com", "Bundle B"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey B: %v", err)
+	}
+	if b.URL != "" {
+		t.Errorf("deal B URL = %q, want empty (no URL extracted)", b.URL)
+	}
+	if fr.calls != 2 {
+		t.Errorf("resolver calls = %d, want 2 (one per deal)", fr.calls)
+	}
+}
+
+func TestIngestResolverErrorKeepsURLAndSucceeds(t *testing.T) {
+	// A failing resolver must not fail the ingest or lose the extracted URL.
+	e := setup(t)
+	e.h.Resolver = &fakeResolver{err: errors.New("resolver down")}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<r2@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	a, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle A"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if a.URL != "https://h/a" {
+		t.Errorf("deal A URL = %q, want the extracted URL kept", a.URL)
 	}
 }
 
