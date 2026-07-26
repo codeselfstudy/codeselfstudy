@@ -8,11 +8,16 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
 
 var update = flag.Bool("update", false, "update golden files")
+
+// testNow is a fixed posting time so deadline suppression is deterministic; it
+// sits before every EndsAt used in the fixtures below.
+var testNow = time.Date(2026, 7, 20, 12, 0, 0, 0, time.UTC)
 
 func TestBuildBlocksGolden(t *testing.T) {
 	deals := []store.Deal{
@@ -28,7 +33,7 @@ func TestBuildBlocksGolden(t *testing.T) {
 		},
 	}
 
-	got, err := BuildBlocks(deals)
+	got, err := BuildBlocks(deals, testNow)
 	if err != nil {
 		t.Fatalf("BuildBlocks: %v", err)
 	}
@@ -57,7 +62,7 @@ func TestBuildBlocksNoTimestampFooter(t *testing.T) {
 	// Without overflow, no context block of any kind belongs in the payload —
 	// asserting on block types rather than footer text catches a reworded
 	// footer too.
-	got, err := BuildBlocks([]store.Deal{{Title: "X"}})
+	got, err := BuildBlocks([]store.Deal{{Title: "X"}}, testNow)
 	if err != nil {
 		t.Fatalf("BuildBlocks: %v", err)
 	}
@@ -81,7 +86,7 @@ func TestBuildBlocksOverflow(t *testing.T) {
 	for i := range deals {
 		deals[i] = store.Deal{Title: fmt.Sprintf("Deal %d", i)}
 	}
-	got, err := BuildBlocks(deals)
+	got, err := BuildBlocks(deals, testNow)
 	if err != nil {
 		t.Fatalf("BuildBlocks: %v", err)
 	}
@@ -125,16 +130,39 @@ func TestEscapeMrkdwn(t *testing.T) {
 }
 
 func TestDealTextOmitsEmptyFields(t *testing.T) {
-	got := dealText(store.Deal{Title: "Bare"})
+	got := dealText(store.Deal{Title: "Bare"}, testNow)
 	if got != "*Bare*" {
 		t.Errorf("dealText(bare) = %q, want *Bare*", got)
+	}
+}
+
+func TestDealTextDeadlineGuard(t *testing.T) {
+	// A stored deadline already in the past (usually a hallucinated year) must
+	// not render; a current, future, or free-form one must.
+	now := time.Date(2026, 7, 26, 12, 0, 0, 0, time.UTC)
+	cases := []struct {
+		name, endsAt string
+		want         bool // "ends …" rendered?
+	}{
+		{"past hidden", "2025-11-27", false},
+		{"today shown", "2026-07-26", true},
+		{"future shown", "2026-11-27", true},
+		{"free-form shown", "while supplies last", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := dealText(store.Deal{Title: "T", EndsAt: tc.endsAt}, now)
+			if rendered := strings.Contains(got, "ends "+tc.endsAt); rendered != tc.want {
+				t.Errorf("dealText with ends_at %q rendered=%v, want %v (text %q)", tc.endsAt, rendered, tc.want, got)
+			}
+		})
 	}
 }
 
 func TestDealTextEscapesURLDelimiters(t *testing.T) {
 	// Any |, <, > that survives param-stripping (e.g. in the path) must not break
 	// Slack's <url|text> syntax.
-	got := dealText(store.Deal{Title: "T", URL: "https://x.example/d|e<f>"})
+	got := dealText(store.Deal{Title: "T", URL: "https://x.example/d|e<f>"}, testNow)
 	if strings.Contains(got, "|e") || strings.Contains(got, "<f>") {
 		t.Errorf("URL delimiters not escaped: %q", got)
 	}
@@ -146,7 +174,7 @@ func TestDealTextEscapesURLDelimiters(t *testing.T) {
 
 func TestDealTextStripsQueryParams(t *testing.T) {
 	// The tracking query attached by newsletters must be gone from the Slack link.
-	got := dealText(store.Deal{Title: "T", URL: "https://x.example/deal?utm_source=news&id=9"})
+	got := dealText(store.Deal{Title: "T", URL: "https://x.example/deal?utm_source=news&id=9"}, testNow)
 	want := "*<https://x.example/deal|T>*"
 	if got != want {
 		t.Errorf("dealText = %q, want %q", got, want)

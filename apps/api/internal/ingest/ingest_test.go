@@ -320,6 +320,63 @@ func TestIngestEmailEndsAtNotOverwritten(t *testing.T) {
 	}
 }
 
+func TestIngestImplausibleEndsAtRefilledFromPage(t *testing.T) {
+	// An extracted deadline already in the past when the email was sent (the
+	// fixture's Date is 2026-07-20) is a hallucinated year, not a deadline: it
+	// must be dropped, which routes the deal through the page fetch so the
+	// page's structured data supplies the real date.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	fr := &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"@type":"Product","offers":{"priceValidUntil":"2026-11-27"}}
+		</script></head></html>`),
+	}
+	e.h.Resolver = fr
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x3@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "2026-11-27" {
+		t.Errorf("ends_at = %q, want the page's 2026-11-27 replacing the hallucinated 2025-11-27", d.EndsAt)
+	}
+	if fr.pageCalls != 1 {
+		t.Errorf("page calls = %d, want 1 (implausible deadline forces the page fetch)", fr.pageCalls)
+	}
+	if fr.resolveCalls != 0 {
+		t.Errorf("resolve calls = %d, want 0", fr.resolveCalls)
+	}
+}
+
+func TestIngestImplausibleEndsAtDroppedWhenPageHasNoDate(t *testing.T) {
+	// Same hallucinated deadline, but the page offers nothing to mine: the deal
+	// must store an empty ends_at rather than keep the impossible date.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body>no structured data</body></html>`)}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x4@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (hallucinated date dropped, page had none)", d.EndsAt)
+	}
+}
+
 func TestIngestResolverErrorKeepsURLAndSucceeds(t *testing.T) {
 	// A failing resolver must not fail the ingest or lose the extracted URL.
 	e := setup(t)

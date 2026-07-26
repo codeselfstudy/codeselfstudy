@@ -25,6 +25,8 @@ Include an offer only when it is about software or software development. Exclude
 For a bundle that mixes software titles with unrelated ones, include it only if it is primarily about software.
 Return one entry per bundle or offer — never one entry per item inside a bundle.
 Set url to the link printed next to that offer if one is present.
+The prompt's Date line is the day the email was sent. When a deadline omits the year, resolve it against that date so the deadline is on or after it: "ends November 27" in an email dated 2026-07-26 means 2026-11-27.
+Copy prices, promo codes, and deadlines only from the email's own text; never invent, infer, or embellish them. Leave a field null when the email does not state it.
 If the email has no software deals (receipts, shipping notices, account or security alerts, plain content newsletters, or only non-software offers), return an empty array.
 Respond only with the JSON array described by the schema.`
 
@@ -79,7 +81,7 @@ func dealGenConfig() *genai.GenerateContentConfig {
 					"title":       {Type: genai.TypeString},
 					"url":         {Type: genai.TypeString, Nullable: genai.Ptr(true)},
 					"price":       {Type: genai.TypeString, Nullable: genai.Ptr(true), Description: `free-form, e.g. "$25 (96% off)", "pay what you want"`},
-					"ends_at":     {Type: genai.TypeString, Nullable: genai.Ptr(true), Description: "ISO 8601 date if stated"},
+					"ends_at":     {Type: genai.TypeString, Nullable: genai.Ptr(true), Description: "ISO 8601 date if stated; a missing year resolves against the Date line, never before it"},
 					"description": {Type: genai.TypeString, Nullable: genai.Ptr(true), Description: "one short sentence"},
 				},
 				Required: []string{"source", "title"},
@@ -118,7 +120,14 @@ func buildUserPrompt(e mailparse.Email) string {
 	if r := []rune(body); len(r) > maxPromptChars {
 		body = string(r[:maxPromptChars])
 	}
-	return fmt.Sprintf("From: %s\nSubject: %s\n\n%s", e.From, e.Subject, body)
+	// The Date line anchors yearless deadlines (see systemInstruction). Kept in
+	// the sender's own zone: that is the calendar the deadline was written
+	// against.
+	date := ""
+	if e.SentAt != nil {
+		date = fmt.Sprintf("Date: %s\n", e.SentAt.Format("2006-01-02"))
+	}
+	return fmt.Sprintf("%sFrom: %s\nSubject: %s\n\n%s", date, e.From, e.Subject, body)
 }
 
 func parseDeals(text string) ([]Deal, error) {

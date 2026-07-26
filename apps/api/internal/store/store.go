@@ -155,7 +155,9 @@ func (s *Store) SetEmailStatus(ctx context.Context, id int64, status, extractErr
 }
 
 // UpsertDeal inserts a deal or, when its dedupe_key already exists, bumps
-// last_seen_at and seen_count and fills any previously-missing optional fields.
+// last_seen_at and seen_count and refreshes each optional field from the new
+// sighting when it supplies a value (the stored value is kept only when the
+// new one is empty).
 // If the existing deal was last seen before repostCutoff (i.e. unseen for longer
 // than the repost window), its posted_in_digest_id is reset to NULL so the deal
 // re-enters the next digest.

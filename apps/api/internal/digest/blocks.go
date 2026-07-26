@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/expiry"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
 
@@ -47,8 +49,11 @@ type contextBlock struct {
 // BuildBlocks renders the deals as a Slack incoming-webhook payload. At most
 // MaxDealsPerDigest deals are shown; if more are supplied, a context line notes
 // how many remain queued. The header count reflects the full set of new deals.
-// No timestamp is rendered — Slack already stamps every message.
-func BuildBlocks(deals []store.Deal) ([]byte, error) {
+// No timestamp is rendered — Slack already stamps every message. now is the
+// posting time: a stored deadline already before it is suppressed from the
+// meta line (the deal itself still posts — a past date is more often a wrong
+// date than a dead deal).
+func BuildBlocks(deals []store.Deal, now time.Time) ([]byte, error) {
 	shown := deals
 	overflow := 0
 	if len(shown) > MaxDealsPerDigest {
@@ -61,7 +66,7 @@ func BuildBlocks(deals []store.Deal) ([]byte, error) {
 	}
 	for _, d := range shown {
 		blocks = append(blocks,
-			sectionBlock{Type: "section", Text: textObject{Type: "mrkdwn", Text: dealText(d)}},
+			sectionBlock{Type: "section", Text: textObject{Type: "mrkdwn", Text: dealText(d, now)}},
 			dividerBlock{Type: "divider"},
 		)
 	}
@@ -84,8 +89,8 @@ func headerText(n int) string {
 
 // dealText renders one deal as Slack mrkdwn: a bold linked title, a middot-joined
 // meta line (price · ends <date> · source), and an italic description. Empty
-// fields are omitted.
-func dealText(d store.Deal) string {
+// fields are omitted, as is a deadline already before now (see BuildBlocks).
+func dealText(d store.Deal, now time.Time) string {
 	var lines []string
 
 	title := escapeMrkdwn(d.Title)
@@ -99,7 +104,7 @@ func dealText(d store.Deal) string {
 	if d.Price != "" {
 		meta = append(meta, escapeMrkdwn(d.Price))
 	}
-	if d.EndsAt != "" {
+	if d.EndsAt != "" && expiry.OnOrAfter(d.EndsAt, now) {
 		meta = append(meta, "ends "+escapeMrkdwn(d.EndsAt))
 	}
 	if d.Source != "" {

@@ -1,6 +1,9 @@
 package expiry
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func page(inner string) []byte {
 	return []byte("<!doctype html><html><head>" + inner + "</head><body><p>deal</p></body></html>")
@@ -87,5 +90,28 @@ func TestNormalizeDate(t *testing.T) {
 		if got := normalizeDate(tc.in); got != tc.want {
 			t.Errorf("normalizeDate(%q) = %q, want %q", tc.in, got, tc.want)
 		}
+	}
+}
+
+func TestOnOrAfter(t *testing.T) {
+	ref := time.Date(2026, 7, 26, 15, 30, 0, 0, time.UTC)
+	cases := []struct {
+		name, in string
+		want     bool
+	}{
+		{"past day", "2025-11-27", false},
+		{"day before", "2026-07-25", false},
+		{"same day", "2026-07-26", true},
+		{"same day despite earlier timestamp", "2026-07-26T01:00:00Z", true},
+		{"future day", "2026-11-27", true},
+		{"unparseable is not rejected", "while supplies last", true},
+		{"empty is not rejected", "", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := OnOrAfter(tc.in, ref); got != tc.want {
+				t.Errorf("OnOrAfter(%q, %s) = %v, want %v", tc.in, ref, got, tc.want)
+			}
+		})
 	}
 }

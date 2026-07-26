@@ -44,7 +44,7 @@ func Run(ctx context.Context, s *store.Store, poster WebhookPoster, interval, st
 		return false, nil
 	}
 
-	body, err := BuildBlocks(deals)
+	body, err := BuildBlocks(deals, s.Now())
 	if err != nil {
 		_ = s.DeleteDigest(ctx, digestID)
 		return false, fmt.Errorf("build blocks: %w", err)

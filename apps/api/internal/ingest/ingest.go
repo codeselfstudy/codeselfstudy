@@ -170,9 +170,23 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	// skipped step keeps the extracted values, and a resolver problem never
 	// fails the ingest.
 	if h.Resolver != nil && len(deals) > 0 {
+		// Reference day for the deadline sanity check below: the email's own
+		// send date (the extractor interprets deadlines relative to it),
+		// falling back to the clock for emails without a parseable Date.
+		ref := h.store.Now()
+		if email.SentAt != nil {
+			ref = *email.SentAt
+		}
 		rctx, cancel := context.WithTimeout(ctx, resolveBudget(len(deals)))
 		for i := range deals {
 			d := &deals[i]
+			if d.EndsAt != "" && !expiry.OnOrAfter(d.EndsAt, ref) {
+				// A deadline already past when the email was sent is almost
+				// always a hallucinated year, not a real deadline. Drop it so
+				// the page fetch below can supply the real one.
+				c.Logger().Warnf("dropping implausible deal deadline %q (email date %s)", d.EndsAt, ref.Format("2006-01-02"))
+				d.EndsAt = ""
+			}
 			if d.EndsAt != "" {
 				resolved, rerr := h.Resolver.Resolve(rctx, d.URL)
 				if rerr != nil {
