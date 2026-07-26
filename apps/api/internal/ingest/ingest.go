@@ -23,10 +23,23 @@ import (
 // size.
 const defaultMaxIngestBytes = 25 * 1024 * 1024
 
-// resolveBudget bounds URL resolution for one email's whole batch of deals, so
-// a pathological email full of slow links cannot stall the ingest request.
-// Deals that miss the budget keep their extracted URLs.
-const resolveBudget = 15 * time.Second
+// resolveBudget bounds URL resolution and page mining for one email's whole
+// batch of deals, so a pathological email full of slow links cannot stall the
+// ingest request. It scales with the batch — a page fetch costs real time per
+// deal — but stays capped so /api/ingest remains responsive. Deals that miss
+// the budget keep their extracted values.
+func resolveBudget(deals int) time.Duration {
+	const (
+		floor   = 15 * time.Second
+		perDeal = 3 * time.Second
+		ceiling = 45 * time.Second
+	)
+	budget := floor + time.Duration(deals)*perDeal
+	if budget > ceiling {
+		return ceiling
+	}
+	return budget
+}
 
 // URLResolver cleans one deal URL (following tracking redirects, stripping
 // tracking parameters). Implementations must return a usable URL — the input
@@ -157,7 +170,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	// skipped step keeps the extracted values, and a resolver problem never
 	// fails the ingest.
 	if h.Resolver != nil && len(deals) > 0 {
-		rctx, cancel := context.WithTimeout(ctx, resolveBudget)
+		rctx, cancel := context.WithTimeout(ctx, resolveBudget(len(deals)))
 		for i := range deals {
 			d := &deals[i]
 			if d.EndsAt != "" {
