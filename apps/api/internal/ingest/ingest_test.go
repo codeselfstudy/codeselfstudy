@@ -377,6 +377,69 @@ func TestIngestImplausibleEndsAtDroppedWhenPageHasNoDate(t *testing.T) {
 	}
 }
 
+func TestIngestImplausibleEndsAtDroppedWithoutResolver(t *testing.T) {
+	// The deadline guard must run even with no resolver wired: an impossible
+	// date never reaches the store.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x5@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (guard runs without a resolver)", d.EndsAt)
+	}
+}
+
+func TestIngestReingestClearsStoredHallucinatedDeadline(t *testing.T) {
+	// A bad deadline stored by an earlier ingest (before the guard existed)
+	// must be erased when the same deal is sighted again and the guard rejects
+	// the same extracted date — plain COALESCE would keep the stored copy.
+	e := setup(t)
+	ctx := context.Background()
+
+	seedEmail, _, err := e.st.InsertEmail(ctx, store.Email{
+		MessageID: "<seed@x>", From: "Humble Bundle <deals@humblebundle.com>", Subject: "Deals", BodyText: "body",
+	})
+	if err != nil {
+		t.Fatalf("InsertEmail: %v", err)
+	}
+	key := store.DedupeKey("deals@humblebundle.com", "AI Agents in Action")
+	if err := e.st.UpsertDeal(ctx, store.Deal{
+		EmailID: seedEmail.ID, DedupeKey: key, Source: "Manning",
+		Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27",
+	}, time.Time{}); err != nil {
+		t.Fatalf("UpsertDeal seed: %v", err)
+	}
+
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body>no structured data</body></html>`)}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x6@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(ctx, key)
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want the stored hallucinated date cleared on re-sighting", d.EndsAt)
+	}
+	if d.SeenCount != 2 {
+		t.Errorf("seen_count = %d, want 2", d.SeenCount)
+	}
+}
+
 func TestIngestResolverErrorKeepsURLAndSucceeds(t *testing.T) {
 	// A failing resolver must not fail the ingest or lose the extracted URL.
 	e := setup(t)
