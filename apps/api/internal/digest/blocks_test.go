@@ -54,12 +54,25 @@ func TestBuildBlocksGolden(t *testing.T) {
 func TestBuildBlocksNoTimestampFooter(t *testing.T) {
 	// Slack stamps every message itself, so the payload must not carry its own
 	// timestamp footer (removed with the Pacific-time machinery it needed).
+	// Without overflow, no context block of any kind belongs in the payload —
+	// asserting on block types rather than footer text catches a reworded
+	// footer too.
 	got, err := BuildBlocks([]store.Deal{{Title: "X"}})
 	if err != nil {
 		t.Fatalf("BuildBlocks: %v", err)
 	}
-	if strings.Contains(string(got), "deal-digest") {
-		t.Errorf("payload still contains the footer label:\n%s", got)
+	var p struct {
+		Blocks []struct {
+			Type string `json:"type"`
+		} `json:"blocks"`
+	}
+	if err := json.Unmarshal(got, &p); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	for _, b := range p.Blocks {
+		if b.Type == "context" {
+			t.Errorf("payload still contains a context footer:\n%s", got)
+		}
 	}
 }
 
