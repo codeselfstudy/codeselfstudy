@@ -134,7 +134,9 @@ func (r *Resolver) Resolve(ctx context.Context, rawURL string) (string, error) {
 
 // stripTracking removes known tracking parameters from a raw query string. It
 // works on the raw string (split on "&") rather than url.Values so the
-// surviving parameters keep their original order and encoding.
+// surviving parameters keep their original order and encoding; only the key's
+// *classification* uses the decoded form, so a percent-encoded tracking key
+// (%75tm_source) can't sneak past the check.
 func stripTracking(rawQuery string) string {
 	if rawQuery == "" {
 		return ""
@@ -145,6 +147,9 @@ func stripTracking(rawQuery string) string {
 		key := p
 		if i := strings.IndexByte(p, '='); i >= 0 {
 			key = p[:i]
+		}
+		if dec, err := url.QueryUnescape(key); err == nil {
+			key = dec
 		}
 		if !isTrackingParam(key) {
 			kept = append(kept, p)
@@ -169,10 +174,15 @@ func isTrackingParam(key string) bool {
 	return false
 }
 
+// cgnat is the RFC 6598 carrier-grade-NAT shared range. It is non-public
+// space some clouds use internally, yet neither IsGlobalUnicast nor IsPrivate
+// covers it, so it needs its own deny.
+var cgnat = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
+
 // rejectNonPublic is a net.Dialer Control hook that refuses any address that
 // is not public global unicast: loopback, link-local (which covers cloud
-// metadata endpoints), multicast, unspecified, and RFC 1918 / ULA private
-// ranges (which cover Fly's 6PN fdaa::/16).
+// metadata endpoints), multicast, unspecified, RFC 1918 / ULA private ranges
+// (which cover Fly's 6PN fdaa::/16), and the RFC 6598 CGNAT range.
 func rejectNonPublic(_, address string, _ syscall.RawConn) error {
 	host, _, err := net.SplitHostPort(address)
 	if err != nil {
@@ -182,7 +192,7 @@ func rejectNonPublic(_, address string, _ syscall.RawConn) error {
 	if ip == nil {
 		return fmt.Errorf("resolve: refusing non-IP address %q", host)
 	}
-	if !ip.IsGlobalUnicast() || ip.IsPrivate() {
+	if !ip.IsGlobalUnicast() || ip.IsPrivate() || cgnat.Contains(ip) {
 		return fmt.Errorf("resolve: refusing non-public address %v", ip)
 	}
 	return nil

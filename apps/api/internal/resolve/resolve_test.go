@@ -201,6 +201,10 @@ func TestRejectNonPublic(t *testing.T) {
 		{"[fe80::1]:80", true},         // v6 link-local
 		{"0.0.0.0:80", true},           // unspecified
 		{"224.0.0.1:80", true},         // multicast
+		{"100.64.0.5:80", true},        // CGNAT low end (RFC 6598)
+		{"100.127.255.254:443", true},  // CGNAT high end
+		{"100.63.255.255:80", false},   // just below CGNAT — public
+		{"100.128.0.1:80", false},      // just above CGNAT — public
 		{"example.com:80", true},       // Control sees IPs only; a name here is wrong
 		{"93.184.216.34:443", false},   // public v4
 		{"[2606:2800:220:1:248:1893:25c8:1946]:443", false}, // public v6
@@ -222,6 +226,8 @@ func TestStripTracking(t *testing.T) {
 		{"valueless key", "utm_source&id=9", "id=9"},
 		{"unknown params kept verbatim", "linkID={$linkID}&q=a%20b", "q=a%20b"},
 		{"not a tracking prefix", "utmx=1", "utmx=1"},
+		{"percent-encoded tracking key stripped", "%75tm_source=x&id=9", "id=9"},
+		{"percent-encoded kept param stays encoded", "%69d=9", "%69d=9"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
