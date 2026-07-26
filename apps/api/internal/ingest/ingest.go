@@ -208,7 +208,17 @@ func (h *Handlers) Ingest(c echo.Context) error {
 			}
 			d.URL = resolved
 			if len(page) > 0 {
-				d.EndsAt = expiry.FromHTML(page)
+				// The page's structured data gets the same skepticism as the
+				// extractor: shop pages routinely carry a stale
+				// priceValidUntil from an earlier promotion, and a past date
+				// is useless to store (the digest would hide it anyway).
+				// Leaving it empty also keeps ClearEndsAt effective, so a
+				// previously stored bad deadline still gets erased.
+				if candidate := expiry.FromHTML(page); candidate == "" || expiry.OnOrAfter(candidate, ref) {
+					d.EndsAt = candidate
+				} else {
+					c.Logger().Warnf("dropping implausible page deadline %q (email date %s)", candidate, ref.Format("2006-01-02"))
+				}
 			}
 		}
 		cancel()

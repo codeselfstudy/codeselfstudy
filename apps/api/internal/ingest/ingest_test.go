@@ -377,6 +377,33 @@ func TestIngestImplausibleEndsAtDroppedWhenPageHasNoDate(t *testing.T) {
 	}
 }
 
+func TestIngestPastPageDeadlineAlsoDropped(t *testing.T) {
+	// When the extracted deadline is rejected and the fetched page's own
+	// structured data is also in the past (stale priceValidUntil from an
+	// earlier promotion), neither may be stored.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"@type":"Product","offers":{"priceValidUntil":"2025-06-01"}}
+		</script></head></html>`),
+	}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x7@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (both extracted and page deadlines implausible)", d.EndsAt)
+	}
+}
+
 func TestIngestImplausibleEndsAtDroppedWithoutResolver(t *testing.T) {
 	// The deadline guard must run even with no resolver wired: an impossible
 	// date never reaches the store.
