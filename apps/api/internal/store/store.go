@@ -77,6 +77,13 @@ type Deal struct {
 	LastSeenAt       time.Time
 	SeenCount        int
 	PostedInDigestID *int64
+
+	// ClearEndsAt is a write-only flag for UpsertDeal (never read back from
+	// the database): when set, an empty EndsAt overwrites the stored deadline
+	// with NULL instead of preserving it. Ingest sets it after rejecting an
+	// implausible extracted deadline, so a previously stored copy of the same
+	// bad date cannot survive a re-sighting.
+	ClearEndsAt bool
 }
 
 // Store is a concrete persistence layer over a *sql.DB.
@@ -155,12 +162,20 @@ func (s *Store) SetEmailStatus(ctx context.Context, id int64, status, extractErr
 }
 
 // UpsertDeal inserts a deal or, when its dedupe_key already exists, bumps
-// last_seen_at and seen_count and fills any previously-missing optional fields.
+// last_seen_at and seen_count and refreshes each optional field from the new
+// sighting when it supplies a value (the stored value is kept only when the
+// new one is empty). d.ClearEndsAt is the exception: it makes an empty EndsAt
+// overwrite the stored deadline with NULL rather than preserve it.
 // If the existing deal was last seen before repostCutoff (i.e. unseen for longer
 // than the repost window), its posted_in_digest_id is reset to NULL so the deal
 // re-enters the next digest.
 func (s *Store) UpsertDeal(ctx context.Context, d Deal, repostCutoff time.Time) error {
 	now := formatTime(s.Now().UTC())
+	// The driver may not convert Go bools; bind the flag as 0/1 explicitly.
+	clearEndsAt := 0
+	if d.ClearEndsAt {
+		clearEndsAt = 1
+	}
 	_, err := s.db.ExecContext(ctx,
 		`INSERT INTO deals
 		   (email_id, dedupe_key, source, title, url, price, ends_at, description, first_seen_at, last_seen_at, seen_count)
@@ -170,13 +185,14 @@ func (s *Store) UpsertDeal(ctx context.Context, d Deal, repostCutoff time.Time) 
 		   seen_count          = deals.seen_count + 1,
 		   url                 = COALESCE(excluded.url, deals.url),
 		   price               = COALESCE(excluded.price, deals.price),
-		   ends_at             = COALESCE(excluded.ends_at, deals.ends_at),
+		   ends_at             = CASE WHEN ? THEN NULL
+		                              ELSE COALESCE(excluded.ends_at, deals.ends_at) END,
 		   description         = COALESCE(excluded.description, deals.description),
 		   posted_in_digest_id = CASE WHEN deals.last_seen_at < ?
 		                              THEN NULL ELSE deals.posted_in_digest_id END`,
 		d.EmailID, d.DedupeKey, d.Source, d.Title,
 		nullString(d.URL), nullString(d.Price), nullString(d.EndsAt), nullString(d.Description),
-		now, now, formatTime(repostCutoff.UTC()),
+		now, now, clearEndsAt, formatTime(repostCutoff.UTC()),
 	)
 	if err != nil {
 		return fmt.Errorf("upsert deal: %w", err)

@@ -157,6 +157,45 @@ func TestUpsertDealBumpsSeenCountAndCoalesces(t *testing.T) {
 	}
 }
 
+func TestUpsertDealClearEndsAt(t *testing.T) {
+	s := newStore(t)
+	e := mustInsertEmail(t, s, "<clr@x>")
+	key := store.DedupeKey("deals@humblebundle.com", "MEAP Book")
+	past := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	seed := store.Deal{EmailID: e.ID, DedupeKey: key, Source: "Manning", Title: "MEAP Book", EndsAt: "2025-11-27"}
+	if err := s.UpsertDeal(ctx, seed, past); err != nil {
+		t.Fatalf("UpsertDeal seed: %v", err)
+	}
+
+	// A plain re-sighting without a deadline preserves the stored one.
+	if err := s.UpsertDeal(ctx, store.Deal{EmailID: e.ID, DedupeKey: key, Source: "Manning", Title: "MEAP Book"}, past); err != nil {
+		t.Fatalf("UpsertDeal keep: %v", err)
+	}
+	got, err := s.GetDealByDedupeKey(ctx, key)
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if got.EndsAt != "2025-11-27" {
+		t.Errorf("EndsAt = %q, want stored 2025-11-27 preserved without ClearEndsAt", got.EndsAt)
+	}
+
+	// ClearEndsAt makes the empty deadline overwrite the stored one.
+	if err := s.UpsertDeal(ctx, store.Deal{EmailID: e.ID, DedupeKey: key, Source: "Manning", Title: "MEAP Book", ClearEndsAt: true}, past); err != nil {
+		t.Fatalf("UpsertDeal clear: %v", err)
+	}
+	got, err = s.GetDealByDedupeKey(ctx, key)
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if got.EndsAt != "" {
+		t.Errorf("EndsAt = %q, want cleared", got.EndsAt)
+	}
+	if got.SeenCount != 3 {
+		t.Errorf("SeenCount = %d, want 3", got.SeenCount)
+	}
+}
+
 // seedPostedDeal inserts a deal at seenAt, posts it in a digest, and returns its key.
 func seedPostedDeal(t *testing.T, s *store.Store, set func(time.Time), emailID int64, title string, seenAt time.Time) string {
 	t.Helper()

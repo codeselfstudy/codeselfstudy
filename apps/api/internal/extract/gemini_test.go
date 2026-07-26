@@ -196,6 +196,22 @@ func TestParseDeals(t *testing.T) {
 	}
 }
 
+func TestBuildUserPromptDateLine(t *testing.T) {
+	sent := time.Date(2026, 7, 26, 15, 29, 0, 0, time.UTC)
+	e := mailparse.Email{From: "a@b.com", Subject: "S", Text: "body", SentAt: &sent}
+	got := buildUserPrompt(e)
+	if !strings.HasPrefix(got, "Date: 2026-07-26\n") {
+		t.Errorf("prompt missing Date line:\n%s", got)
+	}
+
+	// Without a parseable Date header there is no line to anchor on — the
+	// prompt must simply omit it rather than invent one.
+	e.SentAt = nil
+	if got := buildUserPrompt(e); strings.Contains(got, "Date:") {
+		t.Errorf("prompt has a Date line without SentAt:\n%s", got)
+	}
+}
+
 func TestBuildUserPromptTruncates(t *testing.T) {
 	long := make([]rune, maxPromptChars+5000)
 	for i := range long {

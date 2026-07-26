@@ -320,6 +320,153 @@ func TestIngestEmailEndsAtNotOverwritten(t *testing.T) {
 	}
 }
 
+func TestIngestImplausibleEndsAtRefilledFromPage(t *testing.T) {
+	// An extracted deadline already in the past when the email was sent (the
+	// fixture's Date is 2026-07-20) is a hallucinated year, not a deadline: it
+	// must be dropped, which routes the deal through the page fetch so the
+	// page's structured data supplies the real date.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	fr := &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"@type":"Product","offers":{"priceValidUntil":"2026-11-27"}}
+		</script></head></html>`),
+	}
+	e.h.Resolver = fr
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x3@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "2026-11-27" {
+		t.Errorf("ends_at = %q, want the page's 2026-11-27 replacing the hallucinated 2025-11-27", d.EndsAt)
+	}
+	if fr.pageCalls != 1 {
+		t.Errorf("page calls = %d, want 1 (implausible deadline forces the page fetch)", fr.pageCalls)
+	}
+	if fr.resolveCalls != 0 {
+		t.Errorf("resolve calls = %d, want 0", fr.resolveCalls)
+	}
+}
+
+func TestIngestImplausibleEndsAtDroppedWhenPageHasNoDate(t *testing.T) {
+	// Same hallucinated deadline, but the page offers nothing to mine: the deal
+	// must store an empty ends_at rather than keep the impossible date.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body>no structured data</body></html>`)}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x4@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (hallucinated date dropped, page had none)", d.EndsAt)
+	}
+}
+
+func TestIngestPastPageDeadlineAlsoDropped(t *testing.T) {
+	// When the extracted deadline is rejected and the fetched page's own
+	// structured data is also in the past (stale priceValidUntil from an
+	// earlier promotion), neither may be stored.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"@type":"Product","offers":{"priceValidUntil":"2025-06-01"}}
+		</script></head></html>`),
+	}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x7@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (both extracted and page deadlines implausible)", d.EndsAt)
+	}
+}
+
+func TestIngestImplausibleEndsAtDroppedWithoutResolver(t *testing.T) {
+	// The deadline guard must run even with no resolver wired: an impossible
+	// date never reaches the store.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x5@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "AI Agents in Action"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (guard runs without a resolver)", d.EndsAt)
+	}
+}
+
+func TestIngestReingestClearsStoredHallucinatedDeadline(t *testing.T) {
+	// A bad deadline stored by an earlier ingest (before the guard existed)
+	// must be erased when the same deal is sighted again and the guard rejects
+	// the same extracted date — plain COALESCE would keep the stored copy.
+	e := setup(t)
+	ctx := context.Background()
+
+	seedEmail, _, err := e.st.InsertEmail(ctx, store.Email{
+		MessageID: "<seed@x>", From: "Humble Bundle <deals@humblebundle.com>", Subject: "Deals", BodyText: "body",
+	})
+	if err != nil {
+		t.Fatalf("InsertEmail: %v", err)
+	}
+	key := store.DedupeKey("deals@humblebundle.com", "AI Agents in Action")
+	if err := e.st.UpsertDeal(ctx, store.Deal{
+		EmailID: seedEmail.ID, DedupeKey: key, Source: "Manning",
+		Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27",
+	}, time.Time{}); err != nil {
+		t.Fatalf("UpsertDeal seed: %v", err)
+	}
+
+	e.ex.set([]extract.Deal{
+		{Source: "Manning", Title: "AI Agents in Action", URL: "https://h/m", EndsAt: "2025-11-27"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body>no structured data</body></html>`)}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x6@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(ctx, key)
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want the stored hallucinated date cleared on re-sighting", d.EndsAt)
+	}
+	if d.SeenCount != 2 {
+		t.Errorf("seen_count = %d, want 2", d.SeenCount)
+	}
+}
+
 func TestIngestResolverErrorKeepsURLAndSucceeds(t *testing.T) {
 	// A failing resolver must not fail the ingest or lose the extracted URL.
 	e := setup(t)
