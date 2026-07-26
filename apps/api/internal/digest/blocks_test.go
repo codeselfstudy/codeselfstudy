@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
@@ -16,7 +15,6 @@ import (
 var update = flag.Bool("update", false, "update golden files")
 
 func TestBuildBlocksGolden(t *testing.T) {
-	now := time.Date(2026, 7, 20, 14, 2, 0, 0, time.UTC)
 	deals := []store.Deal{
 		{
 			Title: "Humble Programming Bundle", URL: "https://humblebundle.com/books/prog",
@@ -30,7 +28,7 @@ func TestBuildBlocksGolden(t *testing.T) {
 		},
 	}
 
-	got, err := BuildBlocks(deals, now)
+	got, err := BuildBlocks(deals)
 	if err != nil {
 		t.Fatalf("BuildBlocks: %v", err)
 	}
@@ -53,32 +51,28 @@ func TestBuildBlocksGolden(t *testing.T) {
 	}
 }
 
-func TestBuildBlocksFooterPacific(t *testing.T) {
-	// The footer renders Pacific time, not UTC, and picks up the right DST label:
-	// a summer instant is PDT, a winter instant is PST. tzdata is embedded (see
-	// blocks.go) so this resolves the same on a dev machine and in the distroless
-	// runtime.
-	cases := []struct {
-		name string
-		now  time.Time
-		want string
-	}{
-		{"summer PDT", time.Date(2026, 7, 20, 14, 2, 0, 0, time.UTC), "deal-digest · 2026-07-20 07:02 PDT"},
-		{"winter PST", time.Date(2026, 1, 15, 8, 30, 0, 0, time.UTC), "deal-digest · 2026-01-15 00:30 PST"},
+func TestBuildBlocksNoTimestampFooter(t *testing.T) {
+	// Slack stamps every message itself, so the payload must not carry its own
+	// timestamp footer (removed with the Pacific-time machinery it needed).
+	// Without overflow, no context block of any kind belongs in the payload —
+	// asserting on block types rather than footer text catches a reworded
+	// footer too.
+	got, err := BuildBlocks([]store.Deal{{Title: "X"}})
+	if err != nil {
+		t.Fatalf("BuildBlocks: %v", err)
 	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			got, err := BuildBlocks([]store.Deal{{Title: "X"}}, tc.now)
-			if err != nil {
-				t.Fatalf("BuildBlocks: %v", err)
-			}
-			if !strings.Contains(string(got), tc.want) {
-				t.Errorf("footer missing %q in\n%s", tc.want, got)
-			}
-			if strings.Contains(string(got), " UTC") {
-				t.Errorf("footer still renders UTC:\n%s", got)
-			}
-		})
+	var p struct {
+		Blocks []struct {
+			Type string `json:"type"`
+		} `json:"blocks"`
+	}
+	if err := json.Unmarshal(got, &p); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	for _, b := range p.Blocks {
+		if b.Type == "context" {
+			t.Errorf("payload still contains a context footer:\n%s", got)
+		}
 	}
 }
 
@@ -87,7 +81,7 @@ func TestBuildBlocksOverflow(t *testing.T) {
 	for i := range deals {
 		deals[i] = store.Deal{Title: fmt.Sprintf("Deal %d", i)}
 	}
-	got, err := BuildBlocks(deals, time.Date(2026, 7, 20, 0, 0, 0, 0, time.UTC))
+	got, err := BuildBlocks(deals)
 	if err != nil {
 		t.Fatalf("BuildBlocks: %v", err)
 	}
