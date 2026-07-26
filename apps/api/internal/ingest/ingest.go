@@ -1,11 +1,13 @@
 package ingest
 
 import (
+	"context"
 	"crypto/subtle"
 	"errors"
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 
@@ -20,6 +22,19 @@ import (
 // size.
 const defaultMaxIngestBytes = 25 * 1024 * 1024
 
+// resolveBudget bounds URL resolution for one email's whole batch of deals, so
+// a pathological email full of slow links cannot stall the ingest request.
+// Deals that miss the budget keep their extracted URLs.
+const resolveBudget = 15 * time.Second
+
+// URLResolver cleans one deal URL (following tracking redirects, stripping
+// tracking parameters). Implementations must return a usable URL — the input
+// unchanged on any failure — plus the failure for logging. See
+// internal/resolve.
+type URLResolver interface {
+	Resolve(ctx context.Context, rawURL string) (string, error)
+}
+
 // Handlers holds the email-ingest pipeline dependencies and exposes the Echo
 // handlers + middleware. Construct with New and mount with Register.
 type Handlers struct {
@@ -30,6 +45,10 @@ type Handlers struct {
 
 	// MaxIngestBytes bounds the /api/ingest body; overridable in tests.
 	MaxIngestBytes int64
+
+	// Resolver, when set, cleans each extracted deal URL before it is stored.
+	// nil skips resolution (tests, or a deliberately offline setup).
+	Resolver URLResolver
 }
 
 // New builds the ingest Handlers over an already-open store, an extractor, and a
@@ -125,6 +144,22 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	if err != nil {
 		_ = h.store.SetEmailStatus(ctx, stored.ID, store.StatusExtractFailed, err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, "extract deals")
+	}
+
+	// Resolve tracking-redirect URLs to their clean destinations before
+	// storing (see internal/resolve). Strictly best-effort under one shared
+	// budget: a failed or skipped resolution keeps the extracted URL, and a
+	// resolver problem never fails the ingest.
+	if h.Resolver != nil && len(deals) > 0 {
+		rctx, cancel := context.WithTimeout(ctx, resolveBudget)
+		for i := range deals {
+			resolved, rerr := h.Resolver.Resolve(rctx, deals[i].URL)
+			if rerr != nil {
+				c.Logger().Warnf("resolve deal url: %v", rerr)
+			}
+			deals[i].URL = resolved
+		}
+		cancel()
 	}
 
 	repostCutoff := h.store.Now().Add(-h.cfg.RepostAfter)

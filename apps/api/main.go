@@ -22,6 +22,7 @@ import (
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/extract"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/ingest"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/resolve"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/session"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/users"
@@ -195,7 +196,11 @@ func newIngestFromEnv(ctx context.Context, database *sql.DB) *ingest.Handlers {
 	}
 
 	poster := digest.NewHTTPPoster(cfg.SlackWebhookURL)
-	return ingest.New(cfg, store.New(database), extractor, poster)
+	h := ingest.New(cfg, store.New(database), extractor, poster)
+	// Clean tracking redirects out of deal URLs before they are stored
+	// (best-effort; see internal/resolve).
+	h.Resolver = resolve.New()
+	return h
 }
 
 // newUsersFromEnv builds the account handlers over the shared database and, when

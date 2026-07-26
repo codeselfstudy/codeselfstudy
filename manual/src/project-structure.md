@@ -33,6 +33,7 @@ Inside `apps/api/`:
 - `internal/store/`: emails/deals/digests persistence and the once-per-interval digest claim.
 - `internal/mailparse/`, `internal/htmltext/`: raw MIME → normalized text.
 - `internal/extract/`: Gemini deal extraction.
+- `internal/resolve/`: deal-URL cleanup — follows tracking redirects to the canonical page and strips tracking parameters (SSRF-guarded, best-effort).
 - `internal/digest/`: Slack Block Kit rendering + HTTP poster.
 - `static/`: populated at build time from `apps/web/dist/`. Gitignored.
 

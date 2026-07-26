@@ -1,0 +1,189 @@
+// Package resolve turns newsletter deal links into clean canonical URLs. Many
+// newsletters wrap deal links in a click-tracking redirector, so the extracted
+// URL is the tracker, not the deal page; a quick fetch that follows the
+// redirect chain finds the real destination, and known tracking parameters
+// (utm_*, mcID, linkID, …) are stripped from it. Resolution is strictly
+// best-effort: on any failure the input URL is returned unchanged, so a
+// resolver outage can never lose or corrupt a deal.
+//
+// The URLs being fetched come from untrusted email content, so the resolver is
+// hardened against SSRF: only http(s) is fetched, and every connection —
+// including each redirect hop, after DNS resolution — refuses private,
+// loopback, link-local, and otherwise non-public addresses (the server runs
+// inside a Fly private network).
+package resolve
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"net/http"
+	"net/url"
+	"strings"
+	"syscall"
+	"time"
+)
+
+const (
+	// maxRedirects bounds the redirect chain. Real trackers use one or two
+	// hops; a longer chain is a loop or abuse.
+	maxRedirects = 5
+
+	// fetchTimeout bounds one Resolve call end to end (dial, TLS, redirects).
+	// Deals are resolved inline during ingest, so slow hosts must give up
+	// quickly and fall back to the extracted URL.
+	fetchTimeout = 4 * time.Second
+
+	// userAgent identifies the fetcher honestly; some hosts reject Go's
+	// default agent outright.
+	userAgent = "codeselfstudy-deals/1.0 (+https://codeselfstudy.com)"
+)
+
+var errTooManyRedirects = errors.New("too many redirects")
+
+// Resolver resolves deal URLs. Construct with New; the zero value is not
+// usable.
+type Resolver struct {
+	client *http.Client
+	// timeout is fetchTimeout in production; tests shorten it.
+	timeout time.Duration
+}
+
+// New returns a Resolver with the SSRF guard enabled.
+func New() *Resolver { return newResolver(false) }
+
+// newResolver optionally disables the non-public-address guard so tests can
+// fetch from httptest servers on loopback.
+func newResolver(allowPrivate bool) *Resolver {
+	dialer := &net.Dialer{Timeout: fetchTimeout}
+	if !allowPrivate {
+		// Control runs after DNS resolution with the literal address being
+		// dialed, so a tracker that redirects (or DNS-rebinds) to an internal
+		// address is refused at the socket, on every hop.
+		dialer.Control = rejectNonPublic
+	}
+	return &Resolver{
+		client: &http.Client{
+			Transport: &http.Transport{
+				DialContext: dialer.DialContext,
+				// One-shot fetches; don't hold idle connections to newsletter
+				// trackers.
+				DisableKeepAlives:   true,
+				TLSHandshakeTimeout: fetchTimeout,
+			},
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				if len(via) >= maxRedirects {
+					return errTooManyRedirects
+				}
+				if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
+					return fmt.Errorf("refusing redirect to scheme %q", req.URL.Scheme)
+				}
+				return nil
+			},
+		},
+		timeout: fetchTimeout,
+	}
+}
+
+// Resolve follows rawURL's redirect chain and returns the final URL with known
+// tracking parameters stripped. It always returns a usable URL: on any failure
+// (non-http(s) input, timeout, refused address, too many redirects) it returns
+// rawURL unchanged, with a non-nil error the caller may log. Tracking
+// parameters are stripped only after a successful fetch — on an unresolved
+// redirector the query often *is* the destination, so an unfetched URL is left
+// exactly as extracted.
+func (r *Resolver) Resolve(ctx context.Context, rawURL string) (string, error) {
+	if strings.TrimSpace(rawURL) == "" {
+		return rawURL, nil
+	}
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL, fmt.Errorf("parse %q: %w", rawURL, err)
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		// Not fetchable; deliberate skip rather than a failure.
+		return rawURL, nil
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return rawURL, fmt.Errorf("build request: %w", err)
+	}
+	req.Header.Set("User-Agent", userAgent)
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return rawURL, fmt.Errorf("fetch %q: %w", rawURL, err)
+	}
+	resp.Body.Close() // the final URL is all we need; the body is never read
+
+	// resp.Request is the last request of the chain, i.e. the destination —
+	// even when that page answers 404, its URL is still the canonical link.
+	final := *resp.Request.URL
+	final.RawQuery = stripTracking(final.RawQuery)
+	if u.Fragment != "" && final.Fragment == "" {
+		// Browsers carry the original fragment across redirects unless a
+		// Location header supplies its own; do the same.
+		final.Fragment = u.Fragment
+	}
+	return final.String(), nil
+}
+
+// stripTracking removes known tracking parameters from a raw query string. It
+// works on the raw string (split on "&") rather than url.Values so the
+// surviving parameters keep their original order and encoding.
+func stripTracking(rawQuery string) string {
+	if rawQuery == "" {
+		return ""
+	}
+	pairs := strings.Split(rawQuery, "&")
+	kept := pairs[:0]
+	for _, p := range pairs {
+		key := p
+		if i := strings.IndexByte(p, '='); i >= 0 {
+			key = p[:i]
+		}
+		if !isTrackingParam(key) {
+			kept = append(kept, p)
+		}
+	}
+	return strings.Join(kept, "&")
+}
+
+// isTrackingParam reports whether a query key is a known tracking parameter.
+// Matching is case-insensitive (newsletters write mcID, mcid, …). The list is
+// deliberately conservative: an unknown parameter might be load-bearing, and
+// the digest's display-time strip removes leftovers from the Slack link anyway.
+func isTrackingParam(key string) bool {
+	k := strings.ToLower(key)
+	if strings.HasPrefix(k, "utm_") {
+		return true
+	}
+	switch k {
+	case "mcid", "linkid", "fbclid", "gclid", "msclkid", "mc_cid", "mc_eid", "igshid", "twclid":
+		return true
+	}
+	return false
+}
+
+// rejectNonPublic is a net.Dialer Control hook that refuses any address that
+// is not public global unicast: loopback, link-local (which covers cloud
+// metadata endpoints), multicast, unspecified, and RFC 1918 / ULA private
+// ranges (which cover Fly's 6PN fdaa::/16).
+func rejectNonPublic(_, address string, _ syscall.RawConn) error {
+	host, _, err := net.SplitHostPort(address)
+	if err != nil {
+		return fmt.Errorf("resolve: refusing unparseable address %q: %w", address, err)
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return fmt.Errorf("resolve: refusing non-IP address %q", host)
+	}
+	if !ip.IsGlobalUnicast() || ip.IsPrivate() {
+		return fmt.Errorf("resolve: refusing non-public address %v", ip)
+	}
+	return nil
+}

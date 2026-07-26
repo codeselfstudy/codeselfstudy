@@ -24,6 +24,7 @@ codeselfstudy/
 │   │   ├── internal/store/     emails/deals/digests persistence
 │   │   ├── internal/mailparse/ internal/htmltext/  MIME → normalized text
 │   │   ├── internal/extract/   Gemini deal extraction
+│   │   ├── internal/resolve/   deal-URL cleanup (tracking redirects → canonical)
 │   │   ├── internal/digest/    Slack Block Kit digest + HTTP poster
 │   │   └── static/             populated at build time from web's dist/
 │   └── email_receiver/         Cloudflare Worker (TS): email → /api/ingest
@@ -65,7 +66,7 @@ The Go-side auth is opt-in: sign-in needs all five WorkOS variables (`WORKOS_CLI
 An opt-in pipeline turns forwarded "deals" newsletters into a Slack digest:
 
 1. `apps/email_receiver` is a Cloudflare Worker wired to Cloudflare Email Routing. On each message it POSTs the raw RFC822 bytes to the Go server's `POST /api/ingest` (bearer `INGEST_TOKEN`, `Content-Type: message/rfc822`). There is no archive mailbox: an oversize message is rejected with `setReject()`, and a persistent POST failure propagates so Cloudflare fails the delivery and the sender's MTA retries.
-2. `internal/ingest` reads the body (≤25 MB), parses the MIME (`internal/mailparse` + `internal/htmltext`), stores the email (`internal/store`, idempotent on message-id), extracts deals with the Gemini API (`internal/extract`), upserts them (dedup by sender registrable-domain + normalized title), and — best effort — posts a Block Kit digest to Slack (`internal/digest`) at most once per `DIGEST_INTERVAL`. `POST /api/admin/digest` forces one (see [Forcing a Slack digest](./deployment.md#forcing-a-slack-digest)).
+2. `internal/ingest` reads the body (≤25 MB), parses the MIME (`internal/mailparse` + `internal/htmltext`), stores the email (`internal/store`, idempotent on message-id), extracts deals with the Gemini API (`internal/extract`), resolves each deal URL to its clean destination (`internal/resolve` follows tracking redirects and strips tracking params, best-effort with an SSRF guard; a failure keeps the extracted URL), upserts them (dedup by sender registrable-domain + normalized title), and — best effort — posts a Block Kit digest to Slack (`internal/digest`) at most once per `DIGEST_INTERVAL`. `POST /api/admin/digest` forces one (see [Forcing a Slack digest](./deployment.md#forcing-a-slack-digest)).
 3. Mail from an address in `APPROVED_FORWARDING_EMAILS` (comma-separated) skips that wait: its digest posts immediately, flushing every queued deal. A sender matches on either the `From:` header or the Worker's `X-Envelope-From` header, so both a hand-composed forward and an auto-forward rule work. Forcing skips only the interval check — the stale-claim guard still holds, so it stays race-safe. The ingest response carries `"forced":true` when the allowlist matched.
 4. The pipeline is enabled only when `DATABASE_URL` and `INGEST_TOKEN` are set; otherwise the server runs static-only. Extraction needs `GEMINI_API_KEY` (empty ⇒ `/api/ingest` returns 500). The Slack webhook is `SLACK_WEBHOOK_FOR_DEALS_CHANNEL`.
 
