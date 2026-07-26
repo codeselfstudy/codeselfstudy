@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -38,6 +39,11 @@ const (
 	// userAgent identifies the fetcher honestly; some hosts reject Go's
 	// default agent outright.
 	userAgent = "codeselfstudy-deals/1.0 (+https://codeselfstudy.com)"
+
+	// maxBodyBytes caps how much of a deal page ResolvePage reads. Structured
+	// data (JSON-LD) sits in the <head> or early <body>, so half a megabyte is
+	// plenty and bounds memory per fetch.
+	maxBodyBytes = 512 << 10
 )
 
 var errTooManyRedirects = errors.New("too many redirects")
@@ -94,31 +100,56 @@ func newResolver(allowPrivate bool) *Resolver {
 // redirector the query often *is* the destination, so an unfetched URL is left
 // exactly as extracted.
 func (r *Resolver) Resolve(ctx context.Context, rawURL string) (string, error) {
+	final, _, err := r.fetch(ctx, rawURL, false)
+	return final, err
+}
+
+// ResolvePage is Resolve plus the destination page itself: when the final
+// response is HTML and the destination answered 2xx, up to maxBodyBytes of the
+// body is returned so the caller can mine it (e.g. for an expiration date). A
+// nil body with a nil error means the page was deliberately skipped (non-HTML,
+// or an error status); the returned URL is usable either way.
+func (r *Resolver) ResolvePage(ctx context.Context, rawURL string) (string, []byte, error) {
+	return r.fetch(ctx, rawURL, true)
+}
+
+// fetch implements Resolve/ResolvePage. It never returns an unusable URL: the
+// first value is the cleaned final URL on success and rawURL unchanged on any
+// failure.
+func (r *Resolver) fetch(ctx context.Context, rawURL string, readBody bool) (string, []byte, error) {
 	if strings.TrimSpace(rawURL) == "" {
-		return rawURL, nil
+		return rawURL, nil, nil
 	}
 	u, err := url.Parse(rawURL)
 	if err != nil {
-		return rawURL, fmt.Errorf("parse %q: %w", rawURL, err)
+		return rawURL, nil, fmt.Errorf("parse %q: %w", rawURL, err)
 	}
 	if u.Scheme != "http" && u.Scheme != "https" {
 		// Not fetchable; deliberate skip rather than a failure.
-		return rawURL, nil
+		return rawURL, nil, nil
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return rawURL, fmt.Errorf("build request: %w", err)
+		return rawURL, nil, fmt.Errorf("build request: %w", err)
 	}
 	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := r.client.Do(req)
 	if err != nil {
-		return rawURL, fmt.Errorf("fetch %q: %w", rawURL, err)
+		return rawURL, nil, fmt.Errorf("fetch %q: %w", rawURL, err)
 	}
-	resp.Body.Close() // the final URL is all we need; the body is never read
+	defer resp.Body.Close()
+
+	var body []byte
+	if readBody && resp.StatusCode >= 200 && resp.StatusCode < 300 &&
+		strings.Contains(resp.Header.Get("Content-Type"), "html") {
+		// Best-effort read under the same timeout; a partial or failed read
+		// just means less (or no) page to mine, not a failed resolution.
+		body, _ = io.ReadAll(io.LimitReader(resp.Body, maxBodyBytes))
+	}
 
 	// resp.Request is the last request of the chain, i.e. the destination —
 	// even when that page answers 404, its URL is still the canonical link.
@@ -129,7 +160,7 @@ func (r *Resolver) Resolve(ctx context.Context, rawURL string) (string, error) {
 		// Location header supplies its own; do the same.
 		final.Fragment = u.Fragment
 	}
-	return final.String(), nil
+	return final.String(), body, nil
 }
 
 // stripTracking removes known tracking parameters from a raw query string. It

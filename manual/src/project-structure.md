@@ -34,6 +34,7 @@ Inside `apps/api/`:
 - `internal/mailparse/`, `internal/htmltext/`: raw MIME → normalized text.
 - `internal/extract/`: Gemini deal extraction.
 - `internal/resolve/`: deal-URL cleanup — follows tracking redirects to the canonical page and strips tracking parameters (SSRF-guarded, best-effort).
+- `internal/expiry/`: mines a deal page's structured data (JSON-LD / microdata) for the offer's expiration date.
 - `internal/digest/`: Slack Block Kit rendering + HTTP poster.
 - `static/`: populated at build time from `apps/web/dist/`. Gitignored.
 

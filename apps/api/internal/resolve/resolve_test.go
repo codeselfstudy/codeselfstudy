@@ -168,6 +168,105 @@ func TestResolveUnparseableInputKeptWithError(t *testing.T) {
 	}
 }
 
+func TestResolvePageReturnsBodyBehindRedirect(t *testing.T) {
+	mux := http.NewServeMux()
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	mux.HandleFunc("/click", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/deal?utm_source=x", http.StatusFound)
+	})
+	mux.HandleFunc("/deal", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write([]byte("<html><body>the deal page</body></html>"))
+	})
+
+	r := newResolver(true)
+	got, body, err := r.ResolvePage(context.Background(), srv.URL+"/click")
+	if err != nil {
+		t.Fatalf("ResolvePage: %v", err)
+	}
+	if want := srv.URL + "/deal"; got != want {
+		t.Errorf("ResolvePage url = %q, want %q", got, want)
+	}
+	if !strings.Contains(string(body), "the deal page") {
+		t.Errorf("body = %q, want the page content", body)
+	}
+}
+
+func TestResolvePageCapsBody(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		big := strings.Repeat("x", maxBodyBytes+1000)
+		w.Write([]byte(big))
+	}))
+	defer srv.Close()
+
+	r := newResolver(true)
+	_, body, err := r.ResolvePage(context.Background(), srv.URL)
+	if err != nil {
+		t.Fatalf("ResolvePage: %v", err)
+	}
+	if len(body) != maxBodyBytes {
+		t.Errorf("body length = %d, want capped at %d", len(body), maxBodyBytes)
+	}
+}
+
+func TestResolvePageSkipsNonHTML(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/pdf")
+		w.Write([]byte("%PDF-1.7"))
+	}))
+	defer srv.Close()
+
+	r := newResolver(true)
+	got, body, err := r.ResolvePage(context.Background(), srv.URL+"/file?utm_source=x")
+	if err != nil {
+		t.Fatalf("ResolvePage: %v", err)
+	}
+	if body != nil {
+		t.Errorf("body = %q, want nil for non-HTML", body)
+	}
+	if want := srv.URL + "/file"; got != want {
+		t.Errorf("url = %q, want %q (still resolved)", got, want)
+	}
+}
+
+func TestResolvePageErrorStatusNoBody(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("<html>not found</html>"))
+	}))
+	defer srv.Close()
+
+	r := newResolver(true)
+	got, body, err := r.ResolvePage(context.Background(), srv.URL+"/gone")
+	if err != nil {
+		t.Fatalf("ResolvePage: %v", err)
+	}
+	if body != nil {
+		t.Errorf("body = %q, want nil for an error status", body)
+	}
+	if want := srv.URL + "/gone"; got != want {
+		t.Errorf("url = %q, want %q", got, want)
+	}
+}
+
+func TestResolvePageFetchFailureKeepsOriginal(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	srv.Close()
+
+	orig := srv.URL + "/deal"
+	r := newResolver(true)
+	got, body, err := r.ResolvePage(context.Background(), orig)
+	if err == nil {
+		t.Fatal("expected an error from a dead server")
+	}
+	if got != orig || body != nil {
+		t.Errorf("ResolvePage = (%q, %q), want original URL and nil body", got, body)
+	}
+}
+
 func TestResolverGuardBlocksLoopback(t *testing.T) {
 	// The production constructor must refuse loopback at the dial layer — this
 	// proves the guard is actually wired into the transport.
