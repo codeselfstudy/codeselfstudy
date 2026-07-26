@@ -164,8 +164,9 @@ func (h *Handlers) Ingest(c echo.Context) error {
 
 	// An extracted deadline already past on the email's own send date (the
 	// extractor interprets deadlines relative to it; fall back to the clock
-	// for emails without a parseable Date) is almost always a hallucinated
-	// year, not a real deadline. Drop it before resolution — even with no
+	// for emails without a parseable Date) carries a stale or guessed year
+	// — vendors ship last year's copy, extractors guess a year for yearless
+	// dates — not a real deadline. Drop it before resolution — even with no
 	// resolver wired an impossible date must not be stored — and remember the
 	// drop so the upsert below can erase a previously stored copy of the same
 	// bad date instead of coalescing it back.
@@ -236,7 +237,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 			EndsAt:      d.EndsAt,
 			Description: d.Description,
 			// A rejected deadline that nothing refilled must overwrite a
-			// stored one — the stored copy is the same hallucination.
+			// stored one — the stored copy is the same bad date.
 			ClearEndsAt: cleared[i] && d.EndsAt == "",
 		}, repostCutoff); err != nil {
 			return err

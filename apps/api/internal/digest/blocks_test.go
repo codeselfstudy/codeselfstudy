@@ -137,7 +137,7 @@ func TestDealTextOmitsEmptyFields(t *testing.T) {
 }
 
 func TestDealTextDeadlineGuard(t *testing.T) {
-	// A stored deadline already in the past (usually a hallucinated year) must
+	// A stored deadline already in the past (a stale or guessed year) must
 	// not render; a current, future, or free-form one must.
 	now := time.Date(2026, 7, 26, 12, 0, 0, 0, time.UTC)
 	cases := []struct {

@@ -135,8 +135,9 @@ func parseDate(s string) (time.Time, bool) {
 }
 
 // OnOrAfter reports whether s names a calendar day on or after ref's. It is the
-// guard against LLM-hallucinated deadlines (an extractor that guesses a year
-// puts the deadline in the past): only a value that parses and falls strictly
+// guard against impossible deadlines — a stale year in the vendor's own copy,
+// or an extractor that guesses a year for a yearless date — either way the
+// deadline lands in the past: only a value that parses and falls strictly
 // before ref's own day returns false. Empty or unparseable strings return true —
 // they carry nothing confidently wrong to reject. Days are compared without
 // time-zone conversion, matching normalizeDate's stance.

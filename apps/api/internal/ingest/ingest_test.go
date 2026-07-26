@@ -322,7 +322,7 @@ func TestIngestEmailEndsAtNotOverwritten(t *testing.T) {
 
 func TestIngestImplausibleEndsAtRefilledFromPage(t *testing.T) {
 	// An extracted deadline already in the past when the email was sent (the
-	// fixture's Date is 2026-07-20) is a hallucinated year, not a deadline: it
+	// fixture's Date is 2026-07-20) carries a stale or guessed year, not a deadline: it
 	// must be dropped, which routes the deal through the page fetch so the
 	// page's structured data supplies the real date.
 	e := setup(t)
@@ -345,7 +345,7 @@ func TestIngestImplausibleEndsAtRefilledFromPage(t *testing.T) {
 		t.Fatalf("GetDealByDedupeKey: %v", err)
 	}
 	if d.EndsAt != "2026-11-27" {
-		t.Errorf("ends_at = %q, want the page's 2026-11-27 replacing the hallucinated 2025-11-27", d.EndsAt)
+		t.Errorf("ends_at = %q, want the page's 2026-11-27 replacing the impossible 2025-11-27", d.EndsAt)
 	}
 	if fr.pageCalls != 1 {
 		t.Errorf("page calls = %d, want 1 (implausible deadline forces the page fetch)", fr.pageCalls)
@@ -356,7 +356,7 @@ func TestIngestImplausibleEndsAtRefilledFromPage(t *testing.T) {
 }
 
 func TestIngestImplausibleEndsAtDroppedWhenPageHasNoDate(t *testing.T) {
-	// Same hallucinated deadline, but the page offers nothing to mine: the deal
+	// Same impossible deadline, but the page offers nothing to mine: the deal
 	// must store an empty ends_at rather than keep the impossible date.
 	e := setup(t)
 	e.ex.set([]extract.Deal{
@@ -373,7 +373,7 @@ func TestIngestImplausibleEndsAtDroppedWhenPageHasNoDate(t *testing.T) {
 		t.Fatalf("GetDealByDedupeKey: %v", err)
 	}
 	if d.EndsAt != "" {
-		t.Errorf("ends_at = %q, want empty (hallucinated date dropped, page had none)", d.EndsAt)
+		t.Errorf("ends_at = %q, want empty (impossible date dropped, page had none)", d.EndsAt)
 	}
 }
 
@@ -460,7 +460,7 @@ func TestIngestReingestClearsStoredHallucinatedDeadline(t *testing.T) {
 		t.Fatalf("GetDealByDedupeKey: %v", err)
 	}
 	if d.EndsAt != "" {
-		t.Errorf("ends_at = %q, want the stored hallucinated date cleared on re-sighting", d.EndsAt)
+		t.Errorf("ends_at = %q, want the stored impossible date cleared on re-sighting", d.EndsAt)
 	}
 	if d.SeenCount != 2 {
 		t.Errorf("seen_count = %d, want 2", d.SeenCount)
