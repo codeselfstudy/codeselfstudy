@@ -376,6 +376,144 @@ func TestResolveJSWallHop(t *testing.T) {
 	}
 }
 
+func TestResolveJSVarWallHop(t *testing.T) {
+	// The location assignment's right-hand side is a variable; the URL literal
+	// it was assigned must be found and followed.
+	scripts := []string{
+		`var u = "%s/deal?id=5&utm_source=n"; window.location.replace(u);`,
+		`var u = "%s/deal?id=5&utm_source=n"; document.location = u;`,
+	}
+	for _, script := range scripts {
+		mux := http.NewServeMux()
+		srv := httptest.NewServer(mux)
+		mux.HandleFunc("/wall", func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, `<html><body><script>`+script+`</script></body></html>`, srv.URL)
+		})
+		mux.HandleFunc("/deal", func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+
+		r := newResolver(true)
+		got, err := r.Resolve(context.Background(), srv.URL+"/wall")
+		if err != nil {
+			t.Errorf("script %q: Resolve: %v", script, err)
+		}
+		if want := srv.URL + "/deal?id=5"; got != want {
+			t.Errorf("script %q: Resolve = %q, want %q", script, got, want)
+		}
+		srv.Close()
+	}
+}
+
+func TestResolveJSVarInHelperFunction(t *testing.T) {
+	// HubSpot's shape: the URL literal lives inside a helper function, the
+	// variable actually assigned to location is built at runtime. The literal
+	// must still be found by identifier name.
+	mux := http.NewServeMux()
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	mux.HandleFunc("/wall", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, `<html><head><script>
+function getTargetURLWithState(state) {
+  var targetURL = "%s/deal?id=7&utm_source=n";
+  return targetURL.substring(0, targetURL.length - 2) + state;
+}
+var targetURL;
+try { targetURL = getTargetURLWithState("1"); } catch(e) { targetURL = getTargetURLWithState("-1"); }
+if (/Android/.test(window.navigator.userAgent)) {
+  document.location = targetURL;
+} else {
+  window.location.replace(targetURL);
+}
+</script></head><body><p>You're being redirected</p><a href="%s/deal?id=7&utm_source=n">click here</a></body></html>`, srv.URL, srv.URL)
+	})
+	mux.HandleFunc("/deal", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	r := newResolver(true)
+	got, err := r.Resolve(context.Background(), srv.URL+"/wall")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if want := srv.URL + "/deal?id=7"; got != want {
+		t.Errorf("Resolve = %q, want %q", got, want)
+	}
+}
+
+func TestResolveAnchorFallbackAfterUnresolvableJS(t *testing.T) {
+	// A script redirect through a variable whose URL is built at runtime (no
+	// literal anywhere) must fall back to the page's single absolute anchor —
+	// the interstitial's no-JS path.
+	mux := http.NewServeMux()
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	mux.HandleFunc("/wall", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, `<html><body><script>var u = base + path; window.location.replace(u);</script>
+<a href="%s/deal?id=3&utm_source=n">click here</a></body></html>`, srv.URL)
+	})
+	mux.HandleFunc("/deal", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	r := newResolver(true)
+	got, err := r.Resolve(context.Background(), srv.URL+"/wall")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if want := srv.URL + "/deal?id=3"; got != want {
+		t.Errorf("Resolve = %q, want %q", got, want)
+	}
+}
+
+func TestResolveAnchorFallbackNeedsSingleAnchor(t *testing.T) {
+	// Same unresolvable script redirect, but two anchors: ambiguous, no hop.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<html><body><script>var u = base + path; window.location.replace(u);</script>
+<a href="https://a.example/x">one</a> <a href="https://b.example/y">two</a></body></html>`))
+	}))
+	defer srv.Close()
+
+	r := newResolver(true)
+	got, err := r.Resolve(context.Background(), srv.URL+"/wall")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if want := srv.URL + "/wall"; got != want {
+		t.Errorf("Resolve = %q, want %q (multiple anchors must not hop)", got, want)
+	}
+}
+
+func TestResolveAnchorFallbackNeedsDetectedJSRedirect(t *testing.T) {
+	// A small page with one anchor but no script redirect is content, not an
+	// interstitial; it must not hop. Likewise a lone *relative* anchor even
+	// with the redirect detected.
+	pages := []string{
+		`<html><body><a href="https://a.example/x">a link</a></body></html>`,
+		`<html><body><script>var u = base + path; window.location.replace(u);</script><a href="/x">rel</a></body></html>`,
+	}
+	for _, page := range pages {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(page))
+		}))
+
+		r := newResolver(true)
+		got, err := r.Resolve(context.Background(), srv.URL+"/page")
+		if err != nil {
+			t.Errorf("page %q: Resolve: %v", page, err)
+		}
+		if want := srv.URL + "/page"; got != want {
+			t.Errorf("page %q: Resolve = %q, want %q (must not hop)", page, got, want)
+		}
+		srv.Close()
+	}
+}
+
 func TestResolveMetaRefreshRelativeQuoted(t *testing.T) {
 	// A quoted, uppercase URL= with a relative target must resolve against the
 	// interstitial's own URL.
@@ -589,6 +727,8 @@ func TestStripTracking(t *testing.T) {
 		{"not a tracking prefix", "utmx=1", "utmx=1"},
 		{"percent-encoded tracking key stripped", "%75tm_source=x&id=9", "id=9"},
 		{"percent-encoded kept param stays encoded", "%69d=9", "%69d=9"},
+		{"hubspot email params stripped", "_hsenc=p2ANqtz&_hsmi=430&_hsfp=123&ecid=ACsprv&id=9", "id=9"},
+		{"hubspot params case-insensitive", "_HsEnc=x&ECID=y&id=9", "id=9"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
