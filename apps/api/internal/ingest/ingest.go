@@ -14,6 +14,7 @@ import (
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/expiry"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/extract"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/htmltext"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/mailparse"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
@@ -23,15 +24,16 @@ import (
 // size.
 const defaultMaxIngestBytes = 25 * 1024 * 1024
 
-// resolveBudget bounds URL resolution and page mining for one email's whole
-// batch of deals, so a pathological email full of slow links cannot stall the
-// ingest request. It scales with the batch — a page fetch costs real time per
-// deal — but stays capped so /api/ingest remains responsive. Deals that miss
-// the budget keep their extracted values.
+// resolveBudget bounds URL resolution, page mining, and model enrichment for
+// one email's whole batch of deals, so a pathological email full of slow links
+// cannot stall the ingest request. It scales with the batch — a page fetch,
+// and possibly a model call, cost real time per deal — but stays capped so
+// /api/ingest remains responsive. Deals that miss the budget keep their
+// extracted values.
 func resolveBudget(deals int) time.Duration {
 	const (
 		floor   = 15 * time.Second
-		perDeal = 3 * time.Second
+		perDeal = 5 * time.Second
 		ceiling = 45 * time.Second
 	)
 	budget := floor + time.Duration(deals)*perDeal
@@ -65,6 +67,12 @@ type Handlers struct {
 	// Resolver, when set, cleans each extracted deal URL before it is stored.
 	// nil skips resolution (tests, or a deliberately offline setup).
 	Resolver URLResolver
+
+	// Enricher, when set, asks the model to fill a deal's still-missing
+	// deadline (and opportunistically a missing price) from the resolved
+	// page's text, after the page's structured data came up empty. nil skips
+	// enrichment (no API key, tests).
+	Enricher extract.PageEnricher
 }
 
 // New builds the ingest Handlers over an already-open store, an extractor, and a
@@ -227,6 +235,14 @@ func (h *Handlers) Ingest(c echo.Context) error {
 				if d.Price == "" {
 					d.Price = mined.Price
 				}
+				// Last tier: when structured data left the deadline unfilled,
+				// ask the model to read the page text (many pages state a
+				// deadline only as prose). Model output gets the same
+				// OnOrAfter skepticism as every other source, and a missing
+				// price rides along on the same call.
+				if d.EndsAt == "" && h.Enricher != nil {
+					h.enrichFromPage(rctx, c, d, page, ref)
+				}
 			}
 		}
 		cancel()
@@ -272,6 +288,38 @@ func (h *Handlers) Ingest(c echo.Context) error {
 		DigestPosted:   posted,
 		Forced:         force,
 	})
+}
+
+// enrichFromPage runs the model over the deal page's text to fill d.EndsAt
+// (and d.Price when empty). Strictly best-effort: a conversion failure, an
+// enricher error, or an implausible date leaves d unchanged.
+func (h *Handlers) enrichFromPage(ctx context.Context, c echo.Context, d *extract.Deal, page []byte, ref time.Time) {
+	text, err := htmltext.Convert(string(page))
+	if err != nil || strings.TrimSpace(text) == "" {
+		return
+	}
+	en, err := h.Enricher.EnrichFromPage(ctx, d.Title, text, &ref)
+	if err != nil {
+		c.Logger().Warnf("enrich deal from page: %v", err)
+		return
+	}
+	if en.EndsAt != "" {
+		// Model output gets more scrutiny than the other deadline sources:
+		// OnOrAfter deliberately passes unparseable values, so free text
+		// ("soon") must be rejected by normalization first — which also
+		// reduces a full timestamp to the bare date the digest displays.
+		switch normalized := expiry.Normalize(en.EndsAt); {
+		case normalized == "":
+			c.Logger().Warnf("dropping unparseable enriched deadline %q", en.EndsAt)
+		case expiry.OnOrAfter(normalized, ref):
+			d.EndsAt = normalized
+		default:
+			c.Logger().Warnf("dropping implausible enriched deadline %q (email date %s)", en.EndsAt, ref.Format("2006-01-02"))
+		}
+	}
+	if d.Price == "" && en.Price != "" {
+		d.Price = en.Price
+	}
 }
 
 // AdminDigest forces a digest post (skips the interval check, still race-safe).

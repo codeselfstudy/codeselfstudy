@@ -200,6 +200,12 @@ func newIngestFromEnv(ctx context.Context, database *sql.DB) *ingest.Handlers {
 	// Clean tracking redirects out of deal URLs before they are stored
 	// (best-effort; see internal/resolve).
 	h.Resolver = resolve.New()
+	// The Gemini extractor doubles as the page-text enricher for deadlines the
+	// page's structured data doesn't state; Disabled doesn't, so enrichment
+	// stays off without an API key.
+	if en, ok := extractor.(extract.PageEnricher); ok {
+		h.Enricher = en
+	}
 	return h
 }
 
