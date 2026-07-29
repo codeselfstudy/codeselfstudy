@@ -75,6 +75,85 @@ func TestFromHTMLNoMarkers(t *testing.T) {
 	}
 }
 
+func TestMinePrice(t *testing.T) {
+	cases := []struct{ name, inner, want string }{
+		{
+			"string price with USD",
+			`<script type="application/ld+json">{"offers":{"@type":"Offer","price":"25.00","priceCurrency":"USD"}}</script>`,
+			"$25",
+		},
+		{
+			"number price with EUR",
+			`<script type="application/ld+json">{"offers":{"price":9.99,"priceCurrency":"EUR"}}</script>`,
+			"€9.99",
+		},
+		{
+			"aggregate lowPrice",
+			`<script type="application/ld+json">{"offers":{"@type":"AggregateOffer","lowPrice":"9.99","highPrice":"49.99","priceCurrency":"USD"}}</script>`,
+			"from $9.99",
+		},
+		{
+			"unabbreviated currency",
+			`<script type="application/ld+json">{"offers":{"price":"30","priceCurrency":"CAD"}}</script>`,
+			"30 CAD",
+		},
+		{
+			"missing currency rejected",
+			`<script type="application/ld+json">{"offers":{"price":"25"}}</script>`,
+			"",
+		},
+		{
+			"zero price rejected",
+			`<script type="application/ld+json">{"offers":{"price":"0","priceCurrency":"USD"}}</script>`,
+			"",
+		},
+		{
+			"non-numeric price rejected",
+			`<script type="application/ld+json">{"offers":{"price":"cheap","priceCurrency":"USD"}}</script>`,
+			"",
+		},
+		{
+			"itemprop microdata fallback",
+			`<meta itemprop="price" content="12.50"><meta itemprop="priceCurrency" content="GBP">`,
+			"£12.50",
+		},
+		{
+			"json-ld wins over itemprop",
+			`<meta itemprop="price" content="99"><meta itemprop="priceCurrency" content="USD">` +
+				`<script type="application/ld+json">{"offers":{"price":"25","priceCurrency":"USD"}}</script>`,
+			"$25",
+		},
+		{"no markers", `<title>Just a page</title>`, ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := Mine(page(tc.inner)).Price; got != tc.want {
+				t.Errorf("Mine().Price = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestMineBothFields(t *testing.T) {
+	// One offer block carrying both a deadline and a price fills both fields
+	// from a single parse.
+	got := Mine(page(`<script type="application/ld+json">
+		{"@type":"Product","offers":{"price":"25","priceCurrency":"USD","priceValidUntil":"2026-08-01"}}
+	</script>`))
+	if got.EndsAt != "2026-08-01" || got.Price != "$25" {
+		t.Errorf("Mine = %+v, want EndsAt 2026-08-01 and Price $25", got)
+	}
+}
+
+func TestMineFieldsFromSeparateBlocks(t *testing.T) {
+	// A price-only block must not stop the date search in a later block.
+	got := Mine(page(`<script type="application/ld+json">{"offers":{"price":"25","priceCurrency":"USD"}}</script>` +
+		`<script type="application/ld+json">{"priceValidUntil":"2026-08-05"}</script>`))
+	if got.EndsAt != "2026-08-05" || got.Price != "$25" {
+		t.Errorf("Mine = %+v, want both fields filled across blocks", got)
+	}
+}
+
 func TestNormalizeDate(t *testing.T) {
 	cases := []struct{ in, want string }{
 		{"2026-08-01", "2026-08-01"},
