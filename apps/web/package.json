@@ -41,7 +41,7 @@
     "@testing-library/user-event": "14.6.1",
     "@typescript-eslint/parser": "8.64.0",
     "@vitest/coverage-v8": "4.1.10",
-    "eslint": "10.7.0",
+    "eslint": "10.8.0",
     "eslint-plugin-astro": "3.0.1",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react-hooks": "7.1.1",
