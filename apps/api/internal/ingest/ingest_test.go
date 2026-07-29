@@ -494,6 +494,52 @@ func TestIngestEnricherPastDateDropped(t *testing.T) {
 	}
 }
 
+func TestIngestEnricherUnparseableDateDropped(t *testing.T) {
+	// OnOrAfter deliberately passes unparseable values, so free text from the
+	// model must be caught by normalization — never stored, never displayed.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle K", URL: "https://h/k"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body><p>page</p></body></html>`)}
+	e.h.Enricher = &fakeEnricher{en: extract.Enrichment{EndsAt: "soon"}}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x12@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle K"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (free text must not be stored)", d.EndsAt)
+	}
+}
+
+func TestIngestEnricherTimestampNormalized(t *testing.T) {
+	// A full timestamp from the model is reduced to the bare date the digest
+	// displays.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle L", URL: "https://h/l"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body><p>page</p></body></html>`)}
+	e.h.Enricher = &fakeEnricher{en: extract.Enrichment{EndsAt: "2026-08-20T23:59:00Z"}}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x13@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle L"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "2026-08-20" {
+		t.Errorf("ends_at = %q, want the normalized 2026-08-20", d.EndsAt)
+	}
+}
+
 func TestIngestEnricherFailureKeepsValues(t *testing.T) {
 	// An enricher outage must not fail the ingest or corrupt the deal.
 	e := setup(t)

@@ -304,11 +304,16 @@ func (h *Handlers) enrichFromPage(ctx context.Context, c echo.Context, d *extrac
 		return
 	}
 	if en.EndsAt != "" {
-		// Same skepticism as every other deadline source (see the extractor
-		// and page-mining guards above).
-		if expiry.OnOrAfter(en.EndsAt, ref) {
-			d.EndsAt = en.EndsAt
-		} else {
+		// Model output gets more scrutiny than the other deadline sources:
+		// OnOrAfter deliberately passes unparseable values, so free text
+		// ("soon") must be rejected by normalization first — which also
+		// reduces a full timestamp to the bare date the digest displays.
+		switch normalized := expiry.Normalize(en.EndsAt); {
+		case normalized == "":
+			c.Logger().Warnf("dropping unparseable enriched deadline %q", en.EndsAt)
+		case expiry.OnOrAfter(normalized, ref):
+			d.EndsAt = normalized
+		default:
 			c.Logger().Warnf("dropping implausible enriched deadline %q (email date %s)", en.EndsAt, ref.Format("2006-01-02"))
 		}
 	}

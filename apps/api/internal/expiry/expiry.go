@@ -246,6 +246,12 @@ func parseDate(s string) (time.Time, bool) {
 	return time.Time{}, false
 }
 
+// Normalize renders any accepted date shape as a "2006-01-02" date string, or
+// "" when s does not parse. Callers storing a model-supplied date use it to
+// reject free text ("soon", "next week") before OnOrAfter — which deliberately
+// lets unparseable values through — can bless it.
+func Normalize(s string) string { return normalizeDate(s) }
+
 // OnOrAfter reports whether s names a calendar day on or after ref's. It is the
 // guard against impossible deadlines — a stale year in the vendor's own copy,
 // or an extractor that guesses a year for a yearless date — either way the
