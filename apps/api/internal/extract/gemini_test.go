@@ -174,6 +174,69 @@ func TestExtractSendsSchemaAndSystemInstruction(t *testing.T) {
 	}
 }
 
+func TestEnrichFromPage(t *testing.T) {
+	g := newTestGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Write(geminiEnvelope(`{"ends_at":"2026-08-20","price":"$19"}`))
+	})
+	sent := time.Date(2026, 7, 20, 0, 0, 0, 0, time.UTC)
+	en, err := g.EnrichFromPage(ctx, "Bundle A", "Sale ends August 20. Get it for $19.", &sent)
+	if err != nil {
+		t.Fatalf("EnrichFromPage: %v", err)
+	}
+	if en.EndsAt != "2026-08-20" || en.Price != "$19" {
+		t.Errorf("Enrichment = %+v, want ends 2026-08-20 and $19", en)
+	}
+}
+
+func TestEnrichFromPageNulls(t *testing.T) {
+	// The schema's nullable fields come back as JSON nulls when the page
+	// states nothing; they must land as empty strings, not an error.
+	g := newTestGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Write(geminiEnvelope(`{"ends_at":null,"price":null}`))
+	})
+	en, err := g.EnrichFromPage(ctx, "Bundle A", "A page with no offer facts.", nil)
+	if err != nil {
+		t.Fatalf("EnrichFromPage: %v", err)
+	}
+	if en != (Enrichment{}) {
+		t.Errorf("Enrichment = %+v, want zero", en)
+	}
+}
+
+func TestEnrichFromPageMalformedJSON(t *testing.T) {
+	var calls int32
+	g := newTestGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		w.Write(geminiEnvelope("not json"))
+	})
+	if _, err := g.EnrichFromPage(ctx, "Bundle A", "text", nil); err == nil {
+		t.Fatal("expected parse error")
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Errorf("made %d calls, want 1 (no retry on parse error)", got)
+	}
+}
+
+func TestBuildEnrichPrompt(t *testing.T) {
+	sent := time.Date(2026, 7, 20, 0, 0, 0, 0, time.UTC)
+	got := buildEnrichPrompt("Bundle A", "page text here", &sent)
+	want := "Date: 2026-07-20\nDeal: Bundle A\n\npage text here"
+	if got != want {
+		t.Errorf("buildEnrichPrompt = %q, want %q", got, want)
+	}
+	if withoutDate := buildEnrichPrompt("Bundle A", "x", nil); strings.Contains(withoutDate, "Date:") {
+		t.Errorf("prompt without sentAt = %q, want no Date line", withoutDate)
+	}
+}
+
+func TestBuildEnrichPromptTruncates(t *testing.T) {
+	long := strings.Repeat("x", maxPromptChars+500)
+	got := buildEnrichPrompt("Bundle A", long, nil)
+	if len([]rune(got)) > maxPromptChars+100 {
+		t.Errorf("prompt length = %d runes, want the page text capped at %d", len([]rune(got)), maxPromptChars)
+	}
+}
+
 func TestDisabledExtractor(t *testing.T) {
 	deals, err := Disabled{}.Extract(ctx, sampleEmail)
 	if !errors.Is(err, ErrNotConfigured) {

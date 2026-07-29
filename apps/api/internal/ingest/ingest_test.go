@@ -386,6 +386,162 @@ func TestIngestEmailPriceNotOverwritten(t *testing.T) {
 	}
 }
 
+// fakeEnricher returns a canned Enrichment (or error) and records what it was
+// asked about.
+type fakeEnricher struct {
+	mu       sync.Mutex
+	en       extract.Enrichment
+	err      error
+	calls    int
+	gotTitle string
+	gotText  string
+}
+
+func (f *fakeEnricher) EnrichFromPage(_ context.Context, title, pageText string, _ *time.Time) (extract.Enrichment, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.calls++
+	f.gotTitle = title
+	f.gotText = pageText
+	return f.en, f.err
+}
+
+func TestIngestEnrichesFromPageText(t *testing.T) {
+	// No deadline anywhere structured: the enricher reads the page text and
+	// fills both missing fields; the text it sees is the converted page, not
+	// raw HTML.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle F", URL: "https://h/f"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body><p>Sale ends August 20. Now $19.</p></body></html>`)}
+	fe := &fakeEnricher{en: extract.Enrichment{EndsAt: "2026-08-20", Price: "$19"}}
+	e.h.Enricher = fe
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x7@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle F"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "2026-08-20" || d.Price != "$19" {
+		t.Errorf("deal = ends %q price %q, want the enricher's 2026-08-20 / $19", d.EndsAt, d.Price)
+	}
+	if fe.calls != 1 {
+		t.Errorf("enricher calls = %d, want 1", fe.calls)
+	}
+	if fe.gotTitle != "Bundle F" || strings.Contains(fe.gotText, "<p>") {
+		t.Errorf("enricher saw title %q text %q, want the title and tag-free text", fe.gotTitle, fe.gotText)
+	}
+}
+
+func TestIngestEnricherSkippedWhenStructuredDataHit(t *testing.T) {
+	// JSON-LD already answered the deadline: no model call is spent.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle G", URL: "https://h/g"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"priceValidUntil":"2026-08-01"}
+		</script></head></html>`),
+	}
+	fe := &fakeEnricher{en: extract.Enrichment{EndsAt: "2026-09-09"}}
+	e.h.Enricher = fe
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x8@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle G"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "2026-08-01" {
+		t.Errorf("ends_at = %q, want the structured data's 2026-08-01", d.EndsAt)
+	}
+	if fe.calls != 0 {
+		t.Errorf("enricher calls = %d, want 0 (structured data already answered)", fe.calls)
+	}
+}
+
+func TestIngestEnricherPastDateDropped(t *testing.T) {
+	// The model gets the same skepticism as every other deadline source: a
+	// date before the email's own send date (fixture Date: 2026-07-20) is
+	// dropped, while its price still lands.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle H", URL: "https://h/h"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body><p>an old promo page</p></body></html>`)}
+	e.h.Enricher = &fakeEnricher{en: extract.Enrichment{EndsAt: "2025-01-01", Price: "$9"}}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x9@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle H"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" {
+		t.Errorf("ends_at = %q, want empty (implausible enriched date dropped)", d.EndsAt)
+	}
+	if d.Price != "$9" {
+		t.Errorf("price = %q, want $9 (price is not date-guarded)", d.Price)
+	}
+}
+
+func TestIngestEnricherFailureKeepsValues(t *testing.T) {
+	// An enricher outage must not fail the ingest or corrupt the deal.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle I", URL: "https://h/i"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body><p>page</p></body></html>`)}
+	e.h.Enricher = &fakeEnricher{err: errors.New("model down")}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x10@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle I"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.EndsAt != "" || d.Price != "" {
+		t.Errorf("deal = ends %q price %q, want both empty after enricher failure", d.EndsAt, d.Price)
+	}
+}
+
+func TestIngestEnricherPriceNotOverwritten(t *testing.T) {
+	// The enricher runs for the missing deadline, but an email-stated price
+	// must survive it.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle J", URL: "https://h/j", Price: "$5 (90% off)"},
+	}, nil)
+	e.h.Resolver = &fakeResolver{page: []byte(`<html><body><p>Now $25!</p></body></html>`)}
+	e.h.Enricher = &fakeEnricher{en: extract.Enrichment{EndsAt: "2026-08-20", Price: "$25"}}
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x11@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle J"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.Price != "$5 (90% off)" {
+		t.Errorf("price = %q, want the email's price kept", d.Price)
+	}
+	if d.EndsAt != "2026-08-20" {
+		t.Errorf("ends_at = %q, want the enricher's date", d.EndsAt)
+	}
+}
+
 func TestIngestImplausibleEndsAtRefilledFromPage(t *testing.T) {
 	// An extracted deadline already in the past when the email was sent (the
 	// fixture's Date is 2026-07-20) carries a stale or guessed year, not a deadline: it

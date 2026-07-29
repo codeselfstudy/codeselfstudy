@@ -6,6 +6,7 @@ package extract
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/mailparse"
 )
@@ -24,6 +25,21 @@ type Deal struct {
 // empty slice (not an error) for emails that contain no deals.
 type Extractor interface {
 	Extract(ctx context.Context, e mailparse.Email) ([]Deal, error)
+}
+
+// Enrichment is what a deal page's text yields for fields the email and the
+// page's structured data both left empty. An empty field means the page stated
+// nothing usable for it.
+type Enrichment struct {
+	EndsAt string `json:"ends_at"`
+	Price  string `json:"price"`
+}
+
+// PageEnricher extracts a deal's still-missing fields from its landing page's
+// text. sentAt anchors yearless deadlines the way Extract's Date line does.
+// Implementations must report only what the page states — never invent.
+type PageEnricher interface {
+	EnrichFromPage(ctx context.Context, title, pageText string, sentAt *time.Time) (Enrichment, error)
 }
 
 // ErrNotConfigured is returned by Disabled.Extract.
