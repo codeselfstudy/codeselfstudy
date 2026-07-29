@@ -5,7 +5,10 @@
 // (utm_*, mcID, linkID, …) are stripped from it. Some trackers (HubSpot among
 // them) end the HTTP chain on a 200 interstitial that redirects via
 // <meta http-equiv="refresh"> or an inline script instead — those body-level
-// redirects are followed too, under their own hop cap. Resolution is strictly
+// redirects are followed too, under their own hop cap. Script redirects are
+// resolved through one level of variable indirection (HubSpot assigns the
+// target to a variable first), with the interstitial's lone no-JS fallback
+// anchor as a last resort. Resolution is strictly
 // best-effort: on any failure the input URL is returned unchanged, so a
 // resolver outage can never lose or corrupt a deal.
 //
@@ -243,11 +246,49 @@ var jsRedirectPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)(?:window\.|document\.|top\.)?location\.(?:replace|assign)\(\s*["']([^"']+)["']\s*\)`),
 }
 
+// jsVarRedirectPatterns match the same location assignments with an identifier
+// on the right-hand side (`window.location.replace(targetURL)`) — the shape
+// HubSpot's bot-check interstitial uses. The captured identifier is then
+// resolved to a URL literal by jsVarTarget.
+var jsVarRedirectPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?i)(?:(?:window|document|top)\.)?\blocation(?:\.href)?\s*=\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:[;\r\n]|$)`),
+	regexp.MustCompile(`(?i)(?:(?:window|document|top)\.)?\blocation\.(?:replace|assign)\(\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*\)`),
+}
+
+// jsVarTarget resolves a location assignment whose right-hand side is a
+// variable: it finds the identifier being assigned to location, then looks for
+// that identifier receiving an absolute http(s) string literal anywhere in the
+// page's scripts (HubSpot parks the literal inside a helper function).
+// detected reports that such an assignment exists even when the identifier
+// could not be resolved — the caller gates the no-JS anchor fallback on it.
+func jsVarTarget(scripts []string) (target string, detected bool) {
+	for _, src := range scripts {
+		for _, re := range jsVarRedirectPatterns {
+			m := re.FindStringSubmatch(src)
+			if m == nil {
+				continue
+			}
+			detected = true
+			lookup := regexp.MustCompile(`\b` + regexp.QuoteMeta(m[1]) + `\s*=\s*["'](https?://[^"']+)["']`)
+			for _, s := range scripts {
+				if lm := lookup.FindStringSubmatch(s); lm != nil {
+					return lm[1], true
+				}
+			}
+		}
+	}
+	return "", detected
+}
+
 // nextHop extracts a body-level redirect target from an HTML page: a
 // <meta http-equiv="refresh"> URL with a small delay or — on small pages only
-// (jsSniffLimit) — an inline-script location assignment. It returns nil when
-// the page carries no such redirect, the target does not resolve to http(s),
-// or the target is the page itself (a self-refresh, not a redirect).
+// (jsSniffLimit) — an inline-script location assignment, resolved through one
+// level of variable indirection when the assignment's right-hand side is an
+// identifier. When a variable assignment is detected but its URL can't be
+// found, the page's single absolute-http(s) anchor (the interstitial's no-JS
+// "click here" fallback) is used instead. It returns nil when the page carries
+// no such redirect, the target does not resolve to http(s), or the target is
+// the page itself (a self-refresh, not a redirect).
 func nextHop(body []byte, base *url.URL) *url.URL {
 	doc, err := html.Parse(bytes.NewReader(body))
 	if err != nil {
@@ -257,6 +298,7 @@ func nextHop(body []byte, base *url.URL) *url.URL {
 	sniffScripts := len(body) <= jsSniffLimit
 	var target string
 	var scripts []string
+	var anchors []string
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
 		if target != "" {
@@ -274,6 +316,12 @@ func nextHop(body []byte, base *url.URL) *url.URL {
 			case "script":
 				if sniffScripts && n.FirstChild != nil {
 					scripts = append(scripts, n.FirstChild.Data)
+				}
+			case "a":
+				if sniffScripts {
+					if h := attr(n, "href"); h != "" {
+						anchors = append(anchors, h)
+					}
 				}
 			}
 		}
@@ -294,6 +342,17 @@ func nextHop(body []byte, base *url.URL) *url.URL {
 			if target != "" {
 				break
 			}
+		}
+	}
+	if target == "" {
+		var varRedirect bool
+		target, varRedirect = jsVarTarget(scripts)
+		// The page clearly redirects via a script we couldn't decode; take its
+		// no-JS fallback anchor — but only when there is exactly one anchor and
+		// it is absolute, so a genuine content page can never be misread as a
+		// redirector.
+		if target == "" && varRedirect && len(anchors) == 1 && isAbsHTTP(anchors[0]) {
+			target = anchors[0]
 		}
 	}
 	if target == "" {
@@ -335,6 +394,14 @@ func parseRefreshContent(content string) string {
 		return ""
 	}
 	return strings.Trim(strings.TrimSpace(rest[i+len("url="):]), `'"`)
+}
+
+// isAbsHTTP reports whether s is an absolute http(s) URL. The host check
+// matters: url.Parse("https:foo") yields Scheme "https" with an empty Host
+// (scheme:opaque form), and that is not a followable absolute URL.
+func isAbsHTTP(s string) bool {
+	u, err := url.Parse(s)
+	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
 }
 
 // attr returns the named attribute's value, matching the name
@@ -385,6 +452,10 @@ func isTrackingParam(key string) bool {
 	}
 	switch k {
 	case "mcid", "linkid", "fbclid", "gclid", "msclkid", "mc_cid", "mc_eid", "igshid", "twclid":
+		return true
+	// HubSpot email params. ecid is the recipient's contact ID, so leaving it
+	// in a stored URL would also leak who received the newsletter.
+	case "_hsenc", "_hsmi", "_hsfp", "ecid":
 		return true
 	}
 	return false
