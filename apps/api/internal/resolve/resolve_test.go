@@ -495,6 +495,8 @@ func TestResolveAnchorFallbackNeedsDetectedJSRedirect(t *testing.T) {
 	pages := []string{
 		`<html><body><a href="https://a.example/x">a link</a></body></html>`,
 		`<html><body><script>var u = base + path; window.location.replace(u);</script><a href="/x">rel</a></body></html>`,
+		// scheme:opaque form — url.Parse gives it Scheme https but no Host.
+		`<html><body><script>var u = base + path; window.location.replace(u);</script><a href="https:foo">opaque</a></body></html>`,
 	}
 	for _, page := range pages {
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

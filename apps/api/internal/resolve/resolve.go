@@ -396,10 +396,12 @@ func parseRefreshContent(content string) string {
 	return strings.Trim(strings.TrimSpace(rest[i+len("url="):]), `'"`)
 }
 
-// isAbsHTTP reports whether s is an absolute http(s) URL.
+// isAbsHTTP reports whether s is an absolute http(s) URL. The host check
+// matters: url.Parse("https:foo") yields Scheme "https" with an empty Host
+// (scheme:opaque form), and that is not a followable absolute URL.
 func isAbsHTTP(s string) bool {
 	u, err := url.Parse(s)
-	return err == nil && (u.Scheme == "http" || u.Scheme == "https")
+	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
 }
 
 // attr returns the named attribute's value, matching the name
