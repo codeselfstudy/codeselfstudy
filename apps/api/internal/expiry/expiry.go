@@ -1,16 +1,19 @@
-// Package expiry mines a deal page for its expiration date. Newsletters rarely
-// print a deadline, but the deal's landing page usually carries one as
-// structured data — schema.org offers embed it as priceValidUntil (or
-// availabilityEnds) in JSON-LD, and some pages use itemprop microdata instead.
-// Extraction is best-effort and purely local: malformed HTML, broken JSON, or
-// an unparseable date all yield "", never an error. The package also owns the
-// deadline plausibility check (OnOrAfter) that ingest and the digest use to
-// catch confidently-wrong extracted dates.
+// Package expiry mines a deal page for its expiration date and price.
+// Newsletters rarely print a deadline, but the deal's landing page usually
+// carries one as structured data — schema.org offers embed it as
+// priceValidUntil (or availabilityEnds) in JSON-LD, and some pages use
+// itemprop microdata instead; the same offer blocks carry price and
+// priceCurrency. Extraction is best-effort and purely local: malformed HTML,
+// broken JSON, or an unparseable value all yield "", never an error. The
+// package also owns the deadline plausibility check (OnOrAfter) that ingest
+// and the digest use to catch confidently-wrong extracted dates.
 package expiry
 
 import (
 	"bytes"
 	"encoding/json"
+	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,17 +24,33 @@ import (
 // preference order.
 var dateKeys = []string{"priceValidUntil", "availabilityEnds"}
 
+// priceKeys are the schema.org offer fields that carry a price, in preference
+// order: a concrete price first, then an AggregateOffer's lower bound.
+var priceKeys = []string{"price", "lowPrice"}
+
+// Result holds what a deal page's structured data yielded. An empty field
+// means the page stated nothing usable for it.
+type Result struct {
+	EndsAt string // "2006-01-02", ready for deals.ends_at
+	Price  string // display-ready, e.g. "$25" or "from €9.99"
+}
+
 // FromHTML returns the page's offer expiration as a "2006-01-02" date string,
-// or "" when none is found. JSON-LD wins over itemprop microdata; within each,
-// the first parseable date wins.
-func FromHTML(page []byte) string {
+// or "" when none is found. It is Mine for callers that only want the date.
+func FromHTML(page []byte) string { return Mine(page).EndsAt }
+
+// Mine extracts the offer expiration and price from one parse of the page.
+// For each field JSON-LD wins over itemprop microdata; within each, the first
+// parseable value wins.
+func Mine(page []byte) Result {
 	doc, err := html.Parse(bytes.NewReader(page))
 	if err != nil {
-		return ""
+		return Result{}
 	}
 
 	var jsonLD []string // raw <script type="application/ld+json"> payloads
 	var metaDates []string
+	var metaPrice, metaCurrency string
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
 		if n.Type == html.ElementNode {
@@ -47,6 +66,12 @@ func FromHTML(page []byte) string {
 							metaDates = append(metaDates, attr(n, "content"))
 						}
 					}
+					if strings.EqualFold(prop, "price") && metaPrice == "" {
+						metaPrice = attr(n, "content")
+					}
+					if strings.EqualFold(prop, "priceCurrency") && metaCurrency == "" {
+						metaCurrency = attr(n, "content")
+					}
 				}
 			}
 		}
@@ -56,21 +81,34 @@ func FromHTML(page []byte) string {
 	}
 	walk(doc)
 
+	var res Result
 	for _, raw := range jsonLD {
 		var v any
 		if err := json.Unmarshal([]byte(raw), &v); err != nil {
 			continue // one broken block must not spoil the others
 		}
-		if d := findDate(v); d != "" {
-			return d
+		if res.EndsAt == "" {
+			res.EndsAt = findDate(v)
+		}
+		if res.Price == "" {
+			res.Price = findPrice(v)
+		}
+		if res.EndsAt != "" && res.Price != "" {
+			return res
 		}
 	}
-	for _, c := range metaDates {
-		if d := normalizeDate(c); d != "" {
-			return d
+	if res.EndsAt == "" {
+		for _, c := range metaDates {
+			if d := normalizeDate(c); d != "" {
+				res.EndsAt = d
+				break
+			}
 		}
 	}
-	return ""
+	if res.Price == "" {
+		res.Price = renderPrice(metaPrice, metaCurrency, false)
+	}
+	return res
 }
 
 // findDate walks decoded JSON-LD (objects, arrays, @graph nesting) for the
@@ -98,6 +136,80 @@ func findDate(v any) string {
 		}
 	}
 	return ""
+}
+
+// findPrice walks decoded JSON-LD (objects, arrays, @graph nesting) for the
+// first priceKeys value that renders as a price. Only a value sitting next to
+// a priceCurrency is trusted — a bare number could be anything.
+func findPrice(v any) string {
+	switch t := v.(type) {
+	case map[string]any:
+		for _, k := range priceKeys {
+			if raw, ok := t[k]; ok {
+				if p := renderPrice(raw, t["priceCurrency"], k == "lowPrice"); p != "" {
+					return p
+				}
+			}
+		}
+		for _, child := range t {
+			if p := findPrice(child); p != "" {
+				return p
+			}
+		}
+	case []any:
+		for _, child := range t {
+			if p := findPrice(child); p != "" {
+				return p
+			}
+		}
+	}
+	return ""
+}
+
+// currencySymbols maps the ISO 4217 codes worth abbreviating; anything else is
+// rendered as "25 CAD".
+var currencySymbols = map[string]string{"USD": "$", "EUR": "€", "GBP": "£"}
+
+// renderPrice turns a schema.org price value (JSON string or number) and its
+// priceCurrency into a display string like "$25", "€9.99", or "25 CAD" —
+// "from …" when the value is an AggregateOffer's lowPrice. It returns "" for
+// anything unusable: a non-numeric value, a missing currency, or a zero price
+// (more often a placeholder than a real offer).
+func renderPrice(raw, currency any, low bool) string {
+	var f float64
+	switch v := raw.(type) {
+	case string:
+		parsed, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
+		if err != nil {
+			return ""
+		}
+		f = parsed
+	case float64:
+		f = v
+	default:
+		return ""
+	}
+	if f <= 0 {
+		return ""
+	}
+	cur, _ := currency.(string)
+	cur = strings.ToUpper(strings.TrimSpace(cur))
+	if cur == "" {
+		return ""
+	}
+
+	amount := strconv.FormatFloat(f, 'f', 2, 64)
+	if f == math.Trunc(f) {
+		amount = strconv.FormatFloat(f, 'f', 0, 64)
+	}
+	price := amount + " " + cur
+	if sym, ok := currencySymbols[cur]; ok {
+		price = sym + amount
+	}
+	if low {
+		price = "from " + price
+	}
+	return price
 }
 
 // dateLayouts are the shapes schema.org dates show up in, tried in order.

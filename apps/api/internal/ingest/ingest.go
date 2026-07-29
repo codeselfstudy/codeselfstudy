@@ -185,17 +185,17 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	}
 
 	// Resolve tracking-redirect URLs to their clean destinations before
-	// storing (see internal/resolve). When the email stated no usable
-	// deadline, the same fetch also brings back the deal page so its
-	// structured data can fill ends_at (see internal/expiry) — an email-stated
-	// deadline is never overwritten. Strictly best-effort under one shared
-	// budget: a failed or skipped step keeps the extracted values, and a
-	// resolver problem never fails the ingest.
+	// storing (see internal/resolve). When the email left the deadline or the
+	// price unstated, the same fetch also brings back the deal page so its
+	// structured data can fill the missing field (see internal/expiry) — an
+	// email-stated value is never overwritten. Strictly best-effort under one
+	// shared budget: a failed or skipped step keeps the extracted values, and
+	// a resolver problem never fails the ingest.
 	if h.Resolver != nil && len(deals) > 0 {
 		rctx, cancel := context.WithTimeout(ctx, resolveBudget(len(deals)))
 		for i := range deals {
 			d := &deals[i]
-			if d.EndsAt != "" {
+			if d.EndsAt != "" && d.Price != "" {
 				resolved, rerr := h.Resolver.Resolve(rctx, d.URL)
 				if rerr != nil {
 					c.Logger().Warnf("resolve deal url: %v", rerr)
@@ -209,16 +209,23 @@ func (h *Handlers) Ingest(c echo.Context) error {
 			}
 			d.URL = resolved
 			if len(page) > 0 {
-				// The page's structured data gets the same skepticism as the
-				// extractor: shop pages routinely carry a stale
-				// priceValidUntil from an earlier promotion, and a past date
-				// is useless to store (the digest would hide it anyway).
-				// Leaving it empty also keeps ClearEndsAt effective, so a
-				// previously stored bad deadline still gets erased.
-				if candidate := expiry.FromHTML(page); candidate == "" || expiry.OnOrAfter(candidate, ref) {
-					d.EndsAt = candidate
-				} else {
-					c.Logger().Warnf("dropping implausible page deadline %q (email date %s)", candidate, ref.Format("2006-01-02"))
+				mined := expiry.Mine(page)
+				if d.EndsAt == "" {
+					// The page's structured data gets the same skepticism as
+					// the extractor: shop pages routinely carry a stale
+					// priceValidUntil from an earlier promotion, and a past
+					// date is useless to store (the digest would hide it
+					// anyway). Leaving it empty also keeps ClearEndsAt
+					// effective, so a previously stored bad deadline still
+					// gets erased.
+					if mined.EndsAt == "" || expiry.OnOrAfter(mined.EndsAt, ref) {
+						d.EndsAt = mined.EndsAt
+					} else {
+						c.Logger().Warnf("dropping implausible page deadline %q (email date %s)", mined.EndsAt, ref.Format("2006-01-02"))
+					}
+				}
+				if d.Price == "" {
+					d.Price = mined.Price
 				}
 			}
 		}

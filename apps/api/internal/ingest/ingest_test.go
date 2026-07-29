@@ -289,10 +289,12 @@ func TestIngestFillsEndsAtFromPage(t *testing.T) {
 }
 
 func TestIngestEmailEndsAtNotOverwritten(t *testing.T) {
-	// An email-stated deadline wins: the page is not even fetched for that deal.
+	// With both the deadline and the price stated by the email, there is
+	// nothing to mine: the page is not even fetched, and the stated deadline
+	// wins.
 	e := setup(t)
 	e.ex.set([]extract.Deal{
-		{Source: "Humble", Title: "Bundle C", URL: "https://h/c", EndsAt: "2026-12-31"},
+		{Source: "Humble", Title: "Bundle C", URL: "https://h/c", Price: "$10", EndsAt: "2026-12-31"},
 	}, nil)
 	fr := &fakeResolver{
 		page: []byte(`<html><head><script type="application/ld+json">
@@ -313,10 +315,74 @@ func TestIngestEmailEndsAtNotOverwritten(t *testing.T) {
 		t.Errorf("ends_at = %q, want the email's 2026-12-31 kept", d.EndsAt)
 	}
 	if fr.pageCalls != 0 {
-		t.Errorf("page calls = %d, want 0 (deadline already known)", fr.pageCalls)
+		t.Errorf("page calls = %d, want 0 (deadline and price already known)", fr.pageCalls)
 	}
 	if fr.resolveCalls != 1 {
 		t.Errorf("resolve calls = %d, want 1", fr.resolveCalls)
+	}
+}
+
+func TestIngestFillsPriceFromPage(t *testing.T) {
+	// A deal with an email-stated deadline but no price still gets the page
+	// fetched, and the page's offer price fills the gap — without touching the
+	// stated deadline.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle D", URL: "https://h/d", EndsAt: "2026-12-31"},
+	}, nil)
+	fr := &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"offers":{"price":"25","priceCurrency":"USD","priceValidUntil":"2026-08-01"}}
+		</script></head></html>`),
+	}
+	e.h.Resolver = fr
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x5@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle D"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.Price != "$25" {
+		t.Errorf("price = %q, want $25 from the page", d.Price)
+	}
+	if d.EndsAt != "2026-12-31" {
+		t.Errorf("ends_at = %q, want the email's 2026-12-31 kept (page date ignored)", d.EndsAt)
+	}
+	if fr.pageCalls != 1 {
+		t.Errorf("page calls = %d, want 1 (missing price forces the fetch)", fr.pageCalls)
+	}
+}
+
+func TestIngestEmailPriceNotOverwritten(t *testing.T) {
+	// The page is fetched for the missing deadline, but the email-stated price
+	// must survive the mining.
+	e := setup(t)
+	e.ex.set([]extract.Deal{
+		{Source: "Humble", Title: "Bundle E", URL: "https://h/e", Price: "$5 (90% off)"},
+	}, nil)
+	fr := &fakeResolver{
+		page: []byte(`<html><head><script type="application/ld+json">
+			{"offers":{"price":"25","priceCurrency":"USD","priceValidUntil":"2026-08-01"}}
+		</script></head></html>`),
+	}
+	e.h.Resolver = fr
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<x6@x>", "Deals", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	d, err := e.st.GetDealByDedupeKey(context.Background(), store.DedupeKey("deals@humblebundle.com", "Bundle E"))
+	if err != nil {
+		t.Fatalf("GetDealByDedupeKey: %v", err)
+	}
+	if d.Price != "$5 (90% off)" {
+		t.Errorf("price = %q, want the email's price kept", d.Price)
+	}
+	if d.EndsAt != "2026-08-01" {
+		t.Errorf("ends_at = %q, want 2026-08-01 mined from the page", d.EndsAt)
 	}
 }
 
