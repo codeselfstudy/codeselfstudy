@@ -2,7 +2,10 @@
 // newsletters wrap deal links in a click-tracking redirector, so the extracted
 // URL is the tracker, not the deal page; a quick fetch that follows the
 // redirect chain finds the real destination, and known tracking parameters
-// (utm_*, mcID, linkID, …) are stripped from it. Resolution is strictly
+// (utm_*, mcID, linkID, …) are stripped from it. Some trackers (HubSpot among
+// them) end the HTTP chain on a 200 interstitial that redirects via
+// <meta http-equiv="refresh"> or an inline script instead — those body-level
+// redirects are followed too, under their own hop cap. Resolution is strictly
 // best-effort: on any failure the input URL is returned unchanged, so a
 // resolver outage can never lose or corrupt a deal.
 //
@@ -14,6 +17,7 @@
 package resolve
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -21,9 +25,13 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"golang.org/x/net/html"
 )
 
 const (
@@ -44,6 +52,23 @@ const (
 	// data (JSON-LD) sits in the <head> or early <body>, so half a megabyte is
 	// plenty and bounds memory per fetch.
 	maxBodyBytes = 512 << 10
+
+	// maxBodyHops bounds how many body-level redirects (meta refresh, script
+	// location assignment) one resolution follows after the initial fetch. Real
+	// trackers use a single interstitial; more is a loop.
+	maxBodyHops = 3
+
+	// jsSniffLimit is the largest body a script-based redirect is honored on.
+	// Tracker interstitials are tiny; a full content page may well contain an
+	// incidental, conditional location assignment that must not be treated as
+	// a redirect. Meta refresh is exempt — it is an HTML-standard redirect
+	// regardless of page size.
+	jsSniffLimit = 32 << 10
+
+	// maxRefreshDelay is the largest <meta refresh> delay, in seconds, still
+	// treated as a redirect. Trackers use 0; a long delay is a content page
+	// reloading itself, not a redirector.
+	maxRefreshDelay = 5
 )
 
 var errTooManyRedirects = errors.New("too many redirects")
@@ -115,7 +140,9 @@ func (r *Resolver) ResolvePage(ctx context.Context, rawURL string) (string, []by
 
 // fetch implements Resolve/ResolvePage. It never returns an unusable URL: the
 // first value is the cleaned final URL on success and rawURL unchanged on any
-// failure.
+// failure. The body is always read on a 2xx HTML response — even when the
+// caller wants only the URL — because it may carry a body-level redirect
+// (meta refresh, script location assignment) that continues the chain.
 func (r *Resolver) fetch(ctx context.Context, rawURL string, readBody bool) (string, []byte, error) {
 	if strings.TrimSpace(rawURL) == "" {
 		return rawURL, nil, nil
@@ -129,38 +156,196 @@ func (r *Resolver) fetch(ctx context.Context, rawURL string, readBody bool) (str
 		return rawURL, nil, nil
 	}
 
+	// One timeout spans the whole chain, body hops included.
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
+
+	cur := u
+	var reached *url.URL // destination of the last successful fetch
+	var body []byte
+	var bodyOK bool // body belongs to a 2xx HTML response
+	for hop := 0; ; hop++ {
+		resp, err := r.do(ctx, cur)
+		if err != nil {
+			if reached == nil {
+				return rawURL, nil, err
+			}
+			// A body-mined hop failed mid-chain. The last page actually
+			// reached is still a usable destination; its body is a tracker
+			// interstitial, not a deal page, so it is not returned for
+			// mining.
+			return finish(reached, u), nil, err
+		}
+
+		body, bodyOK = nil, false
+		if resp.StatusCode >= 200 && resp.StatusCode < 300 &&
+			strings.Contains(resp.Header.Get("Content-Type"), "html") {
+			// Best-effort read under the same timeout; a partial or failed
+			// read just means less (or no) page to sniff and mine, not a
+			// failed resolution.
+			body, _ = io.ReadAll(io.LimitReader(resp.Body, maxBodyBytes))
+			bodyOK = true
+		}
+		resp.Body.Close()
+
+		// resp.Request is the last request of the HTTP chain, i.e. the
+		// destination — even when that page answers 404, its URL is still the
+		// canonical link.
+		reached = resp.Request.URL
+		if !bodyOK || hop >= maxBodyHops {
+			break
+		}
+		next := nextHop(body, reached)
+		if next == nil {
+			break
+		}
+		cur = next
+	}
+
+	final := finish(reached, u)
+	if !readBody || !bodyOK {
+		return final, nil, nil
+	}
+	return final, body, nil
+}
+
+// do performs one GET (following HTTP redirects) for a link in the chain.
+func (r *Resolver) do(ctx context.Context, u *url.URL) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return rawURL, nil, fmt.Errorf("build request: %w", err)
+		return nil, fmt.Errorf("build request: %w", err)
 	}
 	req.Header.Set("User-Agent", userAgent)
-
 	resp, err := r.client.Do(req)
 	if err != nil {
-		return rawURL, nil, fmt.Errorf("fetch %q: %w", rawURL, err)
+		return nil, fmt.Errorf("fetch %q: %w", u.String(), err)
 	}
-	defer resp.Body.Close()
+	return resp, nil
+}
 
-	var body []byte
-	if readBody && resp.StatusCode >= 200 && resp.StatusCode < 300 &&
-		strings.Contains(resp.Header.Get("Content-Type"), "html") {
-		// Best-effort read under the same timeout; a partial or failed read
-		// just means less (or no) page to mine, not a failed resolution.
-		body, _ = io.ReadAll(io.LimitReader(resp.Body, maxBodyBytes))
-	}
-
-	// resp.Request is the last request of the chain, i.e. the destination —
-	// even when that page answers 404, its URL is still the canonical link.
-	final := *resp.Request.URL
+// finish renders the reached destination as the cleaned final URL.
+func finish(reached, orig *url.URL) string {
+	final := *reached
 	final.RawQuery = stripTracking(final.RawQuery)
-	if u.Fragment != "" && final.Fragment == "" {
+	if orig.Fragment != "" && final.Fragment == "" {
 		// Browsers carry the original fragment across redirects unless a
 		// Location header supplies its own; do the same.
-		final.Fragment = u.Fragment
+		final.Fragment = orig.Fragment
 	}
-	return final.String(), body, nil
+	return final.String()
+}
+
+// jsRedirectPatterns match the unconditional location assignments tracker
+// interstitials use: `window.location.href = "…"`, `location.replace('…')`,
+// `document.location = "…"`, `top.location = '…'`, and the assign() form.
+var jsRedirectPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?i)(?:window\.|document\.|top\.)?location(?:\.href)?\s*=\s*["']([^"']+)["']`),
+	regexp.MustCompile(`(?i)(?:window\.|document\.|top\.)?location\.(?:replace|assign)\(\s*["']([^"']+)["']\s*\)`),
+}
+
+// nextHop extracts a body-level redirect target from an HTML page: a
+// <meta http-equiv="refresh"> URL with a small delay or — on small pages only
+// (jsSniffLimit) — an inline-script location assignment. It returns nil when
+// the page carries no such redirect, the target does not resolve to http(s),
+// or the target is the page itself (a self-refresh, not a redirect).
+func nextHop(body []byte, base *url.URL) *url.URL {
+	doc, err := html.Parse(bytes.NewReader(body))
+	if err != nil {
+		return nil
+	}
+
+	sniffScripts := len(body) <= jsSniffLimit
+	var target string
+	var scripts []string
+	var walk func(*html.Node)
+	walk = func(n *html.Node) {
+		if target != "" {
+			return
+		}
+		if n.Type == html.ElementNode {
+			switch n.Data {
+			case "meta":
+				if strings.EqualFold(attr(n, "http-equiv"), "refresh") {
+					if u := parseRefreshContent(attr(n, "content")); u != "" {
+						target = u
+						return
+					}
+				}
+			case "script":
+				if sniffScripts && n.FirstChild != nil {
+					scripts = append(scripts, n.FirstChild.Data)
+				}
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+	walk(doc)
+
+	if target == "" {
+		for _, src := range scripts {
+			for _, re := range jsRedirectPatterns {
+				if m := re.FindStringSubmatch(src); m != nil {
+					target = m[1]
+					break
+				}
+			}
+			if target != "" {
+				break
+			}
+		}
+	}
+	if target == "" {
+		return nil
+	}
+
+	next, err := base.Parse(target)
+	if err != nil {
+		return nil
+	}
+	if next.Scheme != "http" && next.Scheme != "https" {
+		return nil
+	}
+	if next.String() == base.String() {
+		return nil
+	}
+	return next
+}
+
+// parseRefreshContent pulls the URL out of a meta-refresh content attribute
+// ("0;url=https://…", "1; URL='/path'"). It returns "" when there is no URL
+// part (a bare delay reloads the same page) or the delay exceeds
+// maxRefreshDelay.
+func parseRefreshContent(content string) string {
+	delayPart, rest, ok := strings.Cut(content, ";")
+	if !ok {
+		return ""
+	}
+	delayPart = strings.TrimSpace(delayPart)
+	if delayPart != "" {
+		delay, err := strconv.ParseFloat(delayPart, 64)
+		if err != nil || delay > maxRefreshDelay {
+			return ""
+		}
+	}
+	rest = strings.TrimSpace(rest)
+	i := strings.Index(strings.ToLower(rest), "url=")
+	if i < 0 {
+		return ""
+	}
+	return strings.Trim(strings.TrimSpace(rest[i+len("url="):]), `'"`)
+}
+
+// attr returns the named attribute's value, matching the name
+// case-insensitively.
+func attr(n *html.Node, name string) string {
+	for _, a := range n.Attr {
+		if strings.EqualFold(a.Key, name) {
+			return a.Val
+		}
+	}
+	return ""
 }
 
 // stripTracking removes known tracking parameters from a raw query string. It
