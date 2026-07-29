@@ -24,6 +24,7 @@ A deal is a discounted or time-limited offer whose subject is software or softwa
 Include an offer only when it is about software or software development. Exclude everything else, even when discounted: video games and game bundles, comics, art or asset bundles, tabletop/RPG material, and books or courses on non-technical topics.
 For a bundle that mixes software titles with unrelated ones, include it only if it is primarily about software.
 Return one entry per bundle or offer — never one entry per item inside a bundle.
+When one promotion spans several product categories or tiers — a sitewide or storewide sale covering books, subscriptions, and other products — return a single entry describing the whole promotion, not one entry per category or tier. Still return a separate entry for each individually featured product, such as a specific book on sale, even when the same promotion also covers it. Never return an entry whose offer merely restates a piece of another entry's broader promotion.
 Set url to the link printed next to that offer if one is present.
 The prompt's Date line is the day the email was sent. When a deadline omits the year, resolve it against that date so the deadline is on or after it: "ends November 27" in an email dated 2026-07-26 means 2026-11-27.
 Copy prices, promo codes, and deadlines only from the email's own text; never invent, infer, or embellish them. Leave a field null when the email does not state it.

@@ -353,3 +353,59 @@ func TestSystemInstructionScopesToSoftware(t *testing.T) {
 		}
 	}
 }
+
+// TestSystemInstructionCollapsesPromotions locks the overlap rule — one
+// promotion spanning categories yields one umbrella entry, with individually
+// featured products kept separate — so the prompt can't silently regress. The
+// model-based behaviour itself is verified by
+// TestExtractLiveCollapsesPromotions.
+func TestSystemInstructionCollapsesPromotions(t *testing.T) {
+	lower := strings.ToLower(systemInstruction)
+	for _, want := range []string{"promotion", "category or tier", "individually featured"} {
+		if !strings.Contains(lower, want) {
+			t.Errorf("systemInstruction missing %q", want)
+		}
+	}
+}
+
+// TestExtractLiveCollapsesPromotions hits the real Gemini API; run with
+// GEMINI_LIVE_TEST=1 and a key. A Manning-shaped email — one sitewide sale
+// restated per category plus one individually featured book — must collapse to
+// exactly two deals: the umbrella promotion and the book.
+func TestExtractLiveCollapsesPromotions(t *testing.T) {
+	if os.Getenv("GEMINI_LIVE_TEST") != "1" {
+		t.Skip("set GEMINI_LIVE_TEST=1 and GEMINI_API_KEY to run")
+	}
+	g, err := NewGemini(ctx, os.Getenv("GEMINI_API_KEY"), "gemini-3.5-flash-lite", "")
+	if err != nil {
+		t.Fatalf("NewGemini: %v", err)
+	}
+
+	email := mailparse.Email{
+		From:    "Manning Publications <promo@manning.com>",
+		Subject: "Deal of the Day: Lean Software Engineering",
+		Text: `Deal of the Day: Lean Software Engineering — half off today. https://www.manning.com/books/lean-software-engineering
+Our summer sale is on: save half sitewide on all Manning books, get any liveProject or liveVideo for $10, or a year of Manning Online Pro for $199.99. Sale ends July 31. https://www.manning.com/sale
+All liveProjects and liveVideos $10! https://www.manning.com/liveprojects
+liveProjects and liveVideos bestsellers, $10 each. https://www.manning.com/livevideos
+Manning Online Pro annual subscription $199.99 (save $50). https://www.manning.com/pro`,
+	}
+
+	deals, err := g.Extract(ctx, email)
+	if err != nil {
+		t.Fatalf("Extract: %v", err)
+	}
+	t.Logf("got %d deals: %+v", len(deals), deals)
+	if len(deals) != 2 {
+		t.Errorf("expected exactly 2 deals (umbrella sale + featured book), got %d", len(deals))
+	}
+	books := 0
+	for _, d := range deals {
+		if strings.Contains(strings.ToLower(d.Title), "lean") {
+			books++
+		}
+	}
+	if books != 1 {
+		t.Errorf("expected exactly one entry for the featured book, got %d", books)
+	}
+}
