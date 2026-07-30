@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -70,17 +71,21 @@ func (f *fakePoster) count() int {
 // fakeResolver maps input URLs to resolved ones; unmapped inputs pass through
 // unchanged, and err (if set) is returned alongside — matching the URLResolver
 // contract of always handing back a usable URL. ResolvePage additionally hands
-// back the canned page (nil for an empty URL, like the real resolver).
+// back the canned page (nil for an empty URL, like the real resolver). delay,
+// when set, is slept before the lock so concurrent calls overlap the way real
+// network fetches do.
 type fakeResolver struct {
 	mu           sync.Mutex
 	byURL        map[string]string
 	page         []byte
 	err          error
+	delay        time.Duration
 	resolveCalls int
 	pageCalls    int
 }
 
 func (f *fakeResolver) Resolve(_ context.Context, raw string) (string, error) {
+	time.Sleep(f.delay)
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.resolveCalls++
@@ -88,6 +93,7 @@ func (f *fakeResolver) Resolve(_ context.Context, raw string) (string, error) {
 }
 
 func (f *fakeResolver) ResolvePage(_ context.Context, raw string) (string, []byte, error) {
+	time.Sleep(f.delay)
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.pageCalls++
@@ -253,6 +259,94 @@ func TestIngestResolvesDealURLs(t *testing.T) {
 	}
 	if fr.pageCalls != 2 {
 		t.Errorf("resolver page calls = %d, want 2 (one per deal; both lack ends_at)", fr.pageCalls)
+	}
+}
+
+func TestIngestResolvesLargeBatchConcurrently(t *testing.T) {
+	// A big email must not resolve URLs one after another: run sequentially, a
+	// batch of slow trackers exhausts the shared budget and the later deals
+	// keep their tracker URLs. With ten deals at 200ms each, the sequential
+	// floor is 2s; the concurrent pool finishes in a few waves. Every deal —
+	// including the last — must carry its resolved URL.
+	e := setup(t)
+	const n = 10
+	deals := make([]extract.Deal, n)
+	byURL := make(map[string]string, n)
+	for i := range deals {
+		tracker := fmt.Sprintf("https://t/%d", i)
+		deals[i] = extract.Deal{
+			Source: "Manning", Title: fmt.Sprintf("Deal %d", i), URL: tracker,
+			Price: "$10", EndsAt: "2027-01-01",
+		}
+		byURL[tracker] = fmt.Sprintf("https://clean/%d", i)
+	}
+	e.ex.set(deals, nil)
+	fr := &fakeResolver{byURL: byURL, delay: 200 * time.Millisecond}
+	e.h.Resolver = fr
+
+	start := time.Now()
+	rec := e.post(t, "/api/ingest", token, rawEmail("<big@x>", "Roundup", "body"))
+	elapsed := time.Since(start)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	// Sequential resolution would need n*delay = 2s; leave slack for slow CI
+	// while still ruling the serial path out.
+	if elapsed > 1500*time.Millisecond {
+		t.Errorf("ingest took %v, want well under the %v sequential floor", elapsed, n*200*time.Millisecond)
+	}
+	ctx := context.Background()
+	for i := 0; i < n; i++ {
+		d, err := e.st.GetDealByDedupeKey(ctx, store.DedupeKey("deals@humblebundle.com", fmt.Sprintf("Deal %d", i)))
+		if err != nil {
+			t.Fatalf("GetDealByDedupeKey %d: %v", i, err)
+		}
+		if want := fmt.Sprintf("https://clean/%d", i); d.URL != want {
+			t.Errorf("deal %d URL = %q, want %q (no positional starvation)", i, d.URL, want)
+		}
+	}
+}
+
+// gateEnricher implements extract.PageEnricher and records how many resolver
+// page fetches had completed when its first call arrived.
+type gateEnricher struct {
+	fr               *fakeResolver
+	pageCallsAtFirst int32
+}
+
+func (g *gateEnricher) EnrichFromPage(context.Context, string, string, *time.Time) (extract.Enrichment, error) {
+	g.fr.mu.Lock()
+	seen := g.fr.pageCalls
+	g.fr.mu.Unlock()
+	atomic.CompareAndSwapInt32(&g.pageCallsAtFirst, -1, int32(seen))
+	return extract.Enrichment{}, nil
+}
+
+func TestIngestEnrichmentRunsAfterAllURLsResolved(t *testing.T) {
+	// Model enrichment consumes the same shared budget as resolution, so it
+	// must not start until every deal's URL is resolved — otherwise a slow
+	// model call starves the deals behind it of their URLs.
+	e := setup(t)
+	const n = 6
+	deals := make([]extract.Deal, n)
+	for i := range deals {
+		deals[i] = extract.Deal{
+			Source: "Manning", Title: fmt.Sprintf("Deal %d", i),
+			URL: fmt.Sprintf("https://t/%d", i),
+		}
+	}
+	e.ex.set(deals, nil)
+	fr := &fakeResolver{page: []byte(`<html><body>a sale page</body></html>`)}
+	e.h.Resolver = fr
+	ge := &gateEnricher{fr: fr, pageCallsAtFirst: -1}
+	e.h.Enricher = ge
+
+	rec := e.post(t, "/api/ingest", token, rawEmail("<gate@x>", "Roundup", "body"))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
+	}
+	if got := atomic.LoadInt32(&ge.pageCallsAtFirst); got != n {
+		t.Errorf("first enrichment saw %d completed page fetches, want all %d (resolution must finish first)", got, n)
 	}
 }
 
