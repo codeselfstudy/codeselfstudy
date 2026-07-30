@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -309,6 +310,29 @@ func TestRunCondenserErrorFallsBack(t *testing.T) {
 	}
 	if got := string(fp.payloads[0]); !strings.Contains(got, "2 new deals") || strings.Contains(got, "• ") {
 		t.Errorf("fallback payload should be the plain per-deal format:\n%s", got)
+	}
+}
+
+func TestSanitizeGroupsDropsRepeats(t *testing.T) {
+	queued := []store.Deal{{ID: 1}, {ID: 2}}
+	got := sanitizeGroups([]CondensedGroup{
+		{Source: "A", Bullets: []Bullet{
+			{DealID: 1, Text: "50% off all books"},
+			{DealID: 1, Text: "50% off all books"}, // exact repeat: dropped
+			{DealID: 1, Text: "liveProjects $10"},  // same id, new text: kept (facets share the umbrella link)
+			{DealID: 2, Text: "  Free webinar  "},  // kept, trimmed
+		}},
+		// Cross-group repeat of the trimmed (id, text) pair: dropped, emptying
+		// the group.
+		{Source: "B", Bullets: []Bullet{{DealID: 2, Text: "Free webinar"}}},
+	}, queued)
+	want := []CondensedGroup{{Source: "A", Bullets: []Bullet{
+		{DealID: 1, Text: "50% off all books"},
+		{DealID: 1, Text: "liveProjects $10"},
+		{DealID: 2, Text: "Free webinar"},
+	}}}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("sanitizeGroups = %+v, want %+v", got, want)
 	}
 }
 

@@ -65,20 +65,26 @@ func condenseDeals(ctx context.Context, s *store.Store, c Condenser, queued []st
 }
 
 // sanitizeGroups enforces the Condenser contract on model output: bullets must
-// cite a queued deal and carry text. Offending bullets are dropped, as are
-// groups left empty.
+// cite a queued deal, carry text, and not repeat an (id, text) pair already
+// emitted. Offending bullets are dropped, as are groups left empty. A repeated
+// id with *different* text is allowed — several facets of one promotion can
+// legitimately share the umbrella deal's link.
 func sanitizeGroups(groups []CondensedGroup, queued []store.Deal) []CondensedGroup {
 	known := make(map[int64]bool, len(queued))
 	for _, d := range queued {
 		known[d.ID] = true
 	}
+	seen := make(map[Bullet]bool)
 	var out []CondensedGroup
 	for _, g := range groups {
 		var bullets []Bullet
 		for _, b := range g.Bullets {
-			if known[b.DealID] && strings.TrimSpace(b.Text) != "" {
-				bullets = append(bullets, b)
+			b.Text = strings.TrimSpace(b.Text)
+			if !known[b.DealID] || b.Text == "" || seen[b] {
+				continue
 			}
+			seen[b] = true
+			bullets = append(bullets, b)
 		}
 		if len(bullets) > 0 {
 			out = append(out, CondensedGroup{Source: g.Source, Bullets: bullets})
