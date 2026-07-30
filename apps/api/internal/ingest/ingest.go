@@ -81,6 +81,11 @@ type Handlers struct {
 	// page's text, after the page's structured data came up empty. nil skips
 	// enrichment (no API key, tests).
 	Enricher extract.PageEnricher
+
+	// Condenser, when set, condenses each digest to per-source essentials and
+	// suppresses re-announcements (see digest.Condenser). nil posts the plain
+	// per-deal digest (no API key, tests).
+	Condenser digest.Condenser
 }
 
 // New builds the ingest Handlers over an already-open store, an extractor, and a
@@ -309,7 +314,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 
 	// The email is safely ingested; a digest failure must not fail the request
 	// (the deals are queued and a later ingest retries).
-	posted, derr := digest.Run(ctx, h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, force)
+	posted, derr := digest.Run(ctx, h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, force, h.Condenser)
 	if derr != nil {
 		c.Logger().Errorf("digest run: %v", derr)
 	}
@@ -356,11 +361,15 @@ func (h *Handlers) enrichFromPage(ctx context.Context, c echo.Context, d *extrac
 
 // AdminDigest forces a digest post (skips the interval check, still race-safe).
 func (h *Handlers) AdminDigest(c echo.Context) error {
-	posted, err := digest.Run(c.Request().Context(), h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, true)
+	posted, err := digest.Run(c.Request().Context(), h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, true, h.Condenser)
 	if err != nil {
 		// Do not echo err: it can contain the Slack webhook URL (a secret).
 		c.Logger().Errorf("admin digest: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "digest failed")
+		// posted=true with an error means the digest went out degraded (e.g.
+		// the condenser fell back) — that is a success for the caller.
+		if !posted {
+			return echo.NewHTTPError(http.StatusInternalServerError, "digest failed")
+		}
 	}
 	return c.JSON(http.StatusOK, map[string]bool{"posted": posted})
 }

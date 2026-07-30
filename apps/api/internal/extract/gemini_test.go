@@ -9,12 +9,15 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/mailparse"
+	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/store"
 )
 
 var ctx = context.Background()
@@ -355,23 +358,86 @@ func TestSystemInstructionScopesToSoftware(t *testing.T) {
 }
 
 // TestSystemInstructionCollapsesPromotions locks the overlap rule — one
-// promotion spanning categories yields one umbrella entry, with individually
-// featured products kept separate — so the prompt can't silently regress. The
-// model-based behaviour itself is verified by
-// TestExtractLiveCollapsesPromotions.
+// promotion spanning categories yields one umbrella entry, and a product
+// merely carrying that promotion's discount gets no entry of its own — so the
+// prompt can't silently regress. The model-based behaviour itself is verified
+// by TestExtractLiveCollapsesPromotions.
 func TestSystemInstructionCollapsesPromotions(t *testing.T) {
 	lower := strings.ToLower(systemInstruction)
-	for _, want := range []string{"promotion", "category or tier", "individually featured"} {
+	for _, want := range []string{"promotion", "category or tier", "genuinely distinct"} {
 		if !strings.Contains(lower, want) {
 			t.Errorf("systemInstruction missing %q", want)
 		}
 	}
 }
 
+// TestCondenseSystemInstruction locks the condense rules — merge rewordings,
+// drop sale-priced products, suppress already-announced offers, cite only
+// given ids — so the prompt can't silently regress. The model behaviour is
+// verified by TestCondenseLive.
+func TestCondenseSystemInstruction(t *testing.T) {
+	lower := strings.ToLower(condenseSystemInstruction)
+	for _, want := range []string{"queued", "announced", "merge", "cite only ids", "never invent"} {
+		if !strings.Contains(lower, want) {
+			t.Errorf("condenseSystemInstruction missing %q", want)
+		}
+	}
+}
+
+func TestBuildCondensePrompt(t *testing.T) {
+	queued := []store.Deal{{ID: 7, Source: "Manning", Title: "Sale A", Price: "50% off", EndsAt: "2026-07-31", Description: "line one\nline two"}}
+	recent := []store.Deal{{ID: 3, Source: "Manning", Title: "Old Sale"}}
+	got := buildCondensePrompt(queued, recent)
+	for _, want := range []string{
+		"QUEUED:\n7 | Manning | Sale A | 50% off | 2026-07-31 | line one line two\n",
+		"ANNOUNCED:\n3 | Manning | Old Sale |  |  | \n",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("prompt missing %q:\n%s", want, got)
+		}
+	}
+}
+
+func TestCondenseParsesResponse(t *testing.T) {
+	g := newTestGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Write(geminiEnvelope(`[{"source":"Manning","bullets":[{"deal_id":7,"text":"50% off all books"},{"deal_id":9,"text":"Free webinar: The Rust Journey"}]}]`))
+	})
+	groups, err := g.Condense(ctx, []store.Deal{{ID: 7}, {ID: 9}}, nil)
+	if err != nil {
+		t.Fatalf("Condense: %v", err)
+	}
+	want := []digest.CondensedGroup{{
+		Source: "Manning",
+		Bullets: []digest.Bullet{
+			{DealID: 7, Text: "50% off all books"},
+			{DealID: 9, Text: "Free webinar: The Rust Journey"},
+		},
+	}}
+	if !reflect.DeepEqual(groups, want) {
+		t.Errorf("Condense = %+v, want %+v", groups, want)
+	}
+}
+
+func TestCondenseMalformedJSONNotRetried(t *testing.T) {
+	var calls int32
+	g := newTestGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		w.Write(geminiEnvelope("not json"))
+	})
+	if _, err := g.Condense(ctx, []store.Deal{{ID: 1}}, nil); err == nil {
+		t.Fatal("expected parse error")
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Errorf("made %d calls, want 1 (no retry on parse error)", got)
+	}
+}
+
 // TestExtractLiveCollapsesPromotions hits the real Gemini API; run with
 // GEMINI_LIVE_TEST=1 and a key. A Manning-shaped email — one sitewide sale
-// restated per category plus one individually featured book — must collapse to
-// exactly two deals: the umbrella promotion and the book.
+// restated per category, a book merely at the sale's own discount, and one
+// genuinely distinct free webinar — must collapse to exactly two deals: the
+// umbrella promotion and the webinar. The sale-priced book must NOT get its
+// own entry.
 func TestExtractLiveCollapsesPromotions(t *testing.T) {
 	if os.Getenv("GEMINI_LIVE_TEST") != "1" {
 		t.Skip("set GEMINI_LIVE_TEST=1 and GEMINI_API_KEY to run")
@@ -383,12 +449,11 @@ func TestExtractLiveCollapsesPromotions(t *testing.T) {
 
 	email := mailparse.Email{
 		From:    "Manning Publications <promo@manning.com>",
-		Subject: "Deal of the Day: Lean Software Engineering",
-		Text: `Deal of the Day: Lean Software Engineering — half off today. https://www.manning.com/books/lean-software-engineering
-Our summer sale is on: save half sitewide on all Manning books, get any liveProject or liveVideo for $10, or a year of Manning Online Pro for $199.99. Sale ends July 31. https://www.manning.com/sale
+		Subject: "Save half sitewide + a free Rust webinar",
+		Text: `Our summer sale is on: save half sitewide on all Manning books, get any liveProject or liveVideo for $10, or a year of Manning Online Pro for $199.99. Sale ends July 31. https://www.manning.com/sale
 All liveProjects and liveVideos $10! https://www.manning.com/liveprojects
-liveProjects and liveVideos bestsellers, $10 each. https://www.manning.com/livevideos
-Manning Online Pro annual subscription $199.99 (save $50). https://www.manning.com/pro`,
+Featured today at 50% off: Build a Reasoning Model (From Scratch), $23.99 for eBook. https://www.manning.com/books/build-a-reasoning-model-from-scratch
+Free live webinar: The Rust Journey — Exploring Safe Systems Programming. https://www.manning.com/webinars/rust-journey`,
 	}
 
 	deals, err := g.Extract(ctx, email)
@@ -397,15 +462,81 @@ Manning Online Pro annual subscription $199.99 (save $50). https://www.manning.c
 	}
 	t.Logf("got %d deals: %+v", len(deals), deals)
 	if len(deals) != 2 {
-		t.Errorf("expected exactly 2 deals (umbrella sale + featured book), got %d", len(deals))
+		t.Errorf("expected exactly 2 deals (umbrella sale + free webinar), got %d", len(deals))
 	}
-	books := 0
 	for _, d := range deals {
-		if strings.Contains(strings.ToLower(d.Title), "lean") {
-			books++
+		if strings.Contains(strings.ToLower(d.Title), "reasoning") {
+			t.Errorf("sale-priced book got its own entry: %+v", d)
 		}
 	}
-	if books != 1 {
-		t.Errorf("expected exactly one entry for the featured book, got %d", books)
+	webinars := 0
+	for _, d := range deals {
+		if strings.Contains(strings.ToLower(d.Title), "rust") {
+			webinars++
+		}
+	}
+	if webinars != 1 {
+		t.Errorf("expected exactly one entry for the free webinar, got %d", webinars)
+	}
+}
+
+// TestCondenseLive hits the real Gemini API; run with GEMINI_LIVE_TEST=1 and a
+// key. A screenshot-shaped queue — one sale under four wordings, one $10 promo
+// under three, sale-priced books, and one free webinar — must condense to a
+// handful of Manning bullets citing only queued ids, with no bullet for the
+// sale-priced books.
+func TestCondenseLive(t *testing.T) {
+	if os.Getenv("GEMINI_LIVE_TEST") != "1" {
+		t.Skip("set GEMINI_LIVE_TEST=1 and GEMINI_API_KEY to run")
+	}
+	g, err := NewGemini(ctx, os.Getenv("GEMINI_API_KEY"), "gemini-3.5-flash-lite", "")
+	if err != nil {
+		t.Fatalf("NewGemini: %v", err)
+	}
+
+	src := "Manning Publications"
+	queued := []store.Deal{
+		{ID: 1, Source: src, Title: "Manning Pro Annual Subscription", Price: "$199.99 (was $249.99)", EndsAt: "2026-07-31"},
+		{ID: 2, Source: src, Title: "All books (including MEAP)", Price: "50% off", EndsAt: "2026-07-31"},
+		{ID: 3, Source: src, Title: "All liveVideos and liveProjects", Price: "$10 each", EndsAt: "2026-07-31"},
+		{ID: 4, Source: src, Title: "Books and MEAP Sale", Price: "50% off", EndsAt: "2026-07-31"},
+		{ID: 5, Source: src, Title: "liveVideos and liveProjects", Price: "$10 each", EndsAt: "2026-07-31"},
+		{ID: 6, Source: src, Title: "Architecting for Autonomy", Price: "$27.99 (eBook, 50% off)", EndsAt: "2026-07-31"},
+		{ID: 7, Source: src, Title: "The Rust Journey – Exploring Safe Systems Programming", Price: "Free", EndsAt: "2026-07-31", Description: "Free live webinar exploring Rust and safe systems programming."},
+		{ID: 8, Source: src, Title: "Manning Storewide Book Sale", Price: "50% off", EndsAt: "2026-07-31"},
+		{ID: 9, Source: src, Title: "Manning liveVideos and liveProjects", Price: "$10 each", EndsAt: "2026-07-31"},
+		{ID: 10, Source: src, Title: "Summer Sale Sitewide Book Discount", Price: "50% off", EndsAt: "2026-07-31"},
+		{ID: 11, Source: src, Title: "Build a Reasoning Model (From Scratch)", Price: "$23.99 eBook (50% off)", EndsAt: "2026-07-31"},
+		{ID: 12, Source: src, Title: "AI Agents and Applications", Price: "$23.99 eBook (50% off)", EndsAt: "2026-07-31"},
+		{ID: 13, Source: src, Title: "Build an AI Agent (From Scratch)", Price: "50% off", EndsAt: "2026-07-31"},
+	}
+
+	groups, err := g.Condense(ctx, queued, nil)
+	if err != nil {
+		t.Fatalf("Condense: %v", err)
+	}
+	t.Logf("got %+v", groups)
+	known := map[int64]bool{}
+	for _, d := range queued {
+		known[d.ID] = true
+	}
+	bullets := 0
+	sawWebinar := false
+	for _, g := range groups {
+		for _, b := range g.Bullets {
+			bullets++
+			if !known[b.DealID] {
+				t.Errorf("bullet cites unknown id %d: %+v", b.DealID, b)
+			}
+			if strings.Contains(strings.ToLower(b.Text), "rust") {
+				sawWebinar = true
+			}
+		}
+	}
+	if bullets < 2 || bullets > 5 {
+		t.Errorf("got %d bullets, want the 13 deals condensed to roughly 3-4", bullets)
+	}
+	if !sawWebinar {
+		t.Errorf("expected a bullet for the free Rust webinar")
 	}
 }

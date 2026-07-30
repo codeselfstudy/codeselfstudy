@@ -201,10 +201,14 @@ func newIngestFromEnv(ctx context.Context, database *sql.DB) *ingest.Handlers {
 	// (best-effort; see internal/resolve).
 	h.Resolver = resolve.New()
 	// The Gemini extractor doubles as the page-text enricher for deadlines the
-	// page's structured data doesn't state; Disabled doesn't, so enrichment
-	// stays off without an API key.
+	// page's structured data doesn't state, and as the digest condenser that
+	// collapses each digest to per-source essentials; Disabled does neither, so
+	// both stay off without an API key.
 	if en, ok := extractor.(extract.PageEnricher); ok {
 		h.Enricher = en
+	}
+	if co, ok := extractor.(digest.Condenser); ok {
+		h.Condenser = co
 	}
 	return h
 }

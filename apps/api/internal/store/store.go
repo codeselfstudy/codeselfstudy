@@ -281,6 +281,39 @@ func (s *Store) UnpostedDeals(ctx context.Context, limit int) ([]Deal, error) {
 	return deals, rows.Err()
 }
 
+// RecentlyPostedDeals returns deals included in a digest posted after since,
+// newest digest first, capped at limit (limit <= 0 means no cap). The digest
+// condenser feeds these to the model as "already announced" so an ongoing
+// promotion re-extracted from a later email is not re-posted.
+func (s *Store) RecentlyPostedDeals(ctx context.Context, since time.Time, limit int) ([]Deal, error) {
+	query := `SELECT d.id, d.email_id, d.dedupe_key, d.source, d.title, d.url, d.price, d.ends_at,
+	                 d.description, d.first_seen_at, d.last_seen_at, d.seen_count, d.posted_in_digest_id
+	          FROM deals d
+	          JOIN digests g ON g.id = d.posted_in_digest_id
+	          WHERE g.posted_at > ?
+	          ORDER BY g.posted_at DESC, d.id`
+	args := []any{formatTime(since.UTC())}
+	if limit > 0 {
+		query += " LIMIT ?"
+		args = append(args, limit)
+	}
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("recently posted deals: %w", err)
+	}
+	defer rows.Close()
+
+	var deals []Deal
+	for rows.Next() {
+		d, err := scanDeal(rows)
+		if err != nil {
+			return nil, err
+		}
+		deals = append(deals, d)
+	}
+	return deals, rows.Err()
+}
+
 // GetDealByDedupeKey returns the deal with the given dedupe_key, or
 // sql.ErrNoRows if none exists.
 func (s *Store) GetDealByDedupeKey(ctx context.Context, key string) (Deal, error) {
