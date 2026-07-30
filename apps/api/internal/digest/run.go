@@ -17,11 +17,20 @@ import (
 // and the digest row are marked posted; on a failed post the digest is marked
 // failed and the deals stay queued for a later attempt (the error is returned).
 //
+// With a non-nil condenser the shown deals are condensed to per-source
+// essentials first. Condensation is strictly best-effort: on any condenser
+// failure the digest posts in the plain per-deal format and Run reports the
+// condense error alongside posted=true so the caller can log it. When the
+// condenser finds nothing new to say (every queued offer is equivalent to one
+// already announced), nothing posts to Slack, but the deals are still marked
+// posted so they stop re-queueing — the digest row then records a postless
+// cycle, and Run returns posted=false.
+//
 // Residual limitation: if the Slack post succeeds but marking the digest posted
 // fails every retry, Run returns (true, err) with the row still "claimed". Once
 // staleWindow elapses a later run can re-post the same deals (a duplicate, never
 // a loss). The retry below shrinks that window to a transient-DB-error edge case.
-func Run(ctx context.Context, s *store.Store, poster WebhookPoster, interval, staleWindow time.Duration, force bool) (posted bool, err error) {
+func Run(ctx context.Context, s *store.Store, poster WebhookPoster, interval, staleWindow time.Duration, force bool, condenser Condenser) (posted bool, err error) {
 	digestID, ok, err := s.ClaimDigest(ctx, interval, staleWindow, force)
 	if err != nil {
 		return false, fmt.Errorf("claim digest: %w", err)
@@ -44,36 +53,59 @@ func Run(ctx context.Context, s *store.Store, poster WebhookPoster, interval, st
 		return false, nil
 	}
 
-	body, err := BuildBlocks(deals, s.Now())
-	if err != nil {
-		_ = s.DeleteDigest(ctx, digestID)
-		return false, fmt.Errorf("build blocks: %w", err)
-	}
-
-	if err := poster.Post(ctx, body); err != nil {
-		if ferr := s.MarkDigestFailed(ctx, digestID); ferr != nil {
-			return false, fmt.Errorf("post failed (%v) and mark failed: %w", err, ferr)
-		}
-		return false, fmt.Errorf("post digest: %w", err)
-	}
-
 	shown := deals
 	if len(shown) > MaxDealsPerDigest {
 		shown = shown[:MaxDealsPerDigest]
 	}
+
+	var body []byte
+	var condenseErr error
+	allSuppressed := false
+	if condenser != nil {
+		groups, cerr := condenseDeals(ctx, s, condenser, shown)
+		switch {
+		case cerr != nil:
+			condenseErr = cerr // post uncondensed; surfaced to the caller for logging
+		case countBullets(groups) == 0:
+			allSuppressed = true
+		default:
+			if body, cerr = buildCondensedBlocks(groups, shown, len(deals)-len(shown)); cerr != nil {
+				body, condenseErr = nil, cerr
+			}
+		}
+	}
+	if body == nil && !allSuppressed {
+		body, err = BuildBlocks(deals, s.Now())
+		if err != nil {
+			_ = s.DeleteDigest(ctx, digestID)
+			return false, fmt.Errorf("build blocks: %w", err)
+		}
+	}
+
+	if !allSuppressed {
+		if err := poster.Post(ctx, body); err != nil {
+			if ferr := s.MarkDigestFailed(ctx, digestID); ferr != nil {
+				return false, fmt.Errorf("post failed (%v) and mark failed: %w", err, ferr)
+			}
+			return false, fmt.Errorf("post digest: %w", err)
+		}
+	}
+
 	ids := make([]int64, len(shown))
 	for i, d := range shown {
 		ids[i] = d.ID
 	}
 	// The post already succeeded, so retry the bookkeeping write a few times
 	// before giving up — a transient DB blip here would otherwise risk a
-	// duplicate digest on the next run (see the doc comment).
+	// duplicate digest on the next run (see the doc comment). An all-suppressed
+	// cycle books the same way: the deals are consumed even though nothing was
+	// sent.
 	const markAttempts = 3
 	for attempt := 1; ; attempt++ {
 		if err := s.MarkDigestPosted(ctx, digestID, ids); err == nil {
-			return true, nil
+			return !allSuppressed, condenseErr
 		} else if attempt == markAttempts {
-			return true, fmt.Errorf("posted to slack but failed to mark digest posted after %d attempts: %w", markAttempts, err)
+			return !allSuppressed, fmt.Errorf("posted to slack but failed to mark digest posted after %d attempts: %w", markAttempts, err)
 		}
 		time.Sleep(100 * time.Millisecond)
 	}

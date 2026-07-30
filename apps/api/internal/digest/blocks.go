@@ -87,6 +87,47 @@ func headerText(n int) string {
 	return fmt.Sprintf("%d new deals", n)
 }
 
+// buildCondensedBlocks renders condensed groups: one section per source with a
+// bold source name and minimal linked bullets. Each bullet's link comes from
+// the stored deal its DealID cites (see Condenser); the header counts bullets,
+// not consumed deals. overflow notes deals beyond MaxDealsPerDigest that stay
+// queued, same as BuildBlocks.
+func buildCondensedBlocks(groups []CondensedGroup, queued []store.Deal, overflow int) ([]byte, error) {
+	urlByID := make(map[int64]string, len(queued))
+	for _, d := range queued {
+		urlByID[d.ID] = d.URL
+	}
+
+	blocks := []any{
+		headerBlock{Type: "header", Text: textObject{Type: "plain_text", Text: headerText(countBullets(groups))}},
+	}
+	for _, g := range groups {
+		var lines []string
+		if g.Source != "" {
+			lines = append(lines, "*"+escapeMrkdwn(g.Source)+"*")
+		}
+		for _, b := range g.Bullets {
+			text := escapeMrkdwn(b.Text)
+			if u := urlByID[b.DealID]; u != "" {
+				lines = append(lines, fmt.Sprintf("• <%s|%s>", escapeLinkURL(stripQueryParams(u)), text))
+			} else {
+				lines = append(lines, "• "+text)
+			}
+		}
+		blocks = append(blocks,
+			sectionBlock{Type: "section", Text: textObject{Type: "mrkdwn", Text: strings.Join(lines, "\n")}},
+			dividerBlock{Type: "divider"},
+		)
+	}
+	if overflow > 0 {
+		blocks = append(blocks, contextBlock{
+			Type:     "context",
+			Elements: []textObject{{Type: "mrkdwn", Text: fmt.Sprintf("+ %d more — they'll stay queued for the next digest", overflow)}},
+		})
+	}
+	return json.MarshalIndent(payload{Blocks: blocks}, "", "  ")
+}
+
 // dealText renders one deal as Slack mrkdwn: a bold linked title, a middot-joined
 // meta line (price · ends <date> · source), and an italic description. Empty
 // fields are omitted, as is a deadline already before now (see BuildBlocks).

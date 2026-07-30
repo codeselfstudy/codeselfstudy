@@ -224,6 +224,51 @@ func isPosted(t *testing.T, s *store.Store, key string) bool {
 	return d.PostedInDigestID != nil
 }
 
+func TestRecentlyPostedDeals(t *testing.T) {
+	s := newStore(t)
+	t0 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	set := fixedClock(s, t0)
+	e := mustInsertEmail(t, s, "<rp@x>")
+
+	// One deal posted at T0, one posted a week later, one never posted.
+	seedPostedDeal(t, s, set, e.ID, "Old Bundle", t0)
+	seedPostedDeal(t, s, set, e.ID, "New Bundle", t0.Add(7*24*time.Hour))
+	set(t0.Add(7*24*time.Hour + time.Hour))
+	if err := s.UpsertDeal(ctx, store.Deal{
+		EmailID: e.ID, DedupeKey: store.DedupeKey("deals@humblebundle.com", "Queued Bundle"),
+		Source: "Humble", Title: "Queued Bundle",
+	}, t0); err != nil {
+		t.Fatalf("UpsertDeal: %v", err)
+	}
+
+	// A window opening after T0 sees only the newer posted deal — never the
+	// old one or the unposted one.
+	got, err := s.RecentlyPostedDeals(ctx, t0.Add(24*time.Hour), 0)
+	if err != nil {
+		t.Fatalf("RecentlyPostedDeals: %v", err)
+	}
+	if len(got) != 1 || got[0].Title != "New Bundle" {
+		t.Fatalf("RecentlyPostedDeals = %+v, want just New Bundle", got)
+	}
+
+	// A window before T0 sees both posted deals, newest digest first, and the
+	// limit caps the result.
+	got, err = s.RecentlyPostedDeals(ctx, t0.Add(-time.Hour), 0)
+	if err != nil {
+		t.Fatalf("RecentlyPostedDeals: %v", err)
+	}
+	if len(got) != 2 || got[0].Title != "New Bundle" || got[1].Title != "Old Bundle" {
+		t.Fatalf("RecentlyPostedDeals = %+v, want New then Old", got)
+	}
+	got, err = s.RecentlyPostedDeals(ctx, t0.Add(-time.Hour), 1)
+	if err != nil {
+		t.Fatalf("RecentlyPostedDeals limit: %v", err)
+	}
+	if len(got) != 1 || got[0].Title != "New Bundle" {
+		t.Fatalf("RecentlyPostedDeals limit = %+v, want just New Bundle", got)
+	}
+}
+
 func TestUpsertDealRepostWindow(t *testing.T) {
 	s := newStore(t)
 	t0 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
