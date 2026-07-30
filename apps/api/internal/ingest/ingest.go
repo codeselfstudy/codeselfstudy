@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -42,6 +43,13 @@ func resolveBudget(deals int) time.Duration {
 	}
 	return budget
 }
+
+// resolveConcurrency bounds how many deal URLs resolve at once. Resolution is
+// network-bound against external trackers, so a small pool turns a batch of
+// per-deal fetch timeouts into a few waves of wall clock — without it, a large
+// email spends the whole shared budget on its first few deals and the rest
+// keep their tracker URLs.
+const resolveConcurrency = 5
 
 // URLResolver cleans one deal URL (following tracking redirects, stripping
 // tracking parameters). Implementations must return a usable URL — the input
@@ -199,50 +207,74 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	// email-stated value is never overwritten. Strictly best-effort under one
 	// shared budget: a failed or skipped step keeps the extracted values, and
 	// a resolver problem never fails the ingest.
+	//
+	// Resolution runs first, concurrently across the batch: it is the
+	// load-bearing step (the stored link), while mining and enrichment are
+	// optional fill. Run sequentially, a large email spends the whole budget
+	// on its early deals — each tracker chain costs up to a fetch timeout and
+	// each model call several seconds more — and the remaining deals keep
+	// their tracker URLs.
 	if h.Resolver != nil && len(deals) > 0 {
 		rctx, cancel := context.WithTimeout(ctx, resolveBudget(len(deals)))
+		pages := make([][]byte, len(deals))
+		errs := make([]error, len(deals))
+		sem := make(chan struct{}, resolveConcurrency)
+		var wg sync.WaitGroup
 		for i := range deals {
-			d := &deals[i]
-			if d.EndsAt != "" && d.Price != "" {
-				resolved, rerr := h.Resolver.Resolve(rctx, d.URL)
-				if rerr != nil {
-					c.Logger().Warnf("resolve deal url: %v", rerr)
+			wg.Add(1)
+			sem <- struct{}{}
+			go func() {
+				defer wg.Done()
+				defer func() { <-sem }()
+				d := &deals[i]
+				if d.EndsAt != "" && d.Price != "" {
+					// Nothing left to mine; only the clean URL is wanted.
+					d.URL, errs[i] = h.Resolver.Resolve(rctx, d.URL)
+					return
 				}
-				d.URL = resolved
-				continue
-			}
-			resolved, page, rerr := h.Resolver.ResolvePage(rctx, d.URL)
+				d.URL, pages[i], errs[i] = h.Resolver.ResolvePage(rctx, d.URL)
+			}()
+		}
+		wg.Wait()
+		for _, rerr := range errs {
 			if rerr != nil {
 				c.Logger().Warnf("resolve deal url: %v", rerr)
 			}
-			d.URL = resolved
-			if len(page) > 0 {
-				mined := expiry.Mine(page)
-				if d.EndsAt == "" {
-					// The page's structured data gets the same skepticism as
-					// the extractor: shop pages routinely carry a stale
-					// priceValidUntil from an earlier promotion, and a past
-					// date is useless to store (the digest would hide it
-					// anyway). Leaving it empty also keeps ClearEndsAt
-					// effective, so a previously stored bad deadline still
-					// gets erased.
-					if mined.EndsAt == "" || expiry.OnOrAfter(mined.EndsAt, ref) {
-						d.EndsAt = mined.EndsAt
-					} else {
-						c.Logger().Warnf("dropping implausible page deadline %q (email date %s)", mined.EndsAt, ref.Format("2006-01-02"))
-					}
+		}
+
+		// Mining and model enrichment run on whatever budget remains; running
+		// dry here loses only the optional deadline/price fill, never a URL.
+		for i := range deals {
+			d := &deals[i]
+			page := pages[i]
+			if len(page) == 0 {
+				continue
+			}
+			mined := expiry.Mine(page)
+			if d.EndsAt == "" {
+				// The page's structured data gets the same skepticism as
+				// the extractor: shop pages routinely carry a stale
+				// priceValidUntil from an earlier promotion, and a past
+				// date is useless to store (the digest would hide it
+				// anyway). Leaving it empty also keeps ClearEndsAt
+				// effective, so a previously stored bad deadline still
+				// gets erased.
+				if mined.EndsAt == "" || expiry.OnOrAfter(mined.EndsAt, ref) {
+					d.EndsAt = mined.EndsAt
+				} else {
+					c.Logger().Warnf("dropping implausible page deadline %q (email date %s)", mined.EndsAt, ref.Format("2006-01-02"))
 				}
-				if d.Price == "" {
-					d.Price = mined.Price
-				}
-				// Last tier: when structured data left the deadline unfilled,
-				// ask the model to read the page text (many pages state a
-				// deadline only as prose). Model output gets the same
-				// OnOrAfter skepticism as every other source, and a missing
-				// price rides along on the same call.
-				if d.EndsAt == "" && h.Enricher != nil {
-					h.enrichFromPage(rctx, c, d, page, ref)
-				}
+			}
+			if d.Price == "" {
+				d.Price = mined.Price
+			}
+			// Last tier: when structured data left the deadline unfilled,
+			// ask the model to read the page text (many pages state a
+			// deadline only as prose). Model output gets the same
+			// OnOrAfter skepticism as every other source, and a missing
+			// price rides along on the same call.
+			if d.EndsAt == "" && h.Enricher != nil {
+				h.enrichFromPage(rctx, c, d, page, ref)
 			}
 		}
 		cancel()
