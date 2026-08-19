@@ -22,6 +22,12 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: "1.26"
+          # The runner image preinstalls a 1.26.x that satisfies the spec above,
+          # so setup-go would reuse it and never fetch newer patches. That let CI
+          # build against go1.26.5 while govulncheck flagged 7 called stdlib CVEs
+          # fixed in go1.26.6. check-latest resolves the newest published 1.26.x
+          # instead, so stdlib security releases don't wedge every PR.
+          check-latest: true
           cache-dependency-path: apps/api/go.sum
 
       - name: Install JS dependencies
