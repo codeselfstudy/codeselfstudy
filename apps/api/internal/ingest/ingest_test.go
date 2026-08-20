@@ -71,21 +71,24 @@ func (f *fakePoster) count() int {
 // fakeResolver maps input URLs to resolved ones; unmapped inputs pass through
 // unchanged, and err (if set) is returned alongside — matching the URLResolver
 // contract of always handing back a usable URL. ResolvePage additionally hands
-// back the canned page (nil for an empty URL, like the real resolver). delay,
-// when set, is slept before the lock so concurrent calls overlap the way real
-// network fetches do.
+// back the canned page (nil for an empty URL, like the real resolver). probe,
+// when set, records how many calls overlap and parks each one until the pool
+// is full, so concurrency can be asserted directly.
 type fakeResolver struct {
 	mu           sync.Mutex
 	byURL        map[string]string
 	page         []byte
 	err          error
-	delay        time.Duration
+	probe        *concurrencyProbe
 	resolveCalls int
 	pageCalls    int
 }
 
 func (f *fakeResolver) Resolve(_ context.Context, raw string) (string, error) {
-	time.Sleep(f.delay)
+	if f.probe != nil {
+		done := f.probe.enter()
+		defer done()
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.resolveCalls++
@@ -93,7 +96,10 @@ func (f *fakeResolver) Resolve(_ context.Context, raw string) (string, error) {
 }
 
 func (f *fakeResolver) ResolvePage(_ context.Context, raw string) (string, []byte, error) {
-	time.Sleep(f.delay)
+	if f.probe != nil {
+		done := f.probe.enter()
+		defer done()
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.pageCalls++
@@ -109,6 +115,64 @@ func (f *fakeResolver) mapURL(raw string) string {
 		return r
 	}
 	return raw
+}
+
+// concurrencyProbe measures how many resolver calls are in flight at once,
+// instead of inferring concurrency from elapsed time (a wall-clock assertion
+// flakes on loaded CI runners under -race). Each caller parks until width of
+// them have arrived, so a pooled implementation deterministically drives the
+// high-water mark to the full pool width; a sequential one never gets company
+// and leaves the mark at 1. release frees callers that never got company, so
+// a sequential implementation fails the assertion instead of hanging.
+type concurrencyProbe struct {
+	mu       sync.Mutex
+	width    int
+	inFlight int
+	peak     int
+	gate     chan struct{}
+	gateOpen bool
+}
+
+func newConcurrencyProbe(width int) *concurrencyProbe {
+	return &concurrencyProbe{width: width, gate: make(chan struct{})}
+}
+
+// enter records one in-flight call, parks until the pool is full (or the gate
+// is released), and returns the func that marks the call finished.
+func (p *concurrencyProbe) enter() func() {
+	p.mu.Lock()
+	p.inFlight++
+	if p.inFlight > p.peak {
+		p.peak = p.inFlight
+	}
+	full := p.inFlight >= p.width
+	p.mu.Unlock()
+	if full {
+		p.release()
+	}
+	<-p.gate
+	return func() {
+		p.mu.Lock()
+		p.inFlight--
+		p.mu.Unlock()
+	}
+}
+
+// release unparks every caller, now and in the future. It is idempotent: the
+// pool filling and the test's watchdog can both fire it.
+func (p *concurrencyProbe) release() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if !p.gateOpen {
+		p.gateOpen = true
+		close(p.gate)
+	}
+}
+
+func (p *concurrencyProbe) highWater() int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.peak
 }
 
 type env struct {
@@ -265,9 +329,10 @@ func TestIngestResolvesDealURLs(t *testing.T) {
 func TestIngestResolvesLargeBatchConcurrently(t *testing.T) {
 	// A big email must not resolve URLs one after another: run sequentially, a
 	// batch of slow trackers exhausts the shared budget and the later deals
-	// keep their tracker URLs. With ten deals at 200ms each, the sequential
-	// floor is 2s; the concurrent pool finishes in a few waves. Every deal —
-	// including the last — must carry its resolved URL.
+	// keep their tracker URLs. The probe measures overlap directly — every
+	// resolver call parks until the pool is full — so the assertion holds
+	// regardless of how loaded the machine is. Every deal, including the last,
+	// must still carry its resolved URL.
 	e := setup(t)
 	const n = 10
 	deals := make([]extract.Deal, n)
@@ -281,19 +346,27 @@ func TestIngestResolvesLargeBatchConcurrently(t *testing.T) {
 		byURL[tracker] = fmt.Sprintf("https://clean/%d", i)
 	}
 	e.ex.set(deals, nil)
-	fr := &fakeResolver{byURL: byURL, delay: 200 * time.Millisecond}
+	probe := newConcurrencyProbe(ingest.ResolveConcurrency)
+	fr := &fakeResolver{byURL: byURL, probe: probe}
 	e.h.Resolver = fr
 
-	start := time.Now()
+	// Nothing opens the gate when resolution is sequential, so free the parked
+	// callers after a deadline long enough that scheduling lag on a loaded
+	// runner can never be mistaken for serialization — filling the pool only
+	// takes starting five goroutines. The batch's own resolve budget is longer
+	// still, so a released gate always fails the assertion below rather than
+	// tripping the handler's own timeout.
+	watchdog := time.AfterFunc(10*time.Second, probe.release)
+	defer watchdog.Stop()
+
 	rec := e.post(t, "/api/ingest", token, rawEmail("<big@x>", "Roundup", "body"))
-	elapsed := time.Since(start)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
 	}
-	// Sequential resolution would need n*delay = 2s; leave slack for slow CI
-	// while still ruling the serial path out.
-	if elapsed > 1500*time.Millisecond {
-		t.Errorf("ingest took %v, want well under the %v sequential floor", elapsed, n*200*time.Millisecond)
+	// Exactly the pool width: fewer means resolution serialized, more means
+	// the pool stopped bounding it.
+	if peak := probe.highWater(); peak != ingest.ResolveConcurrency {
+		t.Errorf("peak concurrent resolver calls = %d, want exactly %d (the pool width)", peak, ingest.ResolveConcurrency)
 	}
 	ctx := context.Background()
 	for i := 0; i < n; i++ {
