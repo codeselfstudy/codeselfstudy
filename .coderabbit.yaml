@@ -1,11 +1,12 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 #
 # CodeRabbit's cloud settings only auto-review PRs into the default branch
-# (main). This feature is built as sub-issue PRs into a long-lived integration
-# branch (claude/usernames-user-settings-44e328), and we want each of those
-# PRs reviewed before it merges — so enable auto-review when the PR's *base* is
-# a claude/* branch too. CodeRabbit reads this file from the PR's base branch,
-# so it lives on the integration branch (and travels to main with the feature).
+# (main). Features here are built as sub-issue PRs into a long-lived claude/*
+# integration branch, and we want each of those PRs reviewed before it merges
+# — so enable auto-review when the PR's *base* is a claude/* branch too.
+# CodeRabbit reads this file from the PR's base branch, so a change here only
+# reaches an already-live integration branch once it is merged or cherry-picked
+# into that branch.
 language: en-US
 reviews:
   auto_review:
@@ -14,3 +15,15 @@ reviews:
     # included; this adds the claude/* integration branches.
     base_branches:
       - "claude/.*"
+    # One review per PR, not one per push (the default re-runs the review on
+    # every push). The plan includes a single review per hour, so a burst of
+    # fixup commits spent the whole allowance re-reviewing the same PR. Ask for
+    # a fresh pass with `@coderabbitai review` once a round of fixes is worth
+    # checking. Iterating in a draft PR also costs nothing — drafts are not
+    # auto-reviewed — so open early work as a draft and mark it ready when it
+    # is worth a review.
+    auto_incremental_review: false
+    # Backstop for the line above: should incremental review ever be switched
+    # back on, pause automatic reviews after this many reviewed commits rather
+    # than the default 5.
+    auto_pause_after_reviewed_commits: 2
