@@ -363,9 +363,10 @@ func TestIngestResolvesLargeBatchConcurrently(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, body %s", rec.Code, rec.Body)
 	}
-	if peak := probe.highWater(); peak < ingest.ResolveConcurrency {
-		t.Errorf("peak concurrent resolver calls = %d, want %d (the full pool width) — resolution is not running concurrently",
-			peak, ingest.ResolveConcurrency)
+	// Exactly the pool width: fewer means resolution serialized, more means
+	// the pool stopped bounding it.
+	if peak := probe.highWater(); peak != ingest.ResolveConcurrency {
+		t.Errorf("peak concurrent resolver calls = %d, want exactly %d (the pool width)", peak, ingest.ResolveConcurrency)
 	}
 	ctx := context.Background()
 	for i := 0; i < n; i++ {
