@@ -12,7 +12,7 @@ require (
 	golang.org/x/sync v0.22.0
 	golang.org/x/text v0.41.0
 	google.golang.org/genai v1.68.0
-	modernc.org/sqlite v1.56.0
+	modernc.org/sqlite v1.57.0
 )
 
 require (
