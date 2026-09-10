@@ -9,7 +9,7 @@ require (
 	github.com/tursodatabase/libsql-client-go v0.0.0-20260528064733-9d5d30a29a60
 	github.com/workos/workos-go/v6 v6.5.0
 	golang.org/x/net v0.58.0
-	golang.org/x/sync v0.22.0
+	golang.org/x/sync v0.23.0
 	golang.org/x/text v0.41.0
 	google.golang.org/genai v1.68.0
 	modernc.org/sqlite v1.56.0
