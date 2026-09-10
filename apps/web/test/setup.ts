@@ -9,7 +9,21 @@ import "@testing-library/jest-dom/vitest";
 // tests. Put a minimal in-memory Storage back so the suite behaves the same on
 // any Node version and under Bun. `Storage` is replaced too: the tests spy on
 // `Storage.prototype`, so the class and the instances have to match.
-if (typeof globalThis.localStorage === "undefined") {
+//
+// Reading the global has to be guarded as well as shape-checked: Node's Web
+// Storage is experimental and today's `undefined` could become a throw, and a
+// jsdom window on an opaque origin (`about:blank`, `file:`) throws SecurityError
+// from the getter. Either way there is no usable storage, and letting the probe
+// itself throw would take down every test file instead of just this hook.
+function hostStorageIsUsable() {
+  try {
+    return typeof globalThis.localStorage?.clear === "function";
+  } catch {
+    return false;
+  }
+}
+
+if (!hostStorageIsUsable()) {
   class MemoryStorage {
     #entries = new Map<string, string>();
 
