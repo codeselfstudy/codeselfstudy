@@ -74,28 +74,24 @@ const gaSnippet = minify(`
       })();
     </script>
     <title>{pageTitle}</title>
-    {
-      metadata.map((entry) =>
-        "name" in entry ? (
-          <meta name={entry.name} content={entry.content} />
-        ) : "property" in entry ? (
-          <meta property={entry.property} content={entry.content} />
-        ) : null
-      )
-    }
+    {metadata.map((entry) =>
+      "name" in entry ? (
+        <meta name={entry.name} content={entry.content} />
+      ) : "property" in entry ? (
+        <meta property={entry.property} content={entry.content} />
+      ) : null
+    )}
     <link rel="canonical" href={canonical} />
-    {
-      import.meta.env.PROD && (
-        <>
-          <script
-            is:inline
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-99DC6WSRWL"
-          />
-          <script is:inline set:html={gaSnippet} />
-        </>
-      )
-    }
+    {import.meta.env.PROD && (
+      <>
+        <script
+          is:inline
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-99DC6WSRWL"
+        ></script>
+        <script is:inline set:html={gaSnippet}></script>
+      </>
+    )}
   </head>
   <body>
     <Navbar client:only="react" />
