@@ -16,10 +16,12 @@ pre-push:
     test:
       run: bun run test
     lint:
-      glob: "*.{ts,js,mjs,cjs,jsx,tsx,astro}"
+      glob: "{apps,packages}/**/*.{ts,js,mjs,cjs,jsx,tsx,astro}"
       # bunx finds eslint via apps/web's hoisted node_modules. `bun run eslint`
       # used to work pre-workspace but stopped after Phase 1 since eslint moved
-      # out of the root package.
+      # out of the root package. Restrict the glob to workspace packages so
+      # repo-root config files (e.g. stylelint.config.mjs) don't trip ESLint,
+      # which no longer has a root config after the v9+ flat-config migration.
       run: bunx eslint {push_files}
     stylelint:
       glob: "*.{css,scss}"
