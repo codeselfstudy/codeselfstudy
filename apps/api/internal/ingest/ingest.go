@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/expiry"
@@ -113,7 +113,7 @@ func (h *Handlers) Register(e *echo.Echo) {
 // a constant-time comparison. An unset token rejects everything.
 func (h *Handlers) BearerAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	const prefix = "Bearer "
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		hdr := c.Request().Header.Get("Authorization")
 		if !strings.HasPrefix(hdr, prefix) {
 			return echo.NewHTTPError(http.StatusUnauthorized, "missing bearer token")
@@ -141,7 +141,7 @@ type ingestResult struct {
 // a digest. It is idempotent: a re-POST of an already-extracted email does
 // nothing. Mail from an approved sender forces the digest, posting queued deals
 // immediately instead of waiting out DigestInterval.
-func (h *Handlers) Ingest(c echo.Context) error {
+func (h *Handlers) Ingest(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	raw, err := io.ReadAll(http.MaxBytesReader(c.Response(), c.Request().Body, h.MaxIngestBytes))
@@ -155,7 +155,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 
 	email, err := mailparse.Parse(raw)
 	if err != nil {
-		c.Logger().Errorf("parse email: %v", err)
+		c.Logger().Error("parse email", "err", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid email")
 	}
 
@@ -199,7 +199,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	for i := range deals {
 		d := &deals[i]
 		if d.EndsAt != "" && !expiry.OnOrAfter(d.EndsAt, ref) {
-			c.Logger().Warnf("dropping implausible deal deadline %q (email date %s)", d.EndsAt, ref.Format("2006-01-02"))
+			c.Logger().Warn("dropping implausible deal deadline", "ends_at", d.EndsAt, "email_date", ref.Format("2006-01-02"))
 			d.EndsAt = ""
 			cleared[i] = true
 		}
@@ -243,7 +243,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 		wg.Wait()
 		for _, rerr := range errs {
 			if rerr != nil {
-				c.Logger().Warnf("resolve deal url: %v", rerr)
+				c.Logger().Warn("resolve deal url", "err", rerr)
 			}
 		}
 
@@ -267,7 +267,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 				if mined.EndsAt == "" || expiry.OnOrAfter(mined.EndsAt, ref) {
 					d.EndsAt = mined.EndsAt
 				} else {
-					c.Logger().Warnf("dropping implausible page deadline %q (email date %s)", mined.EndsAt, ref.Format("2006-01-02"))
+					c.Logger().Warn("dropping implausible page deadline", "ends_at", mined.EndsAt, "email_date", ref.Format("2006-01-02"))
 				}
 			}
 			if d.Price == "" {
@@ -316,7 +316,7 @@ func (h *Handlers) Ingest(c echo.Context) error {
 	// (the deals are queued and a later ingest retries).
 	posted, derr := digest.Run(ctx, h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, force, h.Condenser)
 	if derr != nil {
-		c.Logger().Errorf("digest run: %v", derr)
+		c.Logger().Error("digest run", "err", derr)
 	}
 
 	return c.JSON(http.StatusOK, ingestResult{
@@ -330,14 +330,14 @@ func (h *Handlers) Ingest(c echo.Context) error {
 // enrichFromPage runs the model over the deal page's text to fill d.EndsAt
 // (and d.Price when empty). Strictly best-effort: a conversion failure, an
 // enricher error, or an implausible date leaves d unchanged.
-func (h *Handlers) enrichFromPage(ctx context.Context, c echo.Context, d *extract.Deal, page []byte, ref time.Time) {
+func (h *Handlers) enrichFromPage(ctx context.Context, c *echo.Context, d *extract.Deal, page []byte, ref time.Time) {
 	text, err := htmltext.Convert(string(page))
 	if err != nil || strings.TrimSpace(text) == "" {
 		return
 	}
 	en, err := h.Enricher.EnrichFromPage(ctx, d.Title, text, &ref)
 	if err != nil {
-		c.Logger().Warnf("enrich deal from page: %v", err)
+		c.Logger().Warn("enrich deal from page", "err", err)
 		return
 	}
 	if en.EndsAt != "" {
@@ -347,11 +347,11 @@ func (h *Handlers) enrichFromPage(ctx context.Context, c echo.Context, d *extrac
 		// reduces a full timestamp to the bare date the digest displays.
 		switch normalized := expiry.Normalize(en.EndsAt); {
 		case normalized == "":
-			c.Logger().Warnf("dropping unparseable enriched deadline %q", en.EndsAt)
+			c.Logger().Warn("dropping unparseable enriched deadline", "ends_at", en.EndsAt)
 		case expiry.OnOrAfter(normalized, ref):
 			d.EndsAt = normalized
 		default:
-			c.Logger().Warnf("dropping implausible enriched deadline %q (email date %s)", en.EndsAt, ref.Format("2006-01-02"))
+			c.Logger().Warn("dropping implausible enriched deadline", "ends_at", en.EndsAt, "email_date", ref.Format("2006-01-02"))
 		}
 	}
 	if d.Price == "" && en.Price != "" {
@@ -360,11 +360,11 @@ func (h *Handlers) enrichFromPage(ctx context.Context, c echo.Context, d *extrac
 }
 
 // AdminDigest forces a digest post (skips the interval check, still race-safe).
-func (h *Handlers) AdminDigest(c echo.Context) error {
+func (h *Handlers) AdminDigest(c *echo.Context) error {
 	posted, err := digest.Run(c.Request().Context(), h.store, h.poster, h.cfg.DigestInterval, store.DefaultStaleWindow, true, h.Condenser)
 	if err != nil {
 		// Do not echo err: it can contain the Slack webhook URL (a secret).
-		c.Logger().Errorf("admin digest: %v", err)
+		c.Logger().Error("admin digest", "err", err)
 		// posted=true with an error means the digest went out degraded (e.g.
 		// the condenser fell back) — that is a success for the caller.
 		if !posted {

@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/digest"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/session"
@@ -80,10 +80,10 @@ type meResponse struct {
 // username, so a rename is never stale. If the row is somehow absent (a login
 // whose OnLogin upsert failed), it degrades to the session profile rather than
 // erroring, so the navbar still renders.
-func (h *Handlers) Me(c echo.Context) error {
+func (h *Handlers) Me(c *echo.Context) error {
 	p, ok := session.User(c)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 	}
 	resp := meResponse{Email: p.Email, Avatar: p.ProfilePictureURL}
 	u, err := h.store.GetUserByWorkOSID(c.Request().Context(), p.ID)
@@ -108,10 +108,10 @@ type settingsResponse struct {
 
 // GetSettings returns the caller's editable settings plus any pending deletion
 // request (so the form can show the "deletion pending" state).
-func (h *Handlers) GetSettings(c echo.Context) error {
+func (h *Handlers) GetSettings(c *echo.Context) error {
 	p, ok := session.User(c)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 	}
 	u, err := h.userRow(c.Request().Context(), p)
 	if err != nil {
@@ -129,10 +129,10 @@ type patchRequest struct {
 // (a nil pointer leaves it untouched). Status codes the web form maps to inline
 // messages: 400 invalid/reserved username or invalid timezone, 409 taken, 429
 // within the rename cooldown (with retry_after_days), 200 with the new settings.
-func (h *Handlers) PatchSettings(c echo.Context) error {
+func (h *Handlers) PatchSettings(c *echo.Context) error {
 	p, ok := session.User(c)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 	}
 	var req patchRequest
 	if err := c.Bind(&req); err != nil {
@@ -206,10 +206,10 @@ type deleteResponse struct {
 // call never files a duplicate) and best-effort pings the admin Slack channel.
 // Users never self-delete; an admin actions the row manually. A webhook failure
 // is logged but still returns 202, because the row is the durable record.
-func (h *Handlers) DeleteRequest(c echo.Context) error {
+func (h *Handlers) DeleteRequest(c *echo.Context) error {
 	p, ok := session.User(c)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 	}
 	ctx := c.Request().Context()
 	u, err := h.userRow(ctx, p)
@@ -241,7 +241,7 @@ func (h *Handlers) DeleteRequest(c echo.Context) error {
 
 // writeSettings serializes a user's current settings, including any pending
 // deletion request.
-func (h *Handlers) writeSettings(c echo.Context, u store.User) error {
+func (h *Handlers) writeSettings(c *echo.Context, u store.User) error {
 	resp := settingsResponse{Username: u.Username, Email: u.Email, Timezone: u.Timezone}
 	dr, err := h.store.PendingDeletionRequest(c.Request().Context(), u.ID)
 	if err != nil {
@@ -272,7 +272,7 @@ func (h *Handlers) userRow(ctx context.Context, p session.Profile) (store.User, 
 // webhook, and a client that navigates away mid-request must not cancel the
 // ping the admin depends on. A shutdown can still cut an in-flight post, which
 // is the accepted cost of a best-effort notification.
-func (h *Handlers) notifyAdmin(ctx context.Context, c echo.Context, u store.User) {
+func (h *Handlers) notifyAdmin(ctx context.Context, c *echo.Context, u store.User) {
 	if h.poster == nil {
 		return
 	}
@@ -280,7 +280,7 @@ func (h *Handlers) notifyAdmin(ctx context.Context, c echo.Context, u store.User
 		"text": fmt.Sprintf("Account deletion requested by %s (%s), user id %d — action manually.", u.Username, u.Email, u.ID),
 	})
 	if err != nil {
-		c.Logger().Errorf("delete-request: marshal slack payload: %v", err)
+		c.Logger().Error("delete-request: marshal slack payload", "err", err)
 		return
 	}
 	// Captured before the goroutine: echo may recycle the Context once the
@@ -294,11 +294,11 @@ func (h *Handlers) notifyAdmin(ctx context.Context, c echo.Context, u store.User
 		// misbehaving webhook must cost one notification, not the server.
 		defer func() {
 			if r := recover(); r != nil {
-				logger.Errorf("delete-request: slack notify panicked: %v", r)
+				logger.Error("delete-request: slack notify panicked", "panic", r)
 			}
 		}()
 		if err := h.poster.Post(detached, payload); err != nil {
-			logger.Errorf("delete-request: slack notify: %v", err)
+			logger.Error("delete-request: slack notify", "err", err)
 		}
 	}()
 }
@@ -311,7 +311,7 @@ func (h *Handlers) notifyAdmin(ctx context.Context, c echo.Context, u store.User
 // request with neither header (a same-origin server call, curl, a test) is
 // allowed.
 func originCheck(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		r := c.Request()
 		if sfs := r.Header.Get("Sec-Fetch-Site"); sfs != "" {
 			if sfs != "same-origin" && sfs != "none" {
@@ -330,7 +330,7 @@ func originCheck(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // errJSON writes a structured error the web form maps to a message.
-func errJSON(c echo.Context, status int, code string) error {
+func errJSON(c *echo.Context, status int, code string) error {
 	return c.JSON(status, map[string]string{"error": code})
 }
 

@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/db"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/extract"
@@ -216,7 +216,6 @@ func setupApproved(t *testing.T, approved map[string]bool) *env {
 	h := ingest.New(cfg, st, ex, poster)
 
 	e := echo.New()
-	e.HideBanner = true
 	h.Register(e)
 	return &env{e: e, h: h, st: st, ex: ex, poster: poster}
 }

@@ -14,8 +14,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/auth"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/db"
@@ -78,20 +78,18 @@ func main() {
 		port = "8080"
 	}
 
-	go func() {
-		if err := e.Start(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			e.Logger.Fatal(err)
-		}
-	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer shutdownCancel()
-	if err := e.Shutdown(shutdownCtx); err != nil {
-		e.Logger.Fatal(err)
+	// Serve until SIGINT/SIGTERM, then shut down gracefully, giving in-flight
+	// requests up to 5s. Echo v5's StartConfig owns the http.Server and the
+	// shutdown that v4 did through e.Start + e.Shutdown.
+	sigCtx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	sc := echo.StartConfig{
+		Address:         ":" + port,
+		HideBanner:      true,
+		GracefulTimeout: 5 * time.Second,
+	}
+	if err := sc.Start(sigCtx, e); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
 	}
 }
 
@@ -283,10 +281,10 @@ func runMigrate(ctx context.Context) {
 // handleMe returns the validated claims for the authenticated user. Light
 // shape on purpose — tighten the response to whatever the frontend ends up
 // needing.
-func handleMe(c echo.Context) error {
+func handleMe(c *echo.Context) error {
 	tok := auth.Claims(c)
 	if tok == nil {
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 	}
 	resp := map[string]any{
 		"sub": tok.Subject(),
@@ -309,7 +307,6 @@ func handleMe(c echo.Context) error {
 // Split out from main so tests can build a server against fixtures.
 func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *ingest.Handlers, usr *users.Handlers) *echo.Echo {
 	e := echo.New()
-	e.HideBanner = true
 
 	// Canonical host: 308-redirect every www.* request to the bare apex host,
 	// preserving scheme, path and query (e.g. https://www.codeselfstudy.com/x/
@@ -329,7 +326,7 @@ func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *
 	// future WebSocket upgrade will need. Skip it on /ws so Phase 2's choices
 	// don't quietly break Phase 4's hub.
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Skipper: func(c echo.Context) bool {
+		Skipper: func(c *echo.Context) bool {
 			return c.Path() == "/ws"
 		},
 	}))
@@ -339,7 +336,7 @@ func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *
 	// from curl -I, monitoring agents, and load balancers, which is wrong.
 	getOrHead := []string{http.MethodGet, http.MethodHead}
 
-	e.Match(getOrHead, "/healthz", func(c echo.Context) error {
+	e.Match(getOrHead, "/healthz", func(c *echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
 
@@ -372,11 +369,11 @@ func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *
 
 	// Reserve /api/* and /ws so unrecognized requests there reach Echo's
 	// default 404 (JSON, no SSG fallback). Any() already covers HEAD.
-	e.Any("/api/*", func(c echo.Context) error {
-		return echo.NewHTTPError(http.StatusNotFound)
+	e.Any("/api/*", func(c *echo.Context) error {
+		return echo.NewHTTPError(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	})
-	e.Any("/ws", func(c echo.Context) error {
-		return echo.NewHTTPError(http.StatusNotFound)
+	e.Any("/ws", func(c *echo.Context) error {
+		return echo.NewHTTPError(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	})
 
 	e.Match(getOrHead, "/*", staticHandler(staticRoot))
@@ -390,11 +387,15 @@ func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *
 // keeps SSG-style not-found pages working without abusing Echo's error
 // handler (which never fires once FileServer writes to the wire).
 func staticHandler(staticRoot string) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	// Echo v5's c.File resolves names against the process working directory,
+	// so an absolute staticRoot elsewhere (test fixtures) would 404. Serve
+	// through an fs.FS rooted at staticRoot instead, with paths relative to it.
+	staticFS := os.DirFS(staticRoot)
+	return func(c *echo.Context) error {
 		reqPath := c.Request().URL.Path
 		clean := filepath.Clean("/" + reqPath)
 		if strings.Contains(clean, "..") {
-			return echo.NewHTTPError(http.StatusBadRequest)
+			return echo.NewHTTPError(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		}
 		rel := strings.TrimPrefix(clean, "/")
 
@@ -442,13 +443,17 @@ func staticHandler(staticRoot string) echo.HandlerFunc {
 			c.Response().Header().Set("Cache-Control", "no-cache")
 		}
 		if path, ok := resolveStatic(staticRoot, rel); ok {
-			return c.File(path)
+			name, err := filepath.Rel(staticRoot, path)
+			if err != nil {
+				return err
+			}
+			return c.FileFS(filepath.ToSlash(name), staticFS)
 		}
 
 		if data, err := os.ReadFile(filepath.Join(staticRoot, "404.html")); err == nil {
 			return c.HTMLBlob(http.StatusNotFound, data)
 		}
-		return echo.NewHTTPError(http.StatusNotFound)
+		return echo.NewHTTPError(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 }
 

@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
@@ -150,7 +150,7 @@ func TestMiddlewareAcceptsValidToken(t *testing.T) {
 	v := startedVerifier(t, f)
 
 	e := echo.New()
-	e.GET("/me", func(c echo.Context) error {
+	e.GET("/me", func(c *echo.Context) error {
 		tok := Claims(c)
 		if tok == nil {
 			t.Fatal("claims missing on accepted request")
@@ -177,7 +177,7 @@ func TestMiddlewareRejects(t *testing.T) {
 	v := startedVerifier(t, f)
 
 	e := echo.New()
-	e.GET("/me", func(c echo.Context) error { return c.NoContent(http.StatusOK) }, Middleware(v))
+	e.GET("/me", func(c *echo.Context) error { return c.NoContent(http.StatusOK) }, Middleware(v))
 
 	cases := []struct {
 		name   string

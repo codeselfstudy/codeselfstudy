@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/db"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/session"
@@ -49,7 +49,7 @@ func prof(id, email string) session.Profile {
 func mount(h *users.Handlers, p *session.Profile) *echo.Echo {
 	e := echo.New()
 	api := e.Group("/api", func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			if p != nil {
 				session.ContextWithUser(c, *p)
 			}

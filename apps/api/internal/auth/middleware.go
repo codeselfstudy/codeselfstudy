@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
-// userContextKey is the echo.Context key under which validated claims are
+// userContextKey is the *echo.Context key under which validated claims are
 // stored. Handlers reach for it via Claims(c).
 const userContextKey = "auth:claims"
 
@@ -20,10 +20,10 @@ const userContextKey = "auth:claims"
 // against the verifier's JWKS / configured issuer.
 func Middleware(v *Verifier) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			tok, err := authenticate(c, v)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized)
+				return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			}
 			c.Set(userContextKey, tok)
 			return next(c)
@@ -31,7 +31,7 @@ func Middleware(v *Verifier) echo.MiddlewareFunc {
 	}
 }
 
-func authenticate(c echo.Context, v *Verifier) (jwt.Token, error) {
+func authenticate(c *echo.Context, v *Verifier) (jwt.Token, error) {
 	raw := bearerToken(c.Request().Header.Get(echo.HeaderAuthorization))
 	if raw == "" {
 		return nil, errors.New("auth: missing bearer token")
@@ -41,7 +41,7 @@ func authenticate(c echo.Context, v *Verifier) (jwt.Token, error) {
 
 // Claims returns the validated JWT claims placed on the context by
 // Middleware, or nil if the request didn't go through the middleware.
-func Claims(c echo.Context) jwt.Token {
+func Claims(c *echo.Context) jwt.Token {
 	v := c.Get(userContextKey)
 	if v == nil {
 		return nil
