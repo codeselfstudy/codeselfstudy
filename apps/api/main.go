@@ -317,7 +317,9 @@ func newServer(staticRoot string, v *auth.Verifier, sess *session.Manager, ing *
 	// routing, for every path and method. Echo's NonWWWRedirect defaults to 301;
 	// force 308 so the method/body survive, matching the statuses in
 	// redirects.go. c.Scheme() reads X-Forwarded-Proto, so behind Fly's
-	// force_https proxy the redirect target stays https.
+	// force_https proxy the redirect target stays https. Since echo v4.16.0 the
+	// header is only trusted from private/loopback peers; Fly's proxy connects
+	// over its private network, so the default SchemeExtractor still works.
 	e.Pre(middleware.NonWWWRedirectWithConfig(middleware.RedirectConfig{
 		Code: http.StatusPermanentRedirect,
 	}))
