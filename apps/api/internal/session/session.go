@@ -34,7 +34,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/workos/workos-go/v6/pkg/usermanagement"
 	"golang.org/x/sync/singleflight"
 
@@ -241,12 +241,12 @@ func (m *Manager) Register(e *echo.Echo) {
 // OAuth state. A fresh random nonce is signed into the state AND set in a
 // short-lived HttpOnly cookie, so the callback can confirm the redirect came
 // back to the same browser that started the flow (login-CSRF protection).
-func (m *Manager) Login(c echo.Context) error {
+func (m *Manager) Login(c *echo.Context) error {
 	noStore(c)
 	returnTo := safeReturnTo(c.QueryParam("returnTo"))
 	nonce, err := randomToken()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 	m.setNonceCookie(c, nonce)
 	authURL, err := usermanagement.GetAuthorizationURL(usermanagement.GetAuthorizationURLOpts{
@@ -256,7 +256,7 @@ func (m *Manager) Login(c echo.Context) error {
 		State:       m.signState(returnTo, nonce),
 	})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 	return c.Redirect(http.StatusFound, authURL.String())
 }
@@ -264,7 +264,7 @@ func (m *Manager) Login(c echo.Context) error {
 // Callback completes the OAuth exchange: it validates the signed state, trades
 // the code for tokens, seals them into the cookie, and redirects to returnTo.
 // Any failure lands the user back on the home page rather than an error screen.
-func (m *Manager) Callback(c echo.Context) error {
+func (m *Manager) Callback(c *echo.Context) error {
 	noStore(c)
 
 	// The nonce cookie is one-time: read it, then always clear it, whatever the
@@ -307,7 +307,7 @@ func (m *Manager) Callback(c echo.Context) error {
 		User:         profileFrom(resp.User),
 	})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 	m.setCookie(c, sealed)
 	return c.Redirect(http.StatusFound, m.resolveReturnTo(c, returnTo, profileFrom(resp.User)))
@@ -325,7 +325,7 @@ func (m *Manager) Callback(c echo.Context) error {
 // sign-in redirect for the whole request lifetime. A timed-out upsert degrades
 // exactly like the error case, because the users handlers re-upsert a missing
 // row on the next request.
-func (m *Manager) resolveReturnTo(c echo.Context, returnTo string, p Profile) string {
+func (m *Manager) resolveReturnTo(c *echo.Context, returnTo string, p Profile) string {
 	if m.OnLogin == nil {
 		return returnTo
 	}
@@ -333,7 +333,7 @@ func (m *Manager) resolveReturnTo(c echo.Context, returnTo string, p Profile) st
 	defer cancel()
 	dest, err := m.OnLogin(ctx, p)
 	if err != nil {
-		c.Logger().Errorf("session: OnLogin: %v", err)
+		c.Logger().Error("session: OnLogin", "err", err)
 		return returnTo
 	}
 	if dest != "" {
@@ -344,7 +344,7 @@ func (m *Manager) resolveReturnTo(c echo.Context, returnTo string, p Profile) st
 
 // Logout clears the local cookie and redirects through the WorkOS logout URL so
 // the WorkOS session is ended too, then back to a same-origin returnTo.
-func (m *Manager) Logout(c echo.Context) error {
+func (m *Manager) Logout(c *echo.Context) error {
 	noStore(c)
 	returnTo := safeReturnTo(c.QueryParam("returnTo"))
 
@@ -375,16 +375,16 @@ func (m *Manager) Logout(c echo.Context) error {
 // returns 401.
 func (m *Manager) Middleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			noStore(c)
 			ck, err := c.Cookie(cookieName)
 			if err != nil || ck.Value == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized)
+				return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			}
 			data, err := m.unseal(ck.Value)
 			if err != nil {
 				m.clearCookie(c)
-				return echo.NewHTTPError(http.StatusUnauthorized)
+				return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			}
 
 			ctx := c.Request().Context()
@@ -401,18 +401,18 @@ func (m *Manager) Middleware() echo.MiddlewareFunc {
 				access, refresh, rerr := m.refreshOnce(ctx, data.RefreshToken)
 				if rerr != nil {
 					m.clearCookie(c)
-					return echo.NewHTTPError(http.StatusUnauthorized)
+					return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 				}
 				if _, verr := m.verifier.ParseTokenNoIssuer(ctx, access); verr != nil {
 					m.clearCookie(c)
-					return echo.NewHTTPError(http.StatusUnauthorized)
+					return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 				}
 				data.AccessToken = access
 				data.RefreshToken = refresh
 				data.SessionID = m.sessionID(ctx, access)
 				sealed, serr := m.seal(data)
 				if serr != nil {
-					return echo.NewHTTPError(http.StatusInternalServerError)
+					return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 				}
 				m.setCookie(c, sealed)
 			}
@@ -427,10 +427,10 @@ func (m *Manager) Middleware() echo.MiddlewareFunc {
 // placed on the context (sealed in the cookie at login), so it needs no WorkOS
 // round-trip. Used only when the account database is absent; when it is present,
 // the users handlers own /api/me and return the DB-backed username too.
-func (m *Manager) HandleMe(c echo.Context) error {
+func (m *Manager) HandleMe(c *echo.Context) error {
 	p, ok := User(c)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 	}
 	return c.JSON(http.StatusOK, map[string]any{
 		"id":     p.ID,
@@ -444,7 +444,7 @@ func (m *Manager) HandleMe(c echo.Context) error {
 // request context, or ok=false when the request is not authenticated. It lets
 // other packages (the users handlers) read the identity without importing the
 // session internals.
-func User(c echo.Context) (Profile, bool) {
+func User(c *echo.Context) (Profile, bool) {
 	p, ok := c.Get(contextUserKey).(Profile)
 	return p, ok
 }
@@ -452,7 +452,7 @@ func User(c echo.Context) (Profile, bool) {
 // ContextWithUser stores p as the authenticated profile on c, exactly as
 // Middleware does. Exposed so handlers in other packages can be exercised with an
 // authenticated context in tests without running the full cookie flow.
-func ContextWithUser(c echo.Context, p Profile) {
+func ContextWithUser(c *echo.Context, p Profile) {
 	c.Set(contextUserKey, p)
 }
 
@@ -622,7 +622,7 @@ func refreshKey(refreshToken string) string {
 // is set exactly when a session starts and cleared exactly when one ends, so it
 // cannot outlive the session it advertises. Every caller — Callback, the silent
 // refresh, Logout, and each unrecoverable-failure path — inherits that for free.
-func (m *Manager) setCookie(c echo.Context, sealed string) {
+func (m *Manager) setCookie(c *echo.Context, sealed string) {
 	http.SetCookie(c.Response(), &http.Cookie{
 		Name:     cookieName,
 		Value:    sealed,
@@ -643,7 +643,7 @@ func (m *Manager) setCookie(c echo.Context, sealed string) {
 	})
 }
 
-func (m *Manager) clearCookie(c echo.Context) {
+func (m *Manager) clearCookie(c *echo.Context) {
 	http.SetCookie(c.Response(), &http.Cookie{
 		Name:     cookieName,
 		Value:    "",
@@ -667,7 +667,7 @@ func (m *Manager) clearCookie(c echo.Context) {
 // setNonceCookie / clearNonceCookie manage the one-time CSRF nonce. It is scoped
 // to /auth so it never rides along with page or /api requests, and SameSite=Lax
 // still lets it return on the top-level GET redirect from WorkOS to /auth/callback.
-func (m *Manager) setNonceCookie(c echo.Context, nonce string) {
+func (m *Manager) setNonceCookie(c *echo.Context, nonce string) {
 	http.SetCookie(c.Response(), &http.Cookie{
 		Name:     nonceCookieName,
 		Value:    nonce,
@@ -679,7 +679,7 @@ func (m *Manager) setNonceCookie(c echo.Context, nonce string) {
 	})
 }
 
-func (m *Manager) clearNonceCookie(c echo.Context) {
+func (m *Manager) clearNonceCookie(c *echo.Context) {
 	http.SetCookie(c.Response(), &http.Cookie{
 		Name:     nonceCookieName,
 		Value:    "",
@@ -725,6 +725,6 @@ func safeReturnTo(raw string) string {
 // front of this origin), so one user's /api/me or Set-Cookie can never be served
 // to another. Mirrors the no-cache handling the static handler already applies
 // to service-worker scripts.
-func noStore(c echo.Context) {
+func noStore(c *echo.Context) {
 	c.Response().Header().Set("Cache-Control", "no-store")
 }

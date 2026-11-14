@@ -13,6 +13,13 @@ import (
 // which sets X-Forwarded-Proto: https and delivers an origin-form
 // request-target — the tests mirror that (origin-form path + explicit Host +
 // XFP header) so req.RequestURI and c.Scheme() match what the app really sees.
+// Since echo v4.16.0, c.Scheme() only trusts X-Forwarded-Proto from a private,
+// loopback or link-local peer, so the tests also set RemoteAddr to a private
+// address, as Fly's proxy connects over its private network.
+// flyProxyAddr stands in for Fly's proxy, which reaches the app from a private
+// network address. httptest.NewRequest defaults to 192.0.2.1, a public address.
+const flyProxyAddr = "172.16.0.1:1234"
+
 func TestNonWWWRedirect(t *testing.T) {
 	e := newServer(fixtureDir(t), nil, nil, nil, nil)
 	cases := []struct {
@@ -37,6 +44,7 @@ func TestNonWWWRedirect(t *testing.T) {
 			req := httptest.NewRequest(tc.method, tc.path, nil)
 			req.Host = "www.codeselfstudy.com"
 			req.Header.Set("X-Forwarded-Proto", "https") // Fly sets this behind force_https
+			req.RemoteAddr = flyProxyAddr
 			rec := httptest.NewRecorder()
 			e.ServeHTTP(rec, req)
 
@@ -56,6 +64,7 @@ func TestApexHostNotRedirected(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Host = "codeselfstudy.com"
 	req.Header.Set("X-Forwarded-Proto", "https")
+	req.RemoteAddr = flyProxyAddr
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
 
@@ -80,5 +89,25 @@ func TestNonWWWRedirectSchemeFromForwardedProto(t *testing.T) {
 	}
 	if got := rec.Header().Get("Location"); got != "http://codeselfstudy.com/" {
 		t.Fatalf("Location: want %q, got %q", "http://codeselfstudy.com/", got)
+	}
+}
+
+// A client on a public address can't pick the redirect scheme by sending its
+// own X-Forwarded-Proto: echo v4.16.0+ ignores the header from untrusted peers
+// (GHSA-2ffq-g2xg-c22p), so the redirect falls back to the connection's scheme.
+func TestNonWWWRedirectIgnoresSpoofedProto(t *testing.T) {
+	e := newServer(fixtureDir(t), nil, nil, nil, nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Host = "www.codeselfstudy.com"
+	req.Header.Set("X-Forwarded-Proto", "https")
+	req.RemoteAddr = "203.0.113.7:1234" // public (TEST-NET-3) address
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusPermanentRedirect {
+		t.Fatalf("status: want 308, got %d", rec.Code)
+	}
+	if got, want := rec.Header().Get("Location"), "http://codeselfstudy.com/"; got != want {
+		t.Fatalf("Location: want %q, got %q", want, got)
 	}
 }
