@@ -18,6 +18,18 @@ export default [
   ...tseslint.configs.recommended,
   ...eslintPluginAstro.configs.recommended,
   {
+    // Hand astro-eslint-parser the TypeScript parser for frontmatter and
+    // <script> blocks. Without this it looks the parser up from the current
+    // directory, so running eslint from the repo root (the lefthook pre-push
+    // hook) fails on TypeScript syntax such as `interface Props`.
+    files: ["**/*.astro"],
+    languageOptions: {
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+    },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     plugins: { "react-hooks": reactHooks },
     rules: {
