@@ -15,9 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: oven-sh/setup-bun@v2
+      # Node and Bun come from mise.toml so CI runs the same versions as local
+      # development. Bun hands tools with a node shebang (vitest, eslint,
+      # stylelint, astro, tsc) to whichever `node` is on PATH, so Node is pinned
+      # here instead of inheriting whatever the runner image ships. Only these two
+      # are installed: Go stays with setup-go below so it keeps check-latest.
+      - uses: jdx/mise-action@v5
         with:
-          bun-version: latest
+          install_args: node bun
 
       - uses: actions/setup-go@v7
         with:

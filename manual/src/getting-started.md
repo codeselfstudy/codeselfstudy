@@ -2,9 +2,19 @@
 
 ## Prerequisites
 
+The tool versions this project uses are pinned in `mise.toml`. The easiest way to get them is [mise](https://mise.jdx.dev/):
+
+```bash
+mise trust     # once, so mise will read this repo's mise.toml
+mise install   # installs the pinned Node, Bun, Go, and just
+```
+
+Or install the tools yourself:
+
 - Install [Bun](https://bun.com/). It's an alternative to Node.js.
 - Install [Go](https://go.dev/) 1.26+. The backend is Go + Echo.
 - Install [just](https://just.systems/). It's a command runner.
+- Install [Node.js](https://nodejs.org/) at the version in `mise.toml`. Bun is the package manager and script runner, but it hands tools with a `node` shebang (Vitest, ESLint, Stylelint, Astro, Wrangler) to Node whenever a `node` is on your PATH, and Wrangler requires Node.
 
 ## Install and Run
 
