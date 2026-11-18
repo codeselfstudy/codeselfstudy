@@ -1,0 +1,22 @@
+# Tool versions for local development and CI. Run `mise trust` once so mise will
+# read this file, then `mise install` to get them. See manual/src/getting-started.md.
+#
+# Dependabot doesn't track this file, so bump these by hand when you update the
+# dependencies they have to stay compatible with.
+[tools]
+# Node: the project uses Bun, but Bun hands any tool with a `#!/usr/bin/env node`
+# shebang (vitest, eslint, stylelint, astro, tsc, wrangler) to whichever `node`
+# is on PATH. This pins that Node so local runs and CI match, and keeps it inside
+# the `engines` ranges of those tools. wrangler officially requires Node.
+node = "26.7.0"
+
+# Bun: the lockfile layout and the `[install]` settings in bunfig.toml
+# (minimumReleaseAge, exact) depend on the Bun version.
+bun = "1.4.4"
+
+# Go: the 1.26 line, not an exact patch, so `mise upgrade` can move to the newest
+# patch when govulncheck flags stdlib fixes. CI still installs Go with setup-go
+# and `check-latest`, which does the same there. go.mod holds the minimum version.
+go = "1.26"
+
+just = "1.59.0"

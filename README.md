@@ -35,7 +35,7 @@ The Go binary serves the prerendered HTML, the JSON API (`/api/*`), and a future
 
 ## Quick start
 
-Requires [Bun](https://bun.com/), [Go](https://go.dev/) 1.26+, and [just](https://just.systems/).
+Requires [Bun](https://bun.com/), [Go](https://go.dev/) 1.26+, [just](https://just.systems/), and Node.js (Bun runs some tools on it). The versions are pinned in `mise.toml`, so with [mise](https://mise.jdx.dev/) you can run `mise trust && mise install` to get them all.
 
 ```sh
 # clone, then:

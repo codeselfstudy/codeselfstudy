@@ -37,9 +37,15 @@ bun run check                        # Prettier + ESLint
 - **Web:** Vitest (`apps/web/vitest.config.ts`). `just test-coverage` produces an HTML report under `apps/web/coverage/`. `apps/web/src/lib/**` enforces 100% line/branch/function/statement coverage.
 - **API:** stdlib `testing` + `httptest`. All Go code requires test coverage — this is a hard rule of the stack experiment. Tests live next to the code as `*_test.go`.
 
+## Tool Versions
+
+`mise.toml` pins Node, Bun, Go, and just for local development, and CI installs Node and Bun from the same file. Dependabot doesn't track `mise.toml`, so bump the pins by hand when you update dependencies that depend on them (for example, a tool that raises its minimum Node version). Go is pinned to the `1.26` line rather than an exact patch so stdlib security fixes are picked up.
+
+Node is pinned even though the project uses Bun, because Bun runs any tool with a `#!/usr/bin/env node` shebang (Vitest, ESLint, Stylelint, Astro, `tsc`, Wrangler) on whichever `node` is on `PATH`. Without one, Bun runs them itself, and `bun run --bun` forces that.
+
 ## Continuous Integration
 
-`.github/workflows/test.yml` runs all three apps on every pull request and on pushes to `main`:
+`.github/workflows/test.yml` runs all three apps on every pull request and on pushes to `main`. Node and Bun are installed from `mise.toml` with `jdx/mise-action`; Go comes from `setup-go` (with `check-latest`) so stdlib security releases are picked up. It runs:
 
 - ESLint and Stylelint against `apps/web` (without `--fix` — the local `lint` script auto-fixes, CI only checks).
 - `bun run --filter web build` (`astro check` + the static build), then the web tests with coverage.
