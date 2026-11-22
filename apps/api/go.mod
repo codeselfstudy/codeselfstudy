@@ -11,7 +11,7 @@ require (
 	golang.org/x/net v0.63.0
 	golang.org/x/sync v0.25.0
 	golang.org/x/text v0.44.0
-	google.golang.org/genai v1.73.0
+	google.golang.org/genai v1.79.1
 	modernc.org/sqlite v1.62.0
 )
 
