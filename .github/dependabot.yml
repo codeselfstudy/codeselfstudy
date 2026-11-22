@@ -5,7 +5,11 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  # `bun`, not `npm`: the repo has bun.lock and no package-lock.json. The root
+  # entry covers the workspace members (apps/web and apps/email_receiver, the
+  # live Cloudflare email Worker) through the root bun.lock, so they need no
+  # entries of their own.
+  - package-ecosystem: "bun"
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
@@ -37,3 +41,9 @@ updates:
       github-actions:
         patterns:
           - "*"
+
+  # The Fly app's image (Dockerfile at the repo root).
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
