@@ -3,16 +3,16 @@ module github.com/codeselfstudy/codeselfstudy/apps/api
 go 1.26.2
 
 require (
-	github.com/labstack/echo/v5 v5.4.6
-	github.com/lestrrat-go/jwx/v2 v2.1.6
+	github.com/labstack/echo/v5 v5.4.7
+	github.com/lestrrat-go/jwx/v2 v2.1.7
 	github.com/pressly/goose/v3 v3.30.1
 	github.com/tursodatabase/libsql-client-go v0.0.0-20260528064733-9d5d30a29a60
 	github.com/workos/workos-go/v6 v6.5.0
 	golang.org/x/net v0.63.0
 	golang.org/x/sync v0.25.0
 	golang.org/x/text v0.44.0
-	google.golang.org/genai v1.73.0
-	modernc.org/sqlite v1.62.0
+	google.golang.org/genai v1.79.1
+	modernc.org/sqlite v1.63.0
 )
 
 require (
@@ -22,12 +22,12 @@ require (
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/coder/websocket v1.8.15 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/goccy/go-json v0.10.3 // indirect
+	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
@@ -35,7 +35,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.15 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/lestrrat-go/blackmagic v1.0.3 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.4 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.6 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect

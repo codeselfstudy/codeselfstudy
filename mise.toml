@@ -8,15 +8,15 @@
 # shebang (vitest, eslint, stylelint, astro, tsc, wrangler) to whichever `node`
 # is on PATH. This pins that Node so local runs and CI match, and keeps it inside
 # the `engines` ranges of those tools. wrangler officially requires Node.
-node = "26.7.0"
+node = "26.13.1"
 
 # Bun: the lockfile layout and the `[install]` settings in bunfig.toml
 # (minimumReleaseAge, exact) depend on the Bun version.
 bun = "1.4.4"
 
-# Go: the 1.26 line, not an exact patch, so `mise upgrade` can move to the newest
+# Go: the 1.27 line, not an exact patch, so `mise upgrade` can move to the newest
 # patch when govulncheck flags stdlib fixes. CI still installs Go with setup-go
 # and `check-latest`, which does the same there. go.mod holds the minimum version.
-go = "1.26"
+go = "1.27"
 
 just = "1.59.0"
