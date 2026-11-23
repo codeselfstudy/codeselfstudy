@@ -12,7 +12,7 @@ The deployed app is a single Go binary that serves the prerendered web app, the 
 
 `Dockerfile` is multi-stage:
 
-1. **Build stage** (`golang:1.26-alpine`): copy `apps/api/`, copy the prebuilt `apps/web/dist` into `./static`, then `go build -trimpath -ldflags="-s -w" -o /out/server .` with `CGO_ENABLED=0`.
+1. **Build stage** (`golang:1.27-alpine`): copy `apps/api/`, copy the prebuilt `apps/web/dist` into `./static`, then `go build -trimpath -ldflags="-s -w" -o /out/server .` with `CGO_ENABLED=0`.
 2. **Runtime stage** (`gcr.io/distroless/static-debian12:debug-nonroot`): copy `/server` and `/static`. Distroless gives CA certs, a nonroot user, and a BusyBox shell for `fly ssh console` — about 2 MB on disk and zero steady-state RAM beyond the binary itself.
 
 The image runs as `nonroot`, exposes `8080`, and `ENTRYPOINT ["/server"]`.

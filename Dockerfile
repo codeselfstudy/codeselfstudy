@@ -5,7 +5,7 @@
 # builder, which was ~10min on a cold cache.
 
 # 1. Build the Go binary, copying the prebuilt static site as ./static.
-FROM golang:1.26-alpine AS api
+FROM golang:1.27-alpine AS api
 WORKDIR /src
 COPY apps/api/go.mod apps/api/go.sum ./
 RUN go mod download
