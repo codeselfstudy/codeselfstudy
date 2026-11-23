@@ -12,8 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/jwx-go/jwkfetch/v4"
+	"github.com/lestrrat-go/httprc/v3"
+	"github.com/lestrrat-go/jwx/v4/jwk"
+	"github.com/lestrrat-go/jwx/v4/jwt"
 )
 
 // Verifier holds the cached JWKS and the expected issuer for token
@@ -22,7 +24,7 @@ import (
 type Verifier struct {
 	jwksURL string
 	issuer  string
-	keys    *jwk.Cache
+	keys    *jwkfetch.Cache
 	refresh time.Duration
 }
 
@@ -78,8 +80,15 @@ func (v *Verifier) WithRefreshInterval(d time.Duration) *Verifier {
 // Call once at server startup; the returned context is the one to use for
 // the cache's lifetime — cancel it on shutdown to stop refreshing.
 func (v *Verifier) Start(ctx context.Context) error {
-	cache := jwk.NewCache(ctx)
-	if err := cache.Register(v.jwksURL, jwk.WithMinRefreshInterval(v.refresh)); err != nil {
+	cache, err := jwkfetch.NewCache(ctx, httprc.NewClient())
+	if err != nil {
+		return fmt.Errorf("auth: start jwks cache: %w", err)
+	}
+	// WithWaitReady(false): by default Register blocks until the first fetch
+	// succeeds, which would hang startup (not fail it) when the JWKS endpoint
+	// is down. The synchronous Refresh below does the priming fetch and
+	// returns its error instead.
+	if err := cache.Register(ctx, v.jwksURL, jwkfetch.WithMinInterval(v.refresh), jwkfetch.WithWaitReady(false)); err != nil {
 		return fmt.Errorf("auth: register jwks: %w", err)
 	}
 	if _, err := cache.Refresh(ctx, v.jwksURL); err != nil {
@@ -89,12 +98,13 @@ func (v *Verifier) Start(ctx context.Context) error {
 	return nil
 }
 
-// keySet returns the current cached JWKS, refreshing on demand if stale.
+// keySet returns the current cached JWKS. The cache refreshes it in the
+// background, so this never blocks on the network.
 func (v *Verifier) keySet(ctx context.Context) (jwk.Set, error) {
 	if v.keys == nil {
 		return nil, errors.New("auth: verifier not started")
 	}
-	return v.keys.Get(ctx, v.jwksURL)
+	return v.keys.Lookup(ctx, v.jwksURL)
 }
 
 // ParseToken validates a raw JWT against the cached JWKS, the expected issuer,

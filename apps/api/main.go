@@ -286,12 +286,17 @@ func handleMe(c *echo.Context) error {
 	if tok == nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 	}
+	// jwx v4 accessors also report whether the claim was present. A missing
+	// claim falls back to the zero value, which is what v2 returned.
+	sub, _ := tok.Subject()
+	iss, _ := tok.Issuer()
+	exp, _ := tok.Expiration()
 	resp := map[string]any{
-		"sub": tok.Subject(),
-		"iss": tok.Issuer(),
-		"exp": tok.Expiration().Unix(),
+		"sub": sub,
+		"iss": iss,
+		"exp": exp.Unix(),
 	}
-	if email, ok := tok.Get("email"); ok {
+	if email, ok := tok.Field("email"); ok {
 		resp["email"] = email
 	}
 	return c.JSON(http.StatusOK, resp)

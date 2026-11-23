@@ -491,7 +491,7 @@ func (m *Manager) sessionID(ctx context.Context, accessToken string) string {
 	if err != nil {
 		return ""
 	}
-	if sid, ok := tok.Get("sid"); ok {
+	if sid, ok := tok.Field("sid"); ok {
 		if s, ok := sid.(string); ok {
 			return s
 		}
