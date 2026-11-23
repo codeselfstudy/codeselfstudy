@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v5"
-	"github.com/lestrrat-go/jwx/v2/jwa"
-	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/lestrrat-go/jwx/v4/jwa"
+	"github.com/lestrrat-go/jwx/v4/jwk"
+	"github.com/lestrrat-go/jwx/v4/jwt"
 
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/auth"
 	"github.com/codeselfstudy/codeselfstudy/apps/api/internal/session"
@@ -40,12 +40,12 @@ func newMeFixture(t *testing.T) *meFixture {
 	if err != nil {
 		t.Fatalf("rsa: %v", err)
 	}
-	pub, err := jwk.FromRaw(&priv.PublicKey)
+	pub, err := jwk.Import[jwk.Key](&priv.PublicKey)
 	if err != nil {
 		t.Fatalf("jwk pub: %v", err)
 	}
 	_ = pub.Set(jwk.KeyIDKey, meTestKID)
-	_ = pub.Set(jwk.AlgorithmKey, jwa.RS256)
+	_ = pub.Set(jwk.AlgorithmKey, jwa.RS256())
 	set := jwk.NewSet()
 	_ = set.AddKey(pub)
 
@@ -73,13 +73,13 @@ func (f *meFixture) sign(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	priv, err := jwk.FromRaw(f.priv)
+	priv, err := jwk.Import[jwk.Key](f.priv)
 	if err != nil {
 		t.Fatalf("jwk priv: %v", err)
 	}
 	_ = priv.Set(jwk.KeyIDKey, meTestKID)
-	_ = priv.Set(jwk.AlgorithmKey, jwa.RS256)
-	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256, priv))
+	_ = priv.Set(jwk.AlgorithmKey, jwa.RS256())
+	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256(), priv))
 	if err != nil {
 		t.Fatalf("sign: %v", err)
 	}

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v5"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/lestrrat-go/jwx/v4/jwt"
 )
 
 // userContextKey is the *echo.Context key under which validated claims are

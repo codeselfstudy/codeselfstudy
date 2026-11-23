@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,9 +14,9 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v5"
-	"github.com/lestrrat-go/jwx/v2/jwa"
-	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/lestrrat-go/jwx/v4/jwa"
+	"github.com/lestrrat-go/jwx/v4/jwk"
+	"github.com/lestrrat-go/jwx/v4/jwt"
 )
 
 const (
@@ -38,14 +39,14 @@ func newJWKSFixture(t *testing.T) *jwksFixture {
 	if err != nil {
 		t.Fatalf("rsa generate: %v", err)
 	}
-	pub, err := jwk.FromRaw(&priv.PublicKey)
+	pub, err := jwk.Import[jwk.Key](&priv.PublicKey)
 	if err != nil {
 		t.Fatalf("jwk from raw: %v", err)
 	}
 	if err := pub.Set(jwk.KeyIDKey, testKID); err != nil {
 		t.Fatalf("set kid: %v", err)
 	}
-	if err := pub.Set(jwk.AlgorithmKey, jwa.RS256); err != nil {
+	if err := pub.Set(jwk.AlgorithmKey, jwa.RS256()); err != nil {
 		t.Fatalf("set alg: %v", err)
 	}
 	set := jwk.NewSet()
@@ -84,17 +85,17 @@ func (f *jwksFixture) signToken(t *testing.T, mutate func(jwt.Token)) string {
 	if mutate != nil {
 		mutate(tok)
 	}
-	key, err := jwk.FromRaw(f.priv)
+	key, err := jwk.Import[jwk.Key](f.priv)
 	if err != nil {
 		t.Fatalf("priv jwk: %v", err)
 	}
 	if err := key.Set(jwk.KeyIDKey, testKID); err != nil {
 		t.Fatalf("priv kid: %v", err)
 	}
-	if err := key.Set(jwk.AlgorithmKey, jwa.RS256); err != nil {
+	if err := key.Set(jwk.AlgorithmKey, jwa.RS256()); err != nil {
 		t.Fatalf("priv alg: %v", err)
 	}
-	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256, key))
+	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256(), key))
 	if err != nil {
 		t.Fatalf("sign: %v", err)
 	}
@@ -155,7 +156,7 @@ func TestMiddlewareAcceptsValidToken(t *testing.T) {
 		if tok == nil {
 			t.Fatal("claims missing on accepted request")
 		}
-		if got, _ := tok.Get("sub"); got != "user_01HW0EXAMPLE" {
+		if got, _ := tok.Field("sub"); got != "user_01HW0EXAMPLE" {
 			t.Fatalf("sub: got %v", got)
 		}
 		return c.NoContent(http.StatusOK)
@@ -244,17 +245,17 @@ func signWithStrangerKey(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	key, err := jwk.FromRaw(priv)
+	key, err := jwk.Import[jwk.Key](priv)
 	if err != nil {
 		t.Fatalf("jwk: %v", err)
 	}
 	if err := key.Set(jwk.KeyIDKey, testKID); err != nil {
 		t.Fatalf("kid: %v", err)
 	}
-	if err := key.Set(jwk.AlgorithmKey, jwa.RS256); err != nil {
+	if err := key.Set(jwk.AlgorithmKey, jwa.RS256()); err != nil {
 		t.Fatalf("alg: %v", err)
 	}
-	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256, key))
+	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256(), key))
 	if err != nil {
 		t.Fatalf("sign: %v", err)
 	}
@@ -279,6 +280,37 @@ func TestStartFailsOnUnreachableJWKS(t *testing.T) {
 	defer cancel()
 	if err := v.Start(ctx); err == nil {
 		t.Fatal("expected Start to fail when JWKS endpoint is unreachable")
+	}
+}
+
+// Start must return the priming fetch's error rather than block until the
+// context ends. jwx v4's cache waits for the first successful fetch by default,
+// which would hang server startup while WorkOS's JWKS endpoint is erroring, so
+// this uses a long deadline and asserts Start comes back well before it.
+func TestStartFailsFastOnJWKSServerError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "boom", http.StatusInternalServerError)
+	}))
+	t.Cleanup(srv.Close)
+
+	v, err := NewVerifier("test_client", "test.workos.local")
+	if err != nil {
+		t.Fatalf("new verifier: %v", err)
+	}
+	v.WithJWKSURL(srv.URL).WithIssuer(testIssuer)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	start := time.Now()
+	err = v.Start(ctx)
+	if err == nil {
+		t.Fatal("expected Start to fail when the JWKS endpoint returns 500")
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("Start blocked until the deadline instead of failing fast: %v", err)
+	}
+	if elapsed := time.Since(start); elapsed > 5*time.Second {
+		t.Fatalf("Start took %s to fail; want it to fail fast", elapsed)
 	}
 }
 
