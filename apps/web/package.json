@@ -45,7 +45,7 @@
     "eslint-plugin-astro": "3.2.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "jsdom": "31.0.1",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "typescript-eslint": "8.73.0",
     "vitest": "5.1.1"
   }
